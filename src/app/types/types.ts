@@ -3,7 +3,8 @@ export type DeviceType = BaseDeviceType | 'multi';
 
 export interface Device {
   name: string;
-  url: string;
+  url?: string; 
+  key?: string;
   type: DeviceType;
   pumpKey?: string;
   group: string;
@@ -32,7 +33,7 @@ export interface DeviceData {
 
 export interface MultiDeviceCardProps {
   groupName: string;
-  url: string;
+  identifier: string;
   devices: {
     name: string;
     type: 'pump' | 'well';

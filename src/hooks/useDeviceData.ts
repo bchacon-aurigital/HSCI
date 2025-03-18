@@ -1,31 +1,21 @@
-import { useState, useEffect } from 'react';
-import { DeviceData } from '../app/types/types';
+import { useAggregatedData } from './useAggregatedData';
+import { useIndividualDeviceData } from './useIndividualDeviceData';
 
-export const useDeviceData = (url: string) => {
-  const [data, setData] = useState<DeviceData | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+export const useDeviceData = (identifier: string, pumpKey?: string) => {
+  // Si el identificador es una URL, usamos el hook individual.
+  if (identifier.startsWith('http')) {
+    return useIndividualDeviceData(identifier, pumpKey);
+  } else {
+    const { data, loading, error } = useAggregatedData();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('Error en la conexión');
-        const result = await response.json();
-        setData(result);
-        setError(null);
-      } catch (err) {
-        setError('Error al obtener datos');
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchData();
-    const interval = setInterval(fetchData, 5 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, [url]);
+    // Si ya terminó de cargar y la clave no existe, mostrar advertencia.
+    if (!loading && (data[identifier] === undefined || data[identifier] === null)) {
+      console.warn("No data found for key:", identifier);
+      return { data: null, loading, error };
+    }
 
-  return { data, error, loading };
+    // Usamos el encadenamiento opcional para evitar error si data[identifier] es undefined.
+    const deviceData = pumpKey ? data[identifier]?.[pumpKey] : data[identifier];
+    return { data: deviceData, loading, error };
+  }
 };

@@ -1,90 +1,81 @@
-import { useMemo } from 'react';
-import { Device, DeviceGroup, MultiDevice } from '../app/types/types';
-import { devices } from '../app/data/devicesConfig';
+// useDeviceGroups.ts
+import { useState, useEffect, useMemo } from 'react';
+import { loadDevicesForAsada } from './dynamicDeviceLoader';
+import { Device } from '../app/types/types';
 
-export const useDeviceGroups = () => {
-  const deviceGroups = useMemo<DeviceGroup[]>(() => {
+export const useDeviceGroups = (codigoAsada: string) => {
+  const [devices, setDevices] = useState<Device[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    loadDevicesForAsada(codigoAsada)
+      .then(({ devices: deviceList }) => {
+        setDevices(deviceList);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error('Error al cargar los dispositivos:', error);
+        setLoading(false);
+      });
+  }, [codigoAsada]);
+
+  const groupedDevices = useMemo(() => {
+    if (loading) return [];
+
     const groupMap: Record<string, Device[]> = {};
-    
-    devices.forEach(device => {
+    devices.forEach((device) => {
       if (!groupMap[device.group]) {
         groupMap[device.group] = [];
       }
       groupMap[device.group].push(device);
     });
-    
-    return Object.entries(groupMap).map(([group, deviceList]) => ({
-      name: group,
-      devices: deviceList
-    }));
-  }, []);
 
-  const processedGroups = useMemo<DeviceGroup[]>(() => {
-    return deviceGroups.map(group => {
-      const groupDevices: (Device | MultiDevice)[] = [...group.devices];
-      
-      interface UrlGroup {
-        devices: {
-          name: string;
-          type: 'pump' | 'well';
-          pumpKey: string;
-        }[];
-        toRemove: Device[];
-      }
-      
-      const urlGroups: Record<string, UrlGroup> = {};
-      
-      groupDevices.forEach(device => {
-        if ((device.type === 'pump' || device.type === 'well') && device.pumpKey) {
-          if (!urlGroups[device.url]) {
-            urlGroups[device.url] = {
-              devices: [],
-              toRemove: []
-            };
-          }
-          urlGroups[device.url].devices.push({
-            name: device.name,
-            type: device.type as 'pump' | 'well', 
-            pumpKey: device.pumpKey
-          });
-          urlGroups[device.url].toRemove.push(device);
-        }
-      });
-      
-      Object.entries(urlGroups).forEach(([url, { devices: urlDevices, toRemove }]) => {
-        if (urlDevices.length > 1) {
-          toRemove.forEach(device => {
-            const index = groupDevices.findIndex(d => 
-              d.name === device.name && 
-              d.url === device.url && 
-              d.pumpKey === device.pumpKey
-            );
-            if (index !== -1) {
-              groupDevices.splice(index, 1);
+    const groups = Object.entries(groupMap).map(([groupName, deviceList]) => {
+      const multiDevicesMap: Record<string, Device[]> = {};
+      const restDevices: Device[] = [];
+
+      deviceList.forEach((device) => {
+        if (device.type === 'pump' || device.type === 'well') {
+          const groupingKey = device.key ? device.key : device.url!;
+          if (groupingKey) {
+            if (!multiDevicesMap[groupingKey]) {
+              multiDevicesMap[groupingKey] = [];
             }
-          });
-          
-          const averageOrder = toRemove.reduce((sum, device) => sum + device.order, 0) / toRemove.length;
-          
-          const multiDevice: MultiDevice = {
-            name: `${group.name.toUpperCase()} - MULTIPLE`,
-            url,
-            type: 'multi',
-            group: group.name,
-            multiDevices: urlDevices,
-            order: averageOrder 
-          };
-          
-          groupDevices.push(multiDevice);
+            multiDevicesMap[groupingKey].push(device);
+          } else {
+            restDevices.push(device);
+          }
+        } else {
+          restDevices.push(device);
         }
       });
-      
-      return {
-        ...group,
-        devices: groupDevices
-      };
-    });
-  }, [deviceGroups]);
 
-  return processedGroups;
+      Object.entries(multiDevicesMap).forEach(([key, devicesWithKey]) => {
+        if (devicesWithKey.length > 1) {
+          const multiDevice = {
+            name: devicesWithKey[0].name,
+            key,
+            type: 'multi' as const,
+            group: groupName,
+            order: Math.min(...devicesWithKey.map((d) => d.order)),
+            multiDevices: devicesWithKey.map((d) => ({
+              name: d.name,
+              type: d.type as 'pump' | 'well',
+              pumpKey: d.pumpKey!,
+            })),
+          };
+          restDevices.push(multiDevice);
+        } else {
+          restDevices.push(devicesWithKey[0]);
+        }
+      });
+
+      restDevices.sort((a, b) => a.order - b.order);
+      return { name: groupName, devices: restDevices };
+    });
+    return groups;
+  }, [devices, loading]);
+
+  return groupedDevices;
 };
