@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
 import { DeviceData } from '../app/types/types';
 
-// This will be updated dynamically based on the ASADA code
 let groupedURLs: Record<string, string[]> = {};
 
-// Function to set the URLs for a specific ASADA
 export const setGroupedURLsForAsada = (asadaCode: string) => {
   switch (asadaCode) {
     case 'codigo1':
@@ -33,7 +31,6 @@ export const setGroupedURLsForAsada = (asadaCode: string) => {
   }
 };
 
-// Singleton pattern to cache data and prevent multiple calls
 const dataCache: {
   data: Record<string, DeviceData>;
   lastFetched: number;
@@ -58,14 +55,11 @@ export function useAggregatedData(codigoAsada: string) {
   });
 
   useEffect(() => {
-    // Set the URLs for this ASADA
     setGroupedURLsForAsada(codigoAsada);
     
-    // Increment subscribers count
     dataCache.subscribers++;
 
     const fetchData = async () => {
-      // If data was fetched recently (within 2 minutes), use the cache
       const now = Date.now();
       if (now - dataCache.lastFetched < 2 * 60 * 1000 && Object.keys(dataCache.data).length > 0) {
         setState({
@@ -76,7 +70,6 @@ export function useAggregatedData(codigoAsada: string) {
         return;
       }
 
-      // If a fetch is already in progress, wait for it to complete
       if (dataCache.fetchPromise) {
         await dataCache.fetchPromise;
         setState({
@@ -87,7 +80,6 @@ export function useAggregatedData(codigoAsada: string) {
         return;
       }
 
-      // Start a new fetch
       dataCache.loading = true;
       setState(prev => ({ ...prev, loading: true }));
 
@@ -106,7 +98,6 @@ export function useAggregatedData(codigoAsada: string) {
             })
           );
           
-          // Combine all results into a single object
           dataCache.data = Object.assign({}, ...responses);
           dataCache.lastFetched = now;
           dataCache.error = null;
@@ -129,14 +120,12 @@ export function useAggregatedData(codigoAsada: string) {
 
     fetchData();
 
-    // Set up interval for periodic refreshes
     const interval = setInterval(fetchData, 5 * 60 * 1000); // Refresh every 5 minutes
 
     return () => {
       clearInterval(interval);
       dataCache.subscribers--;
       
-      // If there are no more subscribers, clear the cache
       if (dataCache.subscribers === 0) {
         dataCache.data = {};
         dataCache.lastFetched = 0;

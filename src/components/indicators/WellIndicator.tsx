@@ -1,42 +1,357 @@
-import React from 'react';
+import React, { useState, useEffect, useId } from 'react';
 
 interface IndicatorProps {
   status: number;
+  level?: number;
 }
 
-export const WellIndicator = ({ status }: IndicatorProps) => {
+
+export const WellIndicator = ({ status, level = 50 }: IndicatorProps) => {
+  const uniqueId = useId();
+  const [animatedLevel, setAnimatedLevel] = useState(0);
+  const [animatedStatus, setAnimatedStatus] = useState(status);
+  const [waterRipple, setWaterRipple] = useState(0);
+  const [pulseScale, setPulseScale] = useState(1);
+
   const statusColors = ['#3b82f6', '#22c55e', '#ef4444', '#f97316'];
+  const statusGradients = [
+    ['#3b82f6', '#1d4ed8'],
+    ['#22c55e', '#16a34a'],
+    ['#ef4444', '#b91c1c'],
+    ['#f97316', '#c2410c']
+  ];
   const labels = ['Reposo', 'Operación', 'Falla', 'Selector Fuera'];
-  
+
+  useEffect(() => {
+    const duration = 1500;
+    const interval = 10;
+    const steps = duration / interval;
+    const increment = level / steps;
+    let currentLevel = 0;
+
+    const timer = setInterval(() => {
+      currentLevel += increment;
+      if (currentLevel >= level) {
+        clearInterval(timer);
+        setAnimatedLevel(level);
+      } else {
+        setAnimatedLevel(currentLevel);
+      }
+    }, interval);
+
+    return () => clearInterval(timer);
+  }, [level]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setAnimatedStatus(status);
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [status]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setWaterRipple(prev => (prev + 1) % 100);
+    }, 100);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setInterval>;
+
+    if (animatedStatus === 2) {
+      timer = setInterval(() => {
+        setPulseScale(prev => prev === 1 ? 1.1 : 1);
+      }, 500);
+    } else {
+      setPulseScale(1);
+    }
+
+    return () => clearInterval(timer);
+  }, [animatedStatus]);
+
+  const wellHeight = 80;
+  const maxWaterHeight = 35;
+  const baseWaterY = 85;
+  const waterY = baseWaterY - (animatedLevel / 100) * maxWaterHeight;
+
+  const generateWaterSurface = (baseY: number, amplitude: number, frequency: number, phase: number) => {
+    let path = `M 35 ${baseY} `;
+    for (let x = 0; x <= 30; x += 2) {
+      const y = baseY + amplitude * Math.sin((x / 30) * frequency * Math.PI + phase);
+      path += `L ${35 + x} ${y} `;
+    }
+    path += `L 65 ${baseY} L 65 ${baseY + maxWaterHeight} L 35 ${baseY + maxWaterHeight} Z`;
+    return path;
+  };
+
+  const waterSurface1 = generateWaterSurface(waterY, 1, 3, waterRipple / 10);
+  const waterSurface2 = generateWaterSurface(waterY, 0.7, 2, (waterRipple / 10) + 1);
+
+  const generateBubbles = () => {
+    if (animatedStatus !== 1) return null;
+
+    const bubbles = [];
+    const bubbleCount = 5;
+
+    for (let i = 0; i < bubbleCount; i++) {
+      const xPos = 40 + (Math.random() * 20);
+      const delay = i * 0.8;
+      const size = 0.5 + (Math.random() * 1);
+
+      bubbles.push(
+        <circle
+          key={i}
+          cx={xPos}
+          cy={baseWaterY - 5}
+          r={size}
+          fill="white"
+          opacity="0.7">
+          <animate
+            attributeName="cy"
+            from={baseWaterY - 5}
+            to={waterY + 5}
+            dur="3s"
+            begin={`${delay}s`}
+            repeatCount="indefinite"
+          />
+          <animate
+            attributeName="opacity"
+            from="0.7"
+            to="0"
+            dur="3s"
+            begin={`${delay}s`}
+            repeatCount="indefinite"
+          />
+        </circle>
+      );
+    }
+
+    return bubbles;
+  };
+
+  const generateSedimentLayers = () => {
+    const layerCount = 5;
+    const layerHeight = 2;
+    const layerGap = 2;
+    const layers = [];
+
+    for (let i = 0; i < layerCount; i++) {
+      const yPos = 40 + (i * (layerHeight + layerGap));
+
+      layers.push(
+        <rect
+          key={i}
+          x="35"
+          y={yPos}
+          width="30"
+          height={layerHeight}
+          fill="#374151"
+          opacity={0.8 - (i * 0.1)}
+        />
+      );
+
+      for (let j = 0; j < 5; j++) {
+        const lineY = yPos + (j * 0.4);
+        if (lineY < yPos + layerHeight) {
+          layers.push(
+            <line
+              key={`line-${i}-${j}`}
+              x1="35"
+              y1={lineY}
+              x2="65"
+              y2={lineY}
+              stroke="white"
+              strokeWidth="0.2"
+              opacity="0.6"
+            />
+          );
+        }
+      }
+    }
+
+    return layers;
+  };
+
+  const generateGridLines = () => {
+    const verticalLines = [];
+    const horizontalLines = [];
+    const lineCount = 6;
+    const spacing = 30 / (lineCount + 1);
+
+    for (let i = 1; i <= lineCount; i++) {
+      const xPos = 35 + (i * spacing);
+      verticalLines.push(
+        <line
+          key={`v-${i}`}
+          x1={xPos}
+          y1="50"
+          x2={xPos}
+          y2="85"
+          stroke="white"
+          strokeWidth="0.8"
+          opacity="0.6"
+        />
+      );
+    }
+
+    for (let i = 1; i <= lineCount; i++) {
+      const yPos = 50 + (i * spacing);
+      horizontalLines.push(
+        <line
+          key={`h-${i}`}
+          x1="35"
+          y1={yPos}
+          x2="65"
+          y2={yPos}
+          stroke="white"
+          strokeWidth="0.8"
+          opacity="0.6"
+        />
+      );
+    }
+
+    return [...verticalLines, ...horizontalLines];
+  };
+
   return (
-    <svg viewBox="0 0 100 120" className="w-32 h-48 mx-auto">
-      <rect x="35" y="10" width="30" height="70" fill="none" stroke="currentColor" strokeWidth="2" />
-      
-      <rect x="35" y="40" width="30" height="10" fill="#374151" />
-      
-      <line x1="35" y1="40" x2="65" y2="40" stroke="white" strokeWidth="0.8" />
-      <line x1="35" y1="42" x2="65" y2="42" stroke="white" strokeWidth="0.8" />
-      <line x1="35" y1="44" x2="65" y2="44" stroke="white" strokeWidth="0.8" />
-      <line x1="35" y1="46" x2="65" y2="46" stroke="white" strokeWidth="0.8" />
-      <line x1="35" y1="48" x2="65" y2="48" stroke="white" strokeWidth="0.8" />
-      
-      <line x1="39" y1="40" x2="39" y2="50" stroke="white" strokeWidth="0.8" />
-      <line x1="43" y1="40" x2="43" y2="50" stroke="white" strokeWidth="0.8" />
-      <line x1="47" y1="40" x2="47" y2="50" stroke="white" strokeWidth="0.8" />
-      <line x1="51" y1="40" x2="51" y2="50" stroke="white" strokeWidth="0.8" />
-      <line x1="55" y1="40" x2="55" y2="50" stroke="white" strokeWidth="0.8" />
-      <line x1="59" y1="40" x2="59" y2="50" stroke="white" strokeWidth="0.8" />
-      <line x1="63" y1="40" x2="63" y2="50" stroke="white" strokeWidth="0.8" />
-      
-      <rect x="35" y="50" width="30" height="35" fill={statusColors[status]} stroke="currentColor" strokeWidth="1" />
-      
-      <line x1="40" y1="55" x2="40" y2="80" stroke="white" strokeWidth="1.5" />
-      <line x1="45" y1="55" x2="45" y2="80" stroke="white" strokeWidth="1.5" />
-      <line x1="50" y1="55" x2="50" y2="80" stroke="white" strokeWidth="1.5" />
-      <line x1="55" y1="55" x2="55" y2="80" stroke="white" strokeWidth="1.5" />
-      <line x1="60" y1="55" x2="60" y2="80" stroke="white" strokeWidth="1.5" />
-      
-      <text x="50" y="105" textAnchor="middle" fill="currentColor" fontSize="10" fontWeight="bold">{labels[status]}</text>
-    </svg>
+    <div className="relative">
+      <svg viewBox="0 0 100 120" className="w-40 h-56 mx-auto">
+        <defs>
+        <linearGradient id={`wellGradient-${uniqueId}`} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor={statusGradients[animatedStatus][0]} />
+            <stop offset="100%" stopColor={statusGradients[animatedStatus][1]} />
+          </linearGradient>
+          <linearGradient id={`waterGradient-${uniqueId}`} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="#1d4ed8" stopOpacity="0.6" />
+          </linearGradient>
+          <filter id="wellGlow">
+            <feGaussianBlur stdDeviation="1.5" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
+          <filter id="wellShadow">
+            <feDropShadow dx="0" dy="1" stdDeviation="1" floodOpacity="0.3" />
+          </filter>
+          <clipPath id="wellClip">
+            <rect x="35" y="50" width="30" height="35" />
+          </clipPath>
+        </defs>
+
+        <rect
+          x="35"
+          y="10"
+          width="30"
+          height="80"
+          fill="none"
+          stroke="#1e293b"
+          strokeWidth="2.5"
+          rx="1"
+          filter="url(#wellShadow)"
+        />
+
+        <rect
+          x="32"
+          y="10"
+          width="36"
+          height="5"
+          fill="#334155"
+          rx="1"
+          filter="url(#wellShadow)"
+        />
+
+        {generateSedimentLayers()}
+
+        <rect
+          x="35"
+          y="50"
+          width="30"
+          height="35"
+          fill={`url(#wellGradient-${uniqueId})`}
+          stroke="#1e293b"
+          strokeWidth="1"
+          style={{
+            transform: animatedStatus === 2 ? `scale(${pulseScale})` : 'scale(1)',
+            transformOrigin: '50px 67.5px',
+            transition: 'transform 0.3s ease'
+          }}
+        />
+
+        {generateGridLines()}
+
+        <g clipPath="url(#wellClip)">
+          <path
+            d={waterSurface1}
+            fill={`url(#waterGradient-${uniqueId})`}
+            opacity="0.8">
+            <animate
+              attributeName="d"
+              dur="3s"
+              repeatCount="indefinite"
+              values={`${waterSurface1};${generateWaterSurface(waterY, 1, 3, (waterRipple / 10) + Math.PI)};${waterSurface1}`}
+            />
+          </path>
+          <path
+            d={waterSurface2}
+            fill="url(#374151)"
+            opacity="0.6">
+            <animate
+              attributeName="d"
+              dur="2.5s"
+              repeatCount="indefinite"
+              values={`${waterSurface2};${generateWaterSurface(waterY, 0.7, 2, (waterRipple / 10) + Math.PI + 1)};${waterSurface2}`}
+            />
+          </path>
+
+          {generateBubbles()}
+        </g>
+
+
+        <circle
+          cx="50"
+          cy="30"
+          r="7"
+          fill={statusColors[animatedStatus]}
+          stroke="#1e293b"
+          strokeWidth="1"
+          filter="url(#wellGlow)"
+          style={{
+            transform: animatedStatus === 2 ? `scale(${pulseScale})` : 'scale(1)',
+            transformOrigin: '50px 30px',
+            transition: 'transform 0.3s ease'
+          }}
+        >
+          {animatedStatus === 2 && (
+            <animate attributeName="opacity" values="0.9;1;0.9" dur="0.5s" repeatCount="indefinite" />
+          )}
+        </circle>
+
+      </svg>
+
+      <div className="absolute bottom-5 left-0 right-0 flex justify-center">
+        <div className={`px-3 py-1 rounded-full text-xs font-medium ${animatedStatus === 0 ? 'bg-blue-100 text-blue-800' :
+            animatedStatus === 1 ? 'bg-green-100 text-green-800' :
+              animatedStatus === 2 ? 'bg-red-100 text-red-800' : 'bg-orange-100 text-orange-800'
+          }`}>
+          {labels[animatedStatus]}
+          <span className={`ml-1 h-2 w-2 inline-block rounded-full ${animatedStatus === 0 ? 'bg-blue-500' :
+              animatedStatus === 1 ? 'bg-green-500' :
+                animatedStatus === 2 ? 'bg-red-500' : 'bg-orange-500'
+            }`} style={{
+              animation: animatedStatus === 2 ? 'pulse 0.8s infinite' : 'pulse 2s infinite'
+            }}></span>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes pulse {
+          0% { opacity: 0.5; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.2); }
+          100% { opacity: 0.5; transform: scale(1); }
+        }
+      `}</style>
+    </div>
   );
 };
