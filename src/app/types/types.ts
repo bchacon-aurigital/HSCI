@@ -39,4 +39,5 @@ export interface MultiDeviceCardProps {
     type: 'pump' | 'well';
     pumpKey: string;
   }[];
+  codigoAsada?: string; // Added this property
 }

@@ -1,31 +1,28 @@
-// WaterSystemColumns.tsx
 'use client';
 import React, { useState, useEffect } from 'react';
-import Login from '../Login'; // Importa el componente de login
+import Login from '../Login';
 import WaterTankCard from './WaterTankCard';
 import MultiDeviceCard from './MultiDeviceCard';
-import { useDeviceGroups } from '../../hooks/useDeviceGroups'; // Asegúrate de importar correctamente
+import { useDeviceGroups } from '../../hooks/useDeviceGroups';
 import { BaseDeviceType, MultiDevice } from '../../app/types/types';
 import { loadDevicesForAsada } from '../../hooks/dynamicDeviceLoader';
 
 export default function WaterSystemColumns() {
-  const [codigoAsada, setCodigoAsada] = useState<string>(''); // Estado para almacenar el código de la ASADA
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false); // Estado para verificar si el usuario está logueado
-  const [nombreAsada, setNombreAsada] = useState<string>(''); // Estado para almacenar el nombre de la ASADA
+  const [codigoAsada, setCodigoAsada] = useState<string>('');
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [nombreAsada, setNombreAsada] = useState<string>('');
 
   const handleLogin = (codigo: string) => {
     setCodigoAsada(codigo);
-    setIsLoggedIn(true); // Cambiamos el estado a true cuando el login es exitoso
+    setIsLoggedIn(true);
   };
 
-  // Modificamos el hook useDeviceGroups para que también retorne el nombre de la ASADA
   const processedGroups = useDeviceGroups(codigoAsada);
-  console.log(processedGroups)
   
   useEffect(() => {
     if (codigoAsada) {
       loadDevicesForAsada(codigoAsada).then(({ name }) => {
-        setNombreAsada(name); // Almacenamos el nombre de la ASADA
+        setNombreAsada(name);
       });
     }
   }, [codigoAsada]);
@@ -33,7 +30,7 @@ export default function WaterSystemColumns() {
   return (
     <div className="container mx-auto p-4">
       {!isLoggedIn ? (
-        <Login onLogin={handleLogin} /> // Si no está logueado, mostrar el formulario de login
+        <Login onLogin={handleLogin} />
       ) : (
         <>
           <h1 className="text-5xl py-24 text-center mx-auto">
@@ -58,6 +55,7 @@ export default function WaterSystemColumns() {
                             groupName={device.name}
                             identifier={identifier}
                             devices={multiDevice.multiDevices}
+                            codigoAsada={codigoAsada}
                           />
                         );
                       } else {
@@ -68,6 +66,7 @@ export default function WaterSystemColumns() {
                             identifier={identifier}
                             type={device.type as BaseDeviceType}
                             pumpKey={device.pumpKey}
+                            codigoAsada={codigoAsada}
                           />
                         );
                       }

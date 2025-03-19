@@ -10,15 +10,15 @@ import { formatDate } from '../../utils/utils';
 import { BaseDeviceType } from '../../app/types/types';
 
 interface WaterTankCardProps {
-  // "identifier" puede ser una URL (dispositivos individuales) o una key (dispositivos agrupados)
   identifier: string;
   name: string;
   type: BaseDeviceType;
   pumpKey?: string;
+  codigoAsada: string;
 }
 
-export default function WaterTankCard({ identifier, name, type, pumpKey }: WaterTankCardProps) {
-  const { data, error, loading } = useDeviceData(identifier, pumpKey);
+export default function WaterTankCard({ identifier, name, type, pumpKey, codigoAsada }: WaterTankCardProps) {
+  const { data, error, loading } = useDeviceData(identifier, pumpKey, codigoAsada);
 
   if (loading) {
     return (
@@ -45,7 +45,7 @@ export default function WaterTankCard({ identifier, name, type, pumpKey }: Water
     );
   }
 
-  // Para tanques, se espera que "data" sea un objeto con la propiedad "valor" y "fecha"
+  // For tanks, data is expected to be an object with "valor" and "fecha" properties
   if (type === 'tank') {
     const hasTankValue =
       data && typeof data === 'object' && 'valor' in data && typeof data.valor === 'number';
@@ -88,7 +88,7 @@ export default function WaterTankCard({ identifier, name, type, pumpKey }: Water
       </Card>
     );
   } else if (type === 'pump' || type === 'well') {
-    // Para bombas y pozos, el hook retorna directamente un valor (por ejemplo, "0" o "1").
+    // For pumps and wells, the hook returns a direct value (e.g., "0" or "1")
     const numericValue = Number(data);
     const hasValue = !isNaN(numericValue);
 
@@ -106,7 +106,6 @@ export default function WaterTankCard({ identifier, name, type, pumpKey }: Water
                 <Clock className="text-gray-400" size={20} />
                 <div>
                   <p className="text-sm text-gray-400">Última lectura</p>
-                  {/* Si en el caso de bombas/pozos no se cuenta con una fecha, se muestra el valor */}
                   <p className="font-medium text-gray-100">Valor: {numericValue}</p>
                 </div>
               </div>

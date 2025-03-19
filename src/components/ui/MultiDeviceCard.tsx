@@ -1,4 +1,3 @@
-// MultiDeviceCard.tsx
 'use client';
 import React from 'react';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
@@ -9,8 +8,14 @@ import { useDeviceData } from '../../hooks/useDeviceData';
 import { formatDate } from '../../utils/utils';
 import { MultiDeviceCardProps } from '../../app/types/types';
 
-export default function MultiDeviceCard({ groupName, identifier, devices }: MultiDeviceCardProps) {
-  const { data, error, loading } = useDeviceData(identifier);
+export default function MultiDeviceCard({
+  groupName,
+  identifier,
+  devices,
+  codigoAsada,  // Asegúrate de recibir el codigoAsada aquí
+}: MultiDeviceCardProps) {
+  // Pasamos codigoAsada a la función useDeviceData
+  const { data, error, loading } = useDeviceData(identifier, undefined, codigoAsada);
 
   return (
     <Card className="bg-gray-900 border-gray-800">
