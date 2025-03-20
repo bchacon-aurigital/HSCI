@@ -1,12 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useId } from 'react';
 
 interface WaterTankIndicatorProps {
   percentage: number;
+  id?: string; 
 }
 
-export const WaterTankIndicator = ({ percentage }: WaterTankIndicatorProps) => {
+export const WaterTankIndicator = ({ percentage, id }: WaterTankIndicatorProps) => {
   const [animatedPercentage, setAnimatedPercentage] = useState(0);
   const [waveTick, setWaveTick] = useState(0);
+  
+  const uniqueId = useId();
+  const tankId = id || uniqueId;
+  
+  const waterGradientId = `waterGradient-${tankId}`;
+  const tankGradientId = `tankGradient-${tankId}`;
+  const glowId = `glow-${tankId}`;
   
   useEffect(() => {
     const duration = 1500; 
@@ -78,30 +86,30 @@ export const WaterTankIndicator = ({ percentage }: WaterTankIndicatorProps) => {
     <div className="relative mb-6">
       <svg viewBox="0 0 100 160" className="w-44 h-48 mx-auto">
         <defs>
-          <linearGradient id="waterGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <linearGradient id={waterGradientId} x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stopColor={waterColors[0]} />
             <stop offset="100%" stopColor={waterColors[1]} />
           </linearGradient>
-          <linearGradient id="tankGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <linearGradient id={tankGradientId} x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="#1e293b" />
             <stop offset="50%" stopColor="#334155" />
             <stop offset="100%" stopColor="#1e293b" />
           </linearGradient>
-          <filter id="glow">
+          <filter id={glowId}>
             <feGaussianBlur stdDeviation="2" result="blur" />
             <feComposite in="SourceGraphic" in2="blur" operator="over" />
           </filter>
         </defs>
 
-        <rect x="10" y="10" width="80" height="140" rx="3" ry="3" fill="none" stroke="url(#tankGradient)" strokeWidth="3" />
+        <rect x="10" y="10" width="80" height="140" rx="3" ry="3" fill="none" stroke={`url(#${tankGradientId})`} strokeWidth="3" />
         
         <path d="M 13 13 L 87 13 L 87 147 L 13 147 Z" fill="none" stroke="#ffffff" strokeWidth="0.5" strokeOpacity="0.1" />
         
-        <path d={wave1} fill="url(#waterGradient)" opacity="0.7">
+        <path d={wave1} fill={`url(#${waterGradientId})`} opacity="0.7">
           <animate attributeName="d" dur="3s" repeatCount="indefinite" 
                    values={`${wave1};${generateWavePath(yPosition, 3, 4, (waveTick / 10) + Math.PI)};${wave1}`} />
         </path>
-        <path d={wave2} fill="url(#waterGradient)" opacity="0.5">
+        <path d={wave2} fill={`url(#${waterGradientId})`} opacity="0.5">
           <animate attributeName="d" dur="2.5s" repeatCount="indefinite" 
                    values={`${wave2};${generateWavePath(yPosition, 2, 3, (waveTick / 10) + Math.PI + 1)};${wave2}`} />
         </path>
@@ -115,7 +123,7 @@ export const WaterTankIndicator = ({ percentage }: WaterTankIndicatorProps) => {
         <line x1="5" y1="114" x2="15" y2="114" stroke="currentColor" strokeWidth="1.5" />
         <text x="3" y="117" fill="currentColor" fontSize="8" textAnchor="end">25%</text>
         
-        <text x="50" y="80" textAnchor="middle" fill="white" fontSize="20" fontWeight="bold" filter="url(#glow)">
+        <text x="50" y="80" textAnchor="middle" fill="white" fontSize="20" fontWeight="bold" filter={`url(#${glowId})`}>
           {`${Math.round(animatedPercentage)}%`}
         </text>
         
@@ -123,7 +131,7 @@ export const WaterTankIndicator = ({ percentage }: WaterTankIndicatorProps) => {
               transform="translate(65, 3) scale(0.5)  rotate(180 50 15)" 
               fill={getFillColor(percentage)} 
               opacity="0.9" 
-              filter="url(#glow)">
+              filter={`url(#${glowId})`}>
           <animate attributeName="opacity" values="0.7;0.9;0.7" dur="2s" repeatCount="indefinite" />
         </path>
       </svg>

@@ -53,7 +53,6 @@ export default function WaterSystemColumns() {
                             d="M12 2.69c-.23 0-.42.09-.59.21C9.97 4.22 4 9.08 4 15.5 4 19.58 7.42 23 12 23s8-3.42 8-7.5c0-6.42-5.97-11.28-7.41-12.6-.17-.12-.36-.21-.59-.21z"
                             fill="white"
                             stroke="white"
-                            stroke-width="1"
                           />
                         </svg>
                       </div>
