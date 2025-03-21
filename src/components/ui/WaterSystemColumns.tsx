@@ -12,6 +12,7 @@ export default function WaterSystemColumns() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [nombreAsada, setNombreAsada] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
 
   const handleLogin = (codigo: string) => {
     setLoading(true);
@@ -29,6 +30,13 @@ export default function WaterSystemColumns() {
       });
     }
   }, [codigoAsada]);
+
+  const toggleGroupCollapse = (groupName: string) => {
+    setCollapsedGroups(prev => ({
+      ...prev,
+      [groupName]: !prev[groupName]
+    }));
+  };
 
   return (
     <div className="min-h-screen rounded-2xl text-white py-4">
@@ -73,45 +81,64 @@ export default function WaterSystemColumns() {
                   <div key={group.name} className="flex flex-col h-full">
                     <div className="bg-[#172236] border border-blue-500/20 rounded-lg shadow-lg overflow-hidden mb-4">
                       <div className="bg-gradient-to-r from-blue-900/50 to-blue-800/30 p-4 border-b border-blue-500/20">
-                        <h2 className="text-xl font-bold text-white flex items-center">
-                          <div className="h-8 w-8 rounded-full bg-blue-600/30 flex items-center justify-center mr-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                            </svg>
-                          </div>
-                          {group.name.split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                        </h2>
+                        <div className="flex justify-between items-center">
+                          <h2 className="text-xl font-bold text-white flex items-center">
+                            <div className="h-8 w-8 rounded-full bg-blue-600/30 flex items-center justify-center mr-3">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                              </svg>
+                            </div>
+                            {group.name.split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                          </h2>
+                          <button 
+                            onClick={() => toggleGroupCollapse(group.name)}
+                            className="p-2 rounded-full hover:bg-blue-800/30 transition-colors duration-200"
+                            aria-label={collapsedGroups[group.name] ? "Expandir" : "Comprimir"}
+                          >
+                            {collapsedGroups[group.name] ? (
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            ) : (
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                              </svg>
+                            )}
+                          </button>
+                        </div>
                       </div>
-                      <div className="p-4 space-y-4">
-                        {[...group.devices]
-                          .sort((a, b) => a.order - b.order)
-                          .map((device) => {
-                            const identifier = device.url ? device.url : device.key!;
-                            if ('multiDevices' in device) {
-                              const multiDevice = device as MultiDevice;
-                              return (
-                                <MultiDeviceCard
-                                  key={`multi-${identifier}`}
-                                  groupName={device.name}
-                                  identifier={identifier}
-                                  devices={multiDevice.multiDevices}
-                                  codigoAsada={codigoAsada}
-                                />
-                              );
-                            } else {
-                              return (
-                                <WaterTankCard
-                                  key={`${identifier}-${device.name}-${device.pumpKey || ''}`}
-                                  name={device.name}
-                                  identifier={identifier}
-                                  type={device.type as BaseDeviceType}
-                                  pumpKey={device.pumpKey}
-                                  codigoAsada={codigoAsada}
-                                />
-                              );
-                            }
-                          })}
-                      </div>
+                      {!collapsedGroups[group.name] && (
+                        <div className="p-4 space-y-4">
+                          {[...group.devices]
+                            .sort((a, b) => a.order - b.order)
+                            .map((device) => {
+                              const identifier = device.url ? device.url : device.key!;
+                              if ('multiDevices' in device) {
+                                const multiDevice = device as MultiDevice;
+                                return (
+                                  <MultiDeviceCard
+                                    key={`multi-${identifier}`}
+                                    groupName={device.name}
+                                    identifier={identifier}
+                                    devices={multiDevice.multiDevices}
+                                    codigoAsada={codigoAsada}
+                                  />
+                                );
+                              } else {
+                                return (
+                                  <WaterTankCard
+                                    key={`${identifier}-${device.name}-${device.pumpKey || ''}`}
+                                    name={device.name}
+                                    identifier={identifier}
+                                    type={device.type as BaseDeviceType}
+                                    pumpKey={device.pumpKey}
+                                    codigoAsada={codigoAsada}
+                                  />
+                                );
+                              }
+                            })}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
