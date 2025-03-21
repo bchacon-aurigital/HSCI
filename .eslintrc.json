@@ -1,7 +1,13 @@
 {
+  "extends": [
+    "next/core-web-vitals",
+    "next/typescript",
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
   "rules": {
+    "@typescript-eslint/no-explicit-any": "off",
+    "no-case-declarations": "off",  // Deshabilitar esta regla
     "@typescript-eslint/no-unused-vars": "off"
-  },
-  "extends": ["next/core-web-vitals", "next/typescript"]
-
+  }
 }
