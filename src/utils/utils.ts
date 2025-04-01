@@ -1,16 +1,17 @@
-export const formatDate = (fecha: string): string => {
-    try {
-      const parts = fecha.split('..');
-      const [day, month, year] = parts[0].split('.');
-      const time = parts[1].replace('.', ':');
-      const monthIndex = parseInt(month) - 1;
-      const months = [
-        'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 
-        'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
-      ];
-      return `${parseInt(day)} de ${months[monthIndex]} de ${year}, ${time}`;
-    } catch {
-      return fecha;
-    }
-  };
+export const formatDate = (dateStr: string) => {
+  if (!dateStr) return 'No disponible';
+  
+  try {
+    const date = new Date(dateStr);
+    return new Intl.DateTimeFormat('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date);
+  } catch (error) {
+    return dateStr;
+  }
+};
   

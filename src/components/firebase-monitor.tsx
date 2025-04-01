@@ -132,7 +132,7 @@ export default function FirebaseMonitor() {
   return (
     <Card className="max-w-md mx-auto mt-4 bg-gray-900 border-gray-800">
       <CardHeader className="border-b border-gray-800">
-        <h2 className="text-xl font-semibold text-gray-100">Monitoreo tanque 3 Bahías</h2>
+        <h2 className="text-xl font-semibold text-gray-100">Monitoreo en tiempo real: Tanque 3 Bahías</h2>
       </CardHeader>
       <CardContent className="p-4">
         {data ? (
@@ -145,7 +145,7 @@ export default function FirebaseMonitor() {
               <div className="flex items-center gap-2">
                 <Clock className="text-gray-400" size={20} />
                 <div>
-                  <p className="text-sm text-gray-400">Última lectura</p>
+                  <p className="text-sm text-gray-400">Registro más reciente</p>
                   <p className="font-medium text-gray-100">{data.fecha}</p>
                 </div>
               </div>
@@ -153,12 +153,12 @@ export default function FirebaseMonitor() {
               <div className="flex items-center gap-2">
                 <Droplet className={`${getStatusColor(data.valor)}`} size={20} />
                 <div>
-                  <p className="text-sm text-gray-400">Nivel del tanque</p>
+                  <p className="text-sm text-gray-400">Capacidad actual</p>
                   <p className={`font-medium ${getStatusColor(data.valor)}`}>
-                    {data.valor}% Full
+                    {data.valor}% lleno
                     {data.valor < 25 && (
                       <span className="ml-2 text-red-500 text-sm">
-                        (¡Alerta de nivel bajo!)
+                        (Nivel crítico: Se requiere atención)
                       </span>
                     )}
                   </p>
@@ -168,12 +168,18 @@ export default function FirebaseMonitor() {
 
             {lastUpdated && (
               <p className="text-sm text-gray-400 pt-2 border-t border-gray-800">
-                Última actualización: {lastUpdated}
+                Actualizado: {lastUpdated} <span className="text-blue-400">• Datos en tiempo real</span>
               </p>
             )}
           </div>
         ) : (
-          <p className="text-center py-4 text-gray-300">Cargando...</p>
+            <p className="text-center py-4 text-gray-300 flex items-center justify-center">
+              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Obteniendo datos en tiempo real...
+            </p>
         )}
       </CardContent>
     </Card>

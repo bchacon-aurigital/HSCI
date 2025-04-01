@@ -20,7 +20,7 @@ export const WellIndicator = ({ status, level = 50 }: IndicatorProps) => {
     ['#ef4444', '#b91c1c'],
     ['#f97316', '#c2410c']
   ];
-  const labels = ['Reposo', 'Operación', 'Falla', 'Selector Fuera'];
+  const labels = ['En Reposo', 'Extracción Activa', 'Fallo Detectado', 'Fuera de Servicio'];
 
   useEffect(() => {
     const duration = 1500;
@@ -331,17 +331,19 @@ export const WellIndicator = ({ status, level = 50 }: IndicatorProps) => {
       </svg>
 
       <div className="absolute bottom-5 left-0 right-0 flex justify-center">
-        <div className={`px-3 py-1 rounded-full text-xs font-medium ${animatedStatus === 0 ? 'bg-blue-100 text-blue-800' :
-            animatedStatus === 1 ? 'bg-green-100 text-green-800' :
-              animatedStatus === 2 ? 'bg-red-100 text-red-800' : 'bg-orange-100 text-orange-800'
-          }`}>
+        <div className={`px-3 py-1 rounded-full text-xs font-medium flex items-center ${
+          animatedStatus === 0 ? 'bg-blue-100 text-blue-800' :
+          animatedStatus === 1 ? 'bg-green-100 text-green-800' :
+          animatedStatus === 2 ? 'bg-red-100 text-red-800' : 'bg-orange-100 text-orange-800'
+        }`}>
+          <span className={`mr-1.5 h-2 w-2 inline-block rounded-full ${
+            animatedStatus === 0 ? 'bg-blue-500' :
+            animatedStatus === 1 ? 'bg-green-500' :
+            animatedStatus === 2 ? 'bg-red-500' : 'bg-orange-500'
+          }`} style={{
+            animation: animatedStatus === 2 ? 'pulse 0.8s infinite' : 'pulse 2s infinite'
+          }}></span>
           {labels[animatedStatus]}
-          <span className={`ml-1 h-2 w-2 inline-block rounded-full ${animatedStatus === 0 ? 'bg-blue-500' :
-              animatedStatus === 1 ? 'bg-green-500' :
-                animatedStatus === 2 ? 'bg-red-500' : 'bg-orange-500'
-            }`} style={{
-              animation: animatedStatus === 2 ? 'pulse 0.8s infinite' : 'pulse 2s infinite'
-            }}></span>
         </div>
       </div>
 

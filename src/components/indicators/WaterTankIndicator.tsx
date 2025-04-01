@@ -57,10 +57,10 @@ export const WaterTankIndicator = ({ percentage, id }: WaterTankIndicatorProps) 
   };
 
   const getStatusText = (level: number) => {
-    if (level > 75) return 'Óptimo';
-    if (level > 50) return 'Bueno';
-    if (level > 25) return 'Regular';
-    return 'Crítico';
+    if (level > 75) return 'Nivel Óptimo';
+    if (level > 50) return 'Nivel Adecuado';
+    if (level > 25) return 'Nivel Bajo';
+    return 'Nivel Crítico';
   };
 
   const maxHeight = 140;
@@ -137,15 +137,15 @@ export const WaterTankIndicator = ({ percentage, id }: WaterTankIndicatorProps) 
       </svg>
       
       <div className="absolute bottom-3 left-0 right-0 flex justify-center">
-        <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+        <div className={`px-3 py-1 rounded-full text-xs font-medium flex items-center ${
           percentage > 50 ? 'bg-green-100 text-green-800' : 
           percentage > 25 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
         }`}>
-          {statusText}
-          <span className={`ml-1 h-2 w-2 inline-block rounded-full ${
+          <span className={`mr-1.5 h-2 w-2 inline-block rounded-full ${
             percentage > 50 ? 'bg-green-500' : 
             percentage > 25 ? 'bg-yellow-500' : 'bg-red-500'
           }`} style={{ animation: 'pulse 1.5s infinite' }}></span>
+          {statusText}
         </div>
       </div>
       

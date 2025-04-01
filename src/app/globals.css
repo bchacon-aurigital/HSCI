@@ -17,3 +17,14 @@ body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
 }
+/* Añadir en globals.css */
+.text-shadow {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Mejorar las animaciones de pulso */
+@keyframes pulse {
+  0% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.2); }
+  100% { opacity: 0.6; transform: scale(1); }
+}

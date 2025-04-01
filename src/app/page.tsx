@@ -1,6 +1,7 @@
 // src/app/page.tsx
 import FirebaseMonitor from '@/components/firebase-monitor';
 import WaterSystemColumns from '@/components/ui/WaterSystemColumns';
+import DepuradorSistemaAgua from '@/components/WaterSystemDebugger';
 
 
 export default function Home() {
@@ -8,6 +9,7 @@ export default function Home() {
     <main className="min-h-screen bg-gradient-to-br from-[#0b1729] to-[#21314e]">
       <div className="container mx-auto">
         <WaterSystemColumns />
+        <DepuradorSistemaAgua />
       </div>
       <footer className="fixed bottom-0 w-full h-5 bg-[#061120]">
         <a

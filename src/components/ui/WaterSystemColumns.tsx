@@ -45,18 +45,21 @@ export default function WaterSystemColumns() {
       ) : (
         <div className="container mx-auto px-4 py-8 bg-gradient-to-b from-[#0b1729] to-[#172236]">
           {loading ? (
-            <div className="flex justify-center items-center h-screen">
-              <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
-            </div>
+            <div className="flex flex-col justify-center items-center h-screen">
+            <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500 mb-6"></div>
+            <p className="text-blue-300 text-xl font-medium">Conectando con los sistemas...</p>
+            <p className="text-blue-200/70 mt-2">Estamos recuperando la información de sus dispositivos</p>
+          </div>
           ) : (
             <>
               <header className="mb-12">
                 <div className="relative py-16 bg-[#0d1b2a] rounded-lg shadow-2xl overflow-hidden">
                   <div className="absolute inset-0 bg-blue-500/10 mix-blend-multiply"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-900/30 to-transparent"></div>
                   <div className="relative z-10 px-8">
                     <div className="flex items-center mb-4">
-                      <div className="h-12 w-12 rounded-full bg-blue-600 flex items-center justify-center shadow-md shadow-blue-500/50 mr-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" viewBox="0 0 24 24">
+                      <div className="h-14 w-14 rounded-full bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/50 mr-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-white" viewBox="0 0 24 24">
                           <path
                             d="M12 2.69c-.23 0-.42.09-.59.21C9.97 4.22 4 9.08 4 15.5 4 19.58 7.42 23 12 23s8-3.42 8-7.5c0-6.42-5.97-11.28-7.41-12.6-.17-.12-.36-.21-.59-.21z"
                             fill="white"
@@ -64,13 +67,13 @@ export default function WaterSystemColumns() {
                           />
                         </svg>
                       </div>
-                      <h1 className="text-xl font-semibold text-blue-300">Sistema de Monitoreo Remoto</h1>
+                      <h1 className="text-xl font-semibold text-blue-300">Centro de Control ASADA</h1>
                     </div>
-                    <h2 className="text-4xl md:text-5xl font-bold text-white mb-2">
+                    <h2 className="text-4xl md:text-5xl font-bold text-white mb-3 text-shadow">
                       {nombreAsada}
                     </h2>
-                    <p className="text-blue-200 text-lg">
-                      Panel de monitoreo de dispositivos
+                    <p className="text-blue-200 text-lg max-w-2xl">
+                      Panel centralizado de monitoreo y control • Visualización de todos los sistemas activos
                     </p>
                   </div>
                 </div>
@@ -83,16 +86,18 @@ export default function WaterSystemColumns() {
                       <div className="bg-gradient-to-r from-blue-900/50 to-blue-800/30 p-4 border-b border-blue-500/20">
                         <div className="flex justify-between items-center">
                           <h2 className="text-xl font-bold text-white flex items-center">
-                            <div className="h-8 w-8 rounded-full bg-blue-600/30 flex items-center justify-center mr-3">
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <div className="h-9 w-9 rounded-full bg-blue-600/40 flex items-center justify-center mr-3 shadow-inner shadow-blue-500/10">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                               </svg>
                             </div>
-                            {group.name.split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                            <span className="bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
+                              {group.name.split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                            </span>
                           </h2>
                           <button 
                             onClick={() => toggleGroupCollapse(group.name)}
-                            className="p-2 rounded-full hover:bg-blue-800/30 transition-colors duration-200"
+                            className="p-2 rounded-full hover:bg-blue-700/40 transition-all duration-200 hover:shadow-md hover:shadow-blue-900/30"
                             aria-label={collapsedGroups[group.name] ? "Expandir" : "Comprimir"}
                           >
                             {collapsedGroups[group.name] ? (
@@ -144,13 +149,13 @@ export default function WaterSystemColumns() {
                 ))}
               </div>
 
-              <footer className="mt-16 pb-8 text-center text-blue-300/50 text-sm">
+              <footer className="mt-16 pb-8 text-center text-sm">
                 <div className="mx-auto max-w-lg border-t border-blue-500/20 pt-6">
                   <div className="flex items-center justify-center mb-2">
-                    <div className="h-2 w-2 rounded-full bg-blue-400 mr-2 animate-pulse"></div>
-                    <span>Sistema en línea</span>
+                    <div className="h-2 w-2 rounded-full bg-green-400 mr-2 animate-pulse"></div>
+                    <span className="text-green-300/90">Todos los sistemas conectados</span>
                   </div>
-                  <p>© {new Date().getFullYear()} Sistema de Monitoreo HSCI</p>
+                  <p className="text-blue-300/60 mt-2">© {new Date().getFullYear()} Sistema de Monitoreo HCSI CR • Supervisión Continua 24/7</p>
                 </div>
               </footer>
             </>

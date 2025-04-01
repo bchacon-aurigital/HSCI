@@ -13,6 +13,8 @@ const DepuradorSistemaAgua = () => {
   const [estadoBomba, setEstadoBomba] = useState(1); // 0-3 para bombas
   const [estadoPozo, setEstadoPozo] = useState(2); // 0-3 para pozos
 
+  const [guiaExpandida, setGuiaExpandida] = useState(false);
+
   // Obtener el valor correspondiente según el tipo de dispositivo
   const obtenerValorActual = () => {
     switch (tipoDispositivo) {
@@ -42,7 +44,7 @@ const DepuradorSistemaAgua = () => {
   return (
     <div className="container mx-auto p-4 space-y-8">
       <div className="bg-gray-800 p-4 rounded-lg">
-        <h1 className="text-2xl font-bold text-white mb-4">Depurador de Indicadores del Sistema de Agua</h1>
+        <h1 className="text-2xl font-bold text-white mb-4">Centro de Diagnóstico de Indicadores</h1>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-4">
@@ -86,15 +88,36 @@ const DepuradorSistemaAgua = () => {
               <div className="text-white mt-1">{obtenerValorActual()}</div>
             </div>
             
-            <div className="mt-4 bg-gray-700 p-4 rounded">
-              <h3 className="text-lg font-medium text-gray-200 mb-2">Consejos de Depuración:</h3>
-              <ul className="list-disc pl-5 text-gray-300 space-y-1">
-                <li>Verificar si el componente correcto está importado</li>
-                <li>Comprobar que los tipos de props coinciden exactamente</li>
-                <li>Para MultiDeviceCard, asegurar que <code>device.type</code> esté configurado correctamente</li>
-                <li>Verificar que la estructura de datos del backend contiene las claves esperadas</li>
-                <li>Revisar la respuesta de red en la consola del navegador</li>
-              </ul>
+            <div className="mt-4">
+              <button 
+                onClick={() => setGuiaExpandida(!guiaExpandida)}
+                className="w-full flex items-center justify-between bg-gray-700 p-4 rounded-t text-gray-200 hover:bg-gray-600 transition-all duration-200"
+              >
+                <h3 className="text-lg font-medium">Guía de diagnóstico</h3>
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  className={`h-5 w-5 transition-transform duration-300 ${guiaExpandida ? 'transform rotate-180' : ''}`} 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              
+              <div 
+                className={`bg-gray-700 p-4 rounded-b overflow-hidden transition-all duration-300 ${
+                  guiaExpandida ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0 md:max-h-96 md:opacity-100'
+                }`}
+              >
+                <ul className="list-disc pl-5 text-gray-300 space-y-1">
+                  <li>Verificar si el componente correcto está importado</li>
+                  <li>Comprobar que los tipos de props coinciden exactamente</li>
+                  <li>Para MultiDeviceCard, asegurar que <code>device.type</code> esté configurado correctamente</li>
+                  <li>Verificar que la estructura de datos del backend contiene las claves esperadas</li>
+                  <li>Revisar la respuesta de red en la consola del navegador</li>
+                </ul>
+              </div>
             </div>
           </div>
           

@@ -16,7 +16,7 @@ export const PumpIndicator = ({ status }: IndicatorProps) => {
     ['#ef4444', '#dc2626'], 
     ['#f97316', '#ea580c']  
   ];
-  const labels = ['Reposo', 'Operación', 'Falla', 'Selector Fuera'];
+  const labels = ['En Reposo', 'En Operación', 'Fallo Detectado', 'Fuera de Servicio'];
   
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -240,19 +240,19 @@ export const PumpIndicator = ({ status }: IndicatorProps) => {
       </svg>
       
       <div className="absolute bottom-3 left-0 right-0 flex justify-center">
-        <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+        <div className={`px-3 py-1 rounded-full text-xs font-medium flex items-center ${
           animatedStatus === 0 ? 'bg-blue-100 text-blue-800' : 
           animatedStatus === 1 ? 'bg-green-100 text-green-800' : 
           animatedStatus === 2 ? 'bg-red-100 text-red-800' : 'bg-orange-100 text-orange-800'
         }`}>
-          {labels[animatedStatus]}
-          <span className={`ml-1 h-2 w-2 inline-block rounded-full ${
+          <span className={`mr-1.5 h-2 w-2 inline-block rounded-full ${
             animatedStatus === 0 ? 'bg-blue-500' : 
             animatedStatus === 1 ? 'bg-green-500' : 
             animatedStatus === 2 ? 'bg-red-500' : 'bg-orange-500'
           }`} style={{ 
             animation: animatedStatus === 2 ? 'pulse 0.8s infinite' : 'pulse 2s infinite' 
           }}></span>
+          {labels[animatedStatus]}
         </div>
       </div>
       

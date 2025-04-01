@@ -19,7 +19,8 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     setIsLoading(true);
 
     setTimeout(() => {
-      const validCodes = ['codigo1', 'codigo2', 'codigo3'];
+      // const validCodes = ['codigo1', 'codigo2', 'codigo3'];
+      const validCodes = ['codigo1',];
       if (validCodes.includes(codigo)) {
         setError(null);
         onLogin(codigo);
@@ -46,8 +47,8 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         </div>
         
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">Bienvenido</h2>
-          <p className="text-blue-100 mt-2">Ingrese el código de acceso de su ASADA</p>
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">Control de Sistemas Hídricos</h2>
+          <p className="text-blue-100 mt-2">Acceso seguro a su sistema de monitoreo</p>
         </div>
         
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -108,7 +109,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         <div className="mt-8 pt-6 border-t border-blue-500/20 flex justify-center">
           <div className="text-xs text-blue-300/50 flex items-center">
             <div className="w-2 h-2 rounded-full bg-blue-400 mr-2 animate-pulse"></div>
-            Sistema de Administración HSCI
+            Centro de Control HCSI CR • Gestión Responsable del Agua
           </div>
         </div>
       </div>

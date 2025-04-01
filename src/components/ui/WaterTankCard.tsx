@@ -32,7 +32,7 @@ export default function WaterTankCard({ identifier, name, type, pumpKey, codigoA
         <CardContent className="py-8">
           <div className="flex flex-col items-center justify-center space-y-4">
             <div className="animate-pulse bg-gray-800 h-32 w-32 rounded-full"></div>
-            <p className="text-gray-300">Cargando datos...</p>
+            <p className="text-gray-300">Sincronizando información del dispositivo...</p>
           </div>
         </CardContent>
       </Card>
@@ -51,7 +51,9 @@ export default function WaterTankCard({ identifier, name, type, pumpKey, codigoA
         <CardContent className="pt-4">
           <div className="flex items-center bg-orange-950/30 p-3 rounded-lg border border-orange-900">
             <AlertTriangle className="text-orange-500 mr-3" size={20} />
-            <p className="text-orange-400">{error}</p>
+              <p className="text-orange-400">
+                <span className="font-medium">No se pudieron actualizar los datos.</span> Reintentando conexión...
+              </p>
           </div>
         </CardContent>
       </Card>
@@ -77,16 +79,19 @@ export default function WaterTankCard({ identifier, name, type, pumpKey, codigoA
             <div className="flex flex-col items-center space-y-6">
               <WaterTankIndicator percentage={data.valor} />
               
-              <div className="flex items-center justify-center w-full py-2 px-4 rounded-lg bg-gray-800">
-                <Droplet className={`mr-2 ${data.valor < 25 ? 'text-red-500' : 'text-green-400'}`} size={24} />
+              <div className="flex items-center justify-center w-full py-3 px-4 rounded-lg bg-gray-800/80 border border-gray-700/50">
+                <Droplet className={`mr-3 ${data.valor < 25 ? 'text-red-500' : data.valor < 50 ? 'text-yellow-400' : 'text-green-400'}`} size={24} />
                 <span className="text-xl font-bold text-gray-100">{data.valor}%</span>
-                <span className="ml-2 text-gray-400">de capacidad</span>
+                <span className="ml-2 text-gray-400">de capacidad disponible</span>
               </div>
               
               {isLowLevel && (
-                <div className="flex items-center w-full py-2 px-4 rounded-lg bg-red-950/30 border border-red-900">
-                  <AlertTriangle className="text-red-500 mr-2" size={20} />
-                  <span className="text-red-400 font-medium">¡Alerta de nivel bajo!</span>
+                <div className="flex items-center w-full py-3 px-4 rounded-lg bg-red-950/30 border border-red-900">
+                  <AlertTriangle className="text-red-500 mr-3 animate-pulse" size={20} />
+                  <div>
+                    <span className="text-red-400 font-medium block">Nivel crítico de agua</span>
+                    <span className="text-red-300/80 text-sm">Se requiere revisión inmediata del suministro</span>
+                  </div>
                 </div>
               )}
             </div>
@@ -99,10 +104,10 @@ export default function WaterTankCard({ identifier, name, type, pumpKey, codigoA
         </CardContent>
         
         {hasTankValue && (
-          <CardFooter className="bg-gray-800/50 pt-4 pb-3 flex items-center gap-2">
-            <Clock className="text-gray-400" size={18} />
+          <CardFooter className="bg-gray-800/50 pt-4 pb-3 flex items-center gap-3">
+            <Clock className="text-blue-400" size={18} />
             <div>
-              <p className="text-xs text-gray-400">Última lectura</p>
+              <p className="text-xs text-gray-400">Registro actualizado</p>
               <p className="font-medium text-gray-100">{formatDate(data.fecha)}</p>
             </div>
           </CardFooter>
@@ -130,11 +135,11 @@ export default function WaterTankCard({ identifier, name, type, pumpKey, codigoA
               {type === 'pump' && <PumpIndicator status={numericValue} />}
               {type === 'well' && <WellIndicator status={numericValue} />}
               
-              <div className="flex items-center justify-center w-full py-3 px-4 rounded-lg bg-gray-800">
+              <div className="flex items-center justify-center w-full py-3 px-4 rounded-lg bg-gray-800/80 border border-gray-700/50">
                 <Activity className={isActive ? 'text-green-400' : 'text-gray-500'} size={24} />
                 <span className="ml-3 font-medium text-gray-100">
                   Estado: <span className={isActive ? 'text-green-400' : 'text-gray-400'}>
-                    {isActive ? 'Activo' : 'Inactivo'}
+                    {isActive ? 'En operación' : 'En reposo'}
                   </span>
                 </span>
               </div>
