@@ -4,6 +4,7 @@ import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card'
 import { Clock, AlertTriangle, Activity, Settings } from 'lucide-react';
 import { PumpIndicator } from '../indicators/PumpIndicator';
 import { WellIndicator } from '../indicators/WellIndicator';
+import { ValveIndicator } from '../indicators/ValveIndicator';
 import { useDeviceData } from '../../hooks/useDeviceData';
 import { formatDate } from '../../utils/utils';
 import { MultiDeviceCardProps } from '../../app/types/types';
@@ -47,7 +48,7 @@ export default function MultiDeviceCard({
       </Card>
     );
   }
-  
+
   if (error) {
     return (
       <Card className="bg-gray-900 border-gray-800 border-l-4 border-l-orange-500 shadow-lg overflow-hidden">
@@ -70,13 +71,13 @@ export default function MultiDeviceCard({
   const activeDevices = devices.filter(
     (device) => data && device.pumpKey in data && data[device.pumpKey] !== undefined
   );
-  
+   
   const activeDeviceCount = activeDevices.length;
-  
+   
   const onDeviceCount = activeDevices.filter(
     (device) => Number(data[device.pumpKey]) === 1
   ).length;
-
+ 
   if (!activeDeviceCount) {
     return (
       <Card className="bg-gray-900 border-gray-800 shadow-lg overflow-hidden">
@@ -107,14 +108,14 @@ export default function MultiDeviceCard({
           </div>
         </div>
       </CardHeader>
-      
+       
       <CardContent className="pt-4">
         <div className="space-y-6">
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
             {activeDevices.map((device) => {
               const statusAsNumber = Number(data[device.pumpKey]);
               const isActive = statusAsNumber === 1;
-              
+               
               return (
                 <div 
                   key={device.pumpKey} 
@@ -125,14 +126,17 @@ export default function MultiDeviceCard({
                   }`}
                 >
                   <h3 className="text-lg font-medium text-gray-200 mb-2">{device.name}</h3>
-
+ 
                   {device.type === 'pump' && (
                     <PumpIndicator status={statusAsNumber} />
                   )}
                   {device.type === 'well' && (
                     <WellIndicator status={statusAsNumber} />
                   )}
-                  
+                  {device.type === 'valve' && (
+                    <ValveIndicator status={statusAsNumber} />
+                  )}
+                   
                   <div className="flex items-center justify-center w-full mt-4 py-2 px-3 rounded-md bg-gray-900/50 border border-gray-700/30">
                     <Activity className={isActive ? 'text-green-400' : 'text-gray-500'} size={18} />
                     <span className="ml-2 text-sm font-medium text-gray-200">
@@ -145,7 +149,7 @@ export default function MultiDeviceCard({
           </div>
         </div>
       </CardContent>
-      
+       
       <CardFooter className="bg-gray-800/50 pt-4 pb-3">
         <div className="flex items-center gap-3">
           <Clock className="text-blue-400" size={18} />
@@ -155,7 +159,6 @@ export default function MultiDeviceCard({
           </div>
         </div>
       </CardFooter>
-
     </Card>
   );
 }

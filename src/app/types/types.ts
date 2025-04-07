@@ -1,4 +1,4 @@
-export type BaseDeviceType = 'tank' | 'pump' | 'well';
+export type BaseDeviceType = 'tank' | 'pump' | 'well' | 'valve';
 export type DeviceType = BaseDeviceType | 'multi';
 
 export interface Device {
@@ -11,13 +11,16 @@ export interface Device {
   order: number;
 }
 
+export interface MultiDeviceInfo {
+  name: string;
+  type: BaseDeviceType;
+  key: string;
+  pumpKey?: string;
+}
+
 export interface MultiDevice extends Device {
   type: 'multi';
-  multiDevices: {
-    name: string;
-    type: 'pump' | 'well';
-    pumpKey: string;
-  }[];
+  multiDevices: MultiDeviceInfo[];
 }
 
 export interface DeviceGroup {
@@ -34,10 +37,6 @@ export interface DeviceData {
 export interface MultiDeviceCardProps {
   groupName: string;
   identifier: string;
-  devices: {
-    name: string;
-    type: 'pump' | 'well';
-    pumpKey: string;
-  }[];
+  devices: MultiDeviceInfo[];
   codigoAsada?: string; 
 }

@@ -5,6 +5,7 @@ import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { WaterTankIndicator } from './indicators/WaterTankIndicator';
 import { PumpIndicator } from './indicators/PumpIndicator';
 import { WellIndicator } from './indicators/WellIndicator';
+import { ValveIndicator } from './indicators/ValveIndicator';
 
 const DepuradorSistemaAgua = () => {
   const [tipoDispositivo, setTipoDispositivo] = useState('tanque');
@@ -12,6 +13,7 @@ const DepuradorSistemaAgua = () => {
   const [nivelTanque, setNivelTanque] = useState(50); // 0-100 para tanques
   const [estadoBomba, setEstadoBomba] = useState(1); // 0-3 para bombas
   const [estadoPozo, setEstadoPozo] = useState(2); // 0-3 para pozos
+  const [estadoValvula, setEstadoValvula] = useState(1); // 0-1 para válvulas
 
   const [guiaExpandida, setGuiaExpandida] = useState(false);
 
@@ -21,6 +23,7 @@ const DepuradorSistemaAgua = () => {
       case 'tanque': return nivelTanque;
       case 'bomba': return estadoBomba;
       case 'pozo': return estadoPozo;
+      case 'valvula': return estadoValvula;
       default: return 0;
     }
   };
@@ -38,6 +41,9 @@ const DepuradorSistemaAgua = () => {
       case 'pozo': 
         setEstadoPozo(valor);
         break;
+      case 'valvula':
+        setEstadoValvula(valor);
+        break;
     }
   };
 
@@ -50,7 +56,7 @@ const DepuradorSistemaAgua = () => {
           <div className="space-y-4">
             <div>
               <label className="text-gray-200 block mb-2">Tipo de Dispositivo:</label>
-              <div className="flex space-x-4">
+              <div className="flex flex-wrap gap-2">
                 <button 
                   className={`px-4 py-2 rounded ${tipoDispositivo === 'tanque' ? 'bg-blue-600' : 'bg-gray-600'}`}
                   onClick={() => setTipoDispositivo('tanque')}
@@ -69,23 +75,33 @@ const DepuradorSistemaAgua = () => {
                 >
                   Pozo
                 </button>
+                <button 
+                  className={`px-4 py-2 rounded ${tipoDispositivo === 'valvula' ? 'bg-blue-600' : 'bg-gray-600'}`}
+                  onClick={() => setTipoDispositivo('valvula')}
+                >
+                  Válvula
+                </button>
               </div>
             </div>
 
             <div>
               <label className="text-gray-200 block mb-2">
-                {tipoDispositivo === 'tanque' ? 'Nivel de Agua (%)' : 'Estado (0-3)'}:
+                {tipoDispositivo === 'tanque' ? 'Nivel de Agua (%)' : 
+                 tipoDispositivo === 'valvula' ? 'Estado (0-1)' : 'Estado (0-3)'}:
               </label>
               <input 
                 type="range" 
-                min={tipoDispositivo === 'tanque' ? 0 : 0} 
-                max={tipoDispositivo === 'tanque' ? 100 : 3} 
-                step={tipoDispositivo === 'tanque' ? 1 : 1}
+                min={0} 
+                max={tipoDispositivo === 'tanque' ? 100 : tipoDispositivo === 'valvula' ? 3 : 3} 
+                step={1}
                 value={obtenerValorActual()}
                 onChange={(e) => actualizarValor(e.target.value)}
                 className="w-full"
               />
-              <div className="text-white mt-1">{obtenerValorActual()}</div>
+              <div className="text-white mt-1">
+                {obtenerValorActual()} 
+                {tipoDispositivo === 'valvula' && (obtenerValorActual() === 1 ? ' - Abierta' : ' - Cerrada')}
+              </div>
             </div>
             
             <div className="mt-4">
@@ -127,12 +143,13 @@ const DepuradorSistemaAgua = () => {
               {tipoDispositivo === 'tanque' && <WaterTankIndicator percentage={nivelTanque} />}
               {tipoDispositivo === 'bomba' && <PumpIndicator status={estadoBomba} />}
               {tipoDispositivo === 'pozo' && <WellIndicator status={estadoPozo} />}
+              {tipoDispositivo === 'valvula' && <ValveIndicator status={estadoValvula} />}
             </div>
           </div>
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="bg-gray-900 border-gray-800">
           <CardHeader>
             <h2 className="text-xl font-semibold text-gray-100">Ejemplo de Tanque</h2>
@@ -157,6 +174,15 @@ const DepuradorSistemaAgua = () => {
           </CardHeader>
           <CardContent>
             <WellIndicator status={2} />
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-gray-900 border-gray-800">
+          <CardHeader>
+            <h2 className="text-xl font-semibold text-gray-100">Ejemplo de Válvula</h2>
+          </CardHeader>
+          <CardContent>
+            <ValveIndicator status={1} />
           </CardContent>
         </Card>
       </div>
