@@ -1,5 +1,5 @@
 // useDeviceGroups.ts
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { loadDevicesForAsada } from './dynamicDeviceLoader';
 import { Device } from '../app/types/types';
 
@@ -7,18 +7,22 @@ export const useDeviceGroups = (codigoAsada: string) => {
   const [devices, setDevices] = useState<Device[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const reloadDevices = useCallback(async () => {
+    if (!codigoAsada) return;
     setLoading(true);
-    loadDevicesForAsada(codigoAsada)
-      .then(({ devices: deviceList }) => {
-        setDevices(deviceList);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error('Error al cargar los dispositivos:', error);
-        setLoading(false);
-      });
+    try {
+      const { devices: deviceList } = await loadDevicesForAsada(codigoAsada);
+      setDevices(deviceList);
+    } catch (error) {
+      console.error('Error al recargar los dispositivos:', error);
+    } finally {
+      setLoading(false);
+    }
   }, [codigoAsada]);
+
+  useEffect(() => {
+    reloadDevices();
+  }, [codigoAsada, reloadDevices]);
 
   const groupedDevices = useMemo(() => {
     if (loading) return [];
@@ -77,5 +81,5 @@ export const useDeviceGroups = (codigoAsada: string) => {
     return groups;
   }, [devices, loading]);
 
-  return groupedDevices;
+  return { groupedDevices, loading, reloadDevices };
 };

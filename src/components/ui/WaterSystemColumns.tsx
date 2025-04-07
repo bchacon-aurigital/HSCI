@@ -6,6 +6,7 @@ import MultiDeviceCard from './MultiDeviceCard';
 import { useDeviceGroups } from '../../hooks/useDeviceGroups';
 import { BaseDeviceType, MultiDevice } from '../../app/types/types';
 import { loadDevicesForAsada } from '../../hooks/dynamicDeviceLoader';
+import { RefreshCw } from 'lucide-react';
 
 export default function WaterSystemColumns() {
   const [codigoAsada, setCodigoAsada] = useState<string>('');
@@ -20,7 +21,7 @@ export default function WaterSystemColumns() {
     setIsLoggedIn(true);
   };
 
-  const processedGroups = useDeviceGroups(codigoAsada);
+  const { groupedDevices, loading: devicesLoading, reloadDevices } = useDeviceGroups(codigoAsada);
 
   useEffect(() => {
     if (codigoAsada) {
@@ -46,10 +47,10 @@ export default function WaterSystemColumns() {
         <div className="container mx-auto px-4 py-8 bg-gradient-to-b from-[#0b1729] to-[#172236]">
           {loading ? (
             <div className="flex flex-col justify-center items-center h-screen">
-            <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500 mb-6"></div>
-            <p className="text-blue-300 text-xl font-medium">Conectando con los sistemas...</p>
-            <p className="text-blue-200/70 mt-2">Estamos recuperando la información de sus dispositivos</p>
-          </div>
+              <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500 mb-6"></div>
+              <p className="text-blue-300 text-xl font-medium">Conectando con los sistemas...</p>
+              <p className="text-blue-200/70 mt-2">Estamos recuperando la información de sus dispositivos</p>
+            </div>
           ) : (
             <>
               <header className="mb-12">
@@ -57,17 +58,27 @@ export default function WaterSystemColumns() {
                   <div className="absolute inset-0 bg-blue-500/10 mix-blend-multiply"></div>
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-900/30 to-transparent"></div>
                   <div className="relative z-10 px-8">
-                    <div className="flex items-center mb-4">
-                      <div className="h-14 w-14 rounded-full bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/50 mr-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-white" viewBox="0 0 24 24">
-                          <path
-                            d="M12 2.69c-.23 0-.42.09-.59.21C9.97 4.22 4 9.08 4 15.5 4 19.58 7.42 23 12 23s8-3.42 8-7.5c0-6.42-5.97-11.28-7.41-12.6-.17-.12-.36-.21-.59-.21z"
-                            fill="white"
-                            stroke="white"
-                          />
-                        </svg>
+                    <div className="flex justify-between items-center mb-4">
+                      <div className="flex items-center">
+                        <div className="h-14 w-14 rounded-full bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/50 mr-4">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-white" viewBox="0 0 24 24">
+                            <path
+                              d="M12 2.69c-.23 0-.42.09-.59.21C9.97 4.22 4 9.08 4 15.5 4 19.58 7.42 23 12 23s8-3.42 8-7.5c0-6.42-5.97-11.28-7.41-12.6-.17-.12-.36-.21-.59-.21z"
+                              fill="white"
+                              stroke="white"
+                            />
+                          </svg>
+                        </div>
+                        <h1 className="text-xl font-semibold text-blue-300">Centro de Control ASADA</h1>
                       </div>
-                      <h1 className="text-xl font-semibold text-blue-300">Centro de Control ASADA</h1>
+                      <button
+                        onClick={reloadDevices}
+                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200"
+                        disabled={devicesLoading}
+                      >
+                        <RefreshCw className={`w-5 h-5 ${devicesLoading ? 'animate-spin' : ''}`} />
+                        {devicesLoading ? 'Actualizando...' : 'Actualizar Datos'}
+                      </button>
                     </div>
                     <h2 className="text-4xl md:text-5xl font-bold text-white mb-3 text-shadow">
                       {nombreAsada}
@@ -80,7 +91,7 @@ export default function WaterSystemColumns() {
               </header>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {processedGroups.map((group) => (
+                {groupedDevices.map((group) => (
                   <div key={group.name} className="flex flex-col h-full">
                     <div className="bg-[#172236] border border-blue-500/20 rounded-lg shadow-lg overflow-hidden mb-4">
                       <div className="bg-gradient-to-r from-blue-900/50 to-blue-800/30 p-4 border-b border-blue-500/20">
