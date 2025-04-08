@@ -1,7 +1,7 @@
 'use client';
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
-import { Clock, AlertTriangle, Activity, Settings } from 'lucide-react';
+import { Clock, AlertTriangle, Activity, Settings, Thermometer, Droplet, Gauge } from 'lucide-react';
 import { PumpIndicator } from '../indicators/PumpIndicator';
 import { WellIndicator } from '../indicators/WellIndicator';
 import { ValveIndicator } from '../indicators/ValveIndicator';
@@ -16,6 +16,7 @@ export default function MultiDeviceCard({
   codigoAsada, 
 }: MultiDeviceCardProps) {
   const { data, error, loading } = useDeviceData(identifier, undefined, codigoAsada);
+  const [showDetails, setShowDetails] = useState(false);
 
   if (loading) {
     return (
@@ -68,16 +69,27 @@ export default function MultiDeviceCard({
     );
   }
 
+  // Función para verificar si hay datos específicos en el objeto data
+  const hasData = (key: string) => data && key in data && data[key] !== undefined && data[key] !== null;
+
+  // Filtrar dispositivos activos
   const activeDevices = devices.filter(
-    (device) => data && device.pumpKey in data && data[device.pumpKey] !== undefined
+    (device) => hasData(device.pumpKey || device.key || '')
   );
-   
+  
   const activeDeviceCount = activeDevices.length;
-   
+  
   const onDeviceCount = activeDevices.filter(
-    (device) => Number(data[device.pumpKey]) === 1
+    (device) => {
+      const value = device.pumpKey ? data[device.pumpKey] : data[device.key || ''];
+      return Number(value) === 1;
+    }
   ).length;
- 
+
+  // Agrupar las válvulas
+  const valveDevices = activeDevices.filter(device => device.type === 'valve');
+  const otherDevices = activeDevices.filter(device => device.type !== 'valve');
+
   if (!activeDeviceCount) {
     return (
       <Card className="bg-gray-900 border-gray-800 shadow-lg overflow-hidden">
@@ -95,6 +107,79 @@ export default function MultiDeviceCard({
     );
   }
 
+  // Renderizar tarjeta de indicadores de sensores
+  const renderSensorDetails = () => {
+    if (!showDetails) return null;
+
+    return (
+      <div className="mt-6 p-4 bg-gray-800/80 rounded-lg border border-gray-700">
+        <h3 className="text-lg font-medium text-white mb-4">Datos de sensores</h3>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {hasData('PRESAYA') && (
+            <div className="flex items-center bg-gray-700/50 p-3 rounded-lg">
+              <Gauge className="text-blue-400 mr-3" size={20} />
+              <div>
+                <p className="text-xs text-gray-400">Presión Entrada</p>
+                <p className="font-bold text-gray-100">{data.PRESAYA} psi</p>
+              </div>
+            </div>
+          )}
+          
+          {hasData('PRESION') && (
+            <div className="flex items-center bg-gray-700/50 p-3 rounded-lg">
+              <Gauge className="text-blue-400 mr-3" size={20} />
+              <div>
+                <p className="text-xs text-gray-400">Presión Bombeo</p>
+                <p className="font-bold text-gray-100">{data.PRESION} psi</p>
+              </div>
+            </div>
+          )}
+          
+          {hasData('PRESRED') && (
+            <div className="flex items-center bg-gray-700/50 p-3 rounded-lg">
+              <Gauge className="text-blue-400 mr-3" size={20} />
+              <div>
+                <p className="text-xs text-gray-400">Presión Red</p>
+                <p className="font-bold text-gray-100">{data.PRESRED} psi</p>
+              </div>
+            </div>
+          )}
+          
+          {hasData('TEMP1') && (
+            <div className="flex items-center bg-gray-700/50 p-3 rounded-lg">
+              <Thermometer className="text-red-400 mr-3" size={20} />
+              <div>
+                <p className="text-xs text-gray-400">Temperatura 1</p>
+                <p className="font-bold text-gray-100">{data.TEMP1}°C</p>
+              </div>
+            </div>
+          )}
+          
+          {hasData('TEMP2') && (
+            <div className="flex items-center bg-gray-700/50 p-3 rounded-lg">
+              <Thermometer className="text-red-400 mr-3" size={20} />
+              <div>
+                <p className="text-xs text-gray-400">Temperatura 2</p>
+                <p className="font-bold text-gray-100">{data.TEMP2}°C</p>
+              </div>
+            </div>
+          )}
+          
+          {hasData('ppm') && (
+            <div className="flex items-center bg-gray-700/50 p-3 rounded-lg">
+              <Droplet className="text-cyan-400 mr-3" size={20} />
+              <div>
+                <p className="text-xs text-gray-400">Cloro residual</p>
+                <p className="font-bold text-gray-100">{data.ppm}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <Card className="bg-gray-900 border-gray-800 shadow-lg overflow-hidden">
       <CardHeader className="bg-gray-800 pb-2">
@@ -111,14 +196,40 @@ export default function MultiDeviceCard({
        
       <CardContent className="pt-4">
         <div className="space-y-6">
+          {/* Sección de válvulas (si hay más de una) */}
+          {valveDevices.length > 0 && (
+            <div className="grid grid-cols-1 gap-4">
+              <div className={`flex flex-col items-center bg-gray-800 rounded-lg p-4 transition-all duration-300 border-l-4 ${onDeviceCount > 0 ? 'border-l-green-500' : 'border-l-gray-700'}`}>
+                <h3 className="text-lg font-medium text-gray-200 mb-4">Sistema de Válvulas</h3>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full">
+                  {valveDevices.map((device) => {
+                    const statusAsNumber = Number(device.pumpKey ? data[device.pumpKey] : data[device.key || '']);
+                    const isActive = statusAsNumber === 1;
+                    
+                    return (
+                      <div key={device.key || device.pumpKey} className="flex flex-col items-center">
+                        <h4 className="text-sm font-medium text-gray-300 mb-2">{device.name}</h4>
+                        <div className="transform scale-75 md:scale-90 lg:scale-100">
+                          <ValveIndicator status={statusAsNumber} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Otros dispositivos (no válvulas) */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
-            {activeDevices.map((device) => {
-              const statusAsNumber = Number(data[device.pumpKey]);
+            {otherDevices.map((device) => {
+              const statusAsNumber = Number(device.pumpKey ? data[device.pumpKey] : data[device.key || '']);
               const isActive = statusAsNumber === 1;
                
               return (
                 <div 
-                  key={device.pumpKey} 
+                  key={device.pumpKey || device.key} 
                   className={`flex flex-col items-center bg-gray-800 rounded-lg p-4 transition-all duration-300 ${
                     isActive 
                       ? 'border-l-4 border-l-green-500 shadow-lg shadow-green-900/20' 
@@ -133,9 +244,6 @@ export default function MultiDeviceCard({
                   {device.type === 'well' && (
                     <WellIndicator status={statusAsNumber} />
                   )}
-                  {device.type === 'valve' && (
-                    <ValveIndicator status={statusAsNumber} />
-                  )}
                    
                   <div className="flex items-center justify-center w-full mt-4 py-2 px-3 rounded-md bg-gray-900/50 border border-gray-700/30">
                     <Activity className={isActive ? 'text-green-400' : 'text-gray-500'} size={18} />
@@ -148,6 +256,29 @@ export default function MultiDeviceCard({
             })}
           </div>
         </div>
+        
+        {/* Detalles de sensores */}
+        {renderSensorDetails()}
+        
+        {/* Botón para mostrar/ocultar detalles */}
+        {(hasData('PRESAYA') || hasData('PRESION') || hasData('PRESRED') || 
+          hasData('TEMP1') || hasData('TEMP2') || hasData('ppm')) && (
+          <button 
+            onClick={() => setShowDetails(!showDetails)} 
+            className="mt-4 w-full py-2 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg flex items-center justify-center gap-2 transition-colors duration-200"
+          >
+            <span>{showDetails ? 'Ocultar detalles' : 'Ver detalles de sensores'}</span>
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              className={`h-4 w-4 transition-transform duration-300 ${showDetails ? 'rotate-180' : ''}`} 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+        )}
       </CardContent>
        
       <CardFooter className="bg-gray-800/50 pt-4 pb-3">
