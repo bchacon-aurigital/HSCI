@@ -24,10 +24,15 @@ const config: Config = {
         flowLeft: {
           '0%': { transform: 'translateX(100%)' },
           '100%': { transform: 'translateX(-100%)' }
-        }
+        },
+        progress: {
+          '0%': { width: '0%' },
+          '100%': { width: '100%' },
+        },
       },
       animation: {
         'flowLeft': 'flowLeft 2s linear infinite',
+        'progress-bar': 'progress 2s ease-in-out forwards',
       }
     },
   },
