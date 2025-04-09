@@ -2,18 +2,25 @@
 import { Device, MultiDevice } from '../types/types';
 
 export const devices: (Device | MultiDevice)[] = [
-  { name: 'VTBLOTE 05 TANQUE 1', url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/ALSH_3B.json', type: 'tank', group: 'vtblote-05', order: 1 },
-  { name: 'Rebombeo 1', url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/ALSH_3B_VTB.json', type: 'pump', pumpKey: 'BOMBA1', group: 'vtblote-05', order: 2 },
-  { name: 'Rebombeo 2', url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/ALSH_3B_VTB.json', type: 'pump', pumpKey: 'BOMBA2', group: 'vtblote-05', order: 3 },
-  { name: 'VTBLOTE 05 TANQUE 2', url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/ALSH_3BT2.json', type: 'tank', group: 'vtblote-05', order: 4 },
-  
-  // Sistema CATSA con válvulas y sensores
-  { 
-    name: 'Sistema de Válvulas CATSA', 
-    url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/CATSA_R.json', 
-    type: 'multi', 
-    group: 'catsa-valvulas', 
-    order: 1,
+  /* { name: 'TANQUE PRINCIPAL', url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/TPOJO.json', type: 'tank', group: 'ojo-de-agua', order: 1 },
+   { name: 'LOS RODRIGUEZ', key: 'ROD', type: 'tank', group: 'los-rodriguez', order: 2 },
+   { name: 'SACRAMENTO', key: 'SACRA', type: 'tank', group: 'sacramento', order: 3 },
+   { name: 'SONIA ARAUJO', key: 'SONIA', type: 'tank', group: 'sonia-araujo', order: 4 },
+   { name: 'BAJO PAIRE', key: 'BAJOPAI', type: 'tank', group: 'bajo-paires', order: 5 },
+   { name: 'JULIO ALFARO', key: 'JULIO', type: 'tank', group: 'julio-alfaro', order: 6 },
+   { name: 'LAS MELISAS', key: 'MELI', type: 'tank', group: 'las-melisas', order: 7 },
+   { name: 'SAN GERARDO', key: 'ZSG', type: 'tank', group: 'san-gerardo', order: 8 },
+   { name: 'VICTOR JIMENEZ', key: 'VICTORJ', type: 'tank', group: 'victor-jimenez', order: 9 },
+   { name: 'OCIDENTE', key: 'OCCI', type: 'tank', group: 'occidente', order: 10 },
+ */
+  { name: 'BOMBA1', url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/CATSA_R.json', pumpKey: 'BOMBA1', type: 'pump', group: 'catsa1', order: 1 },
+  { name: 'BOMBA2', url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/CATSA_R.json', pumpKey: 'BOMBA2', type: 'pump', group: 'catsa1', order: 2 },
+  {
+    name: 'Sistema de Válvulas CATSA',
+    url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/CATSA_R.json',
+    type: 'multi',
+    group: 'catsa',
+    order: 3,
     multiDevices: [
       { name: 'Válvula 1', type: 'valve', key: 'VAL1' },
       { name: 'Válvula 2', type: 'valve', key: 'VAL2' },

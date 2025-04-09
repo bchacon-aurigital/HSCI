@@ -184,7 +184,7 @@ export default function MultiDeviceCard({
     <Card className="bg-gray-900 border-gray-800 shadow-lg overflow-hidden">
       <CardHeader className="bg-gray-800 pb-2">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-gray-100">{groupName}</h2>
+          <h2 className="text-xl font-semibold text-gray-100"> </h2>
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-400">
               <span className="font-medium">{onDeviceCount}</span>/{activeDeviceCount} en operación
@@ -202,7 +202,7 @@ export default function MultiDeviceCard({
               <div className={`flex flex-col items-center bg-gray-800 rounded-lg p-4 transition-all duration-300 border-l-4 ${onDeviceCount > 0 ? 'border-l-green-500' : 'border-l-gray-700'}`}>
                 <h3 className="text-lg font-medium text-gray-200 mb-4">Sistema de Válvulas</h3>
                 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full">
+                <div className="grid grid-cols-1 2xl:grid-cols-3 gap-6 w-full">
                   {valveDevices.map((device) => {
                     const statusAsNumber = Number(device.pumpKey ? data[device.pumpKey] : data[device.key || '']);
                     const isActive = statusAsNumber === 1;
@@ -257,10 +257,8 @@ export default function MultiDeviceCard({
           </div>
         </div>
         
-        {/* Detalles de sensores */}
         {renderSensorDetails()}
         
-        {/* Botón para mostrar/ocultar detalles */}
         {(hasData('PRESAYA') || hasData('PRESION') || hasData('PRESRED') || 
           hasData('TEMP1') || hasData('TEMP2') || hasData('ppm')) && (
           <button 
