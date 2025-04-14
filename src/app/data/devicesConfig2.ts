@@ -13,13 +13,13 @@ export const devices: (Device | MultiDevice)[] = [
    { name: 'VICTOR JIMENEZ', key: 'VICTORJ', type: 'tank', group: 'victor-jimenez', order: 9 },
    { name: 'OCIDENTE', key: 'OCCI', type: 'tank', group: 'occidente', order: 10 },
  */
-  { name: 'BOMBA1', url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/CATSA_R.json', pumpKey: 'BOMBA1', type: 'pump', group: 'catsa1', order: 1 },
-  { name: 'BOMBA2', url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/CATSA_R.json', pumpKey: 'BOMBA2', type: 'pump', group: 'catsa1', order: 2 },
+  { name: 'BOMBA1', url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/CATSA_R.json', pumpKey: 'BOMBA1', type: 'pump', group: 'control1', order: 1 },
+  { name: 'BOMBA2', url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/CATSA_R.json', pumpKey: 'BOMBA2', type: 'pump', group: 'control1', order: 2 },
   {
-    name: 'Sistema de Válvulas CATSA',
+    name: 'Sistema de Válvulas Control',
     url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/CATSA_R.json',
     type: 'multi',
-    group: 'catsa',
+    group: 'control',
     order: 3,
     multiDevices: [
       { name: 'Válvula 1', type: 'valve', key: 'VAL1' },

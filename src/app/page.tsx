@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';  // Importamos el componente Image de Next.js
 import LoadingScreen from '@/components/LoadingScreen';
 import FirebaseMonitor from '@/components/firebase-monitor';
 import WaterSystemColumns from '@/components/ui/WaterSystemColumns';
@@ -35,9 +36,12 @@ export default function Home() {
             <p className="text-white uppercase text-[8px] text-center p-1 hover:text-[#28C0F5] ">
               Design and Development by :
             </p>
-            <img
+            {/* Reemplazamos el elemento img por el componente Image de Next.js */}
+            <Image
               src="/isotipo.avif"
               alt="Design and Development by aurigital"
+              width={20}
+              height={20}
               className="h-[20px] w-[20px]"
             />
           </a>
