@@ -25,7 +25,7 @@ const DepuradorSistemaAgua = () => {
   const [nivelTanque, setNivelTanque] = useState(50); // 0-100 para tanques
   const [estadoBomba, setEstadoBomba] = useState(1); // 0-3 para bombas
   const [estadoPozo, setEstadoPozo] = useState(2); // 0-3 para pozos
-  const [estadoValvula, setEstadoValvula] = useState(1); // 0-1 para válvulas
+  const [estadoValvula, setEstadoValvula] = useState(2); // 0-4 para válvulas (ahora 5 estados)
 
   const [guiaExpandida, setGuiaExpandida] = useState(false);
   const [customUrl, setCustomUrl] = useState('');
@@ -81,9 +81,15 @@ const DepuradorSistemaAgua = () => {
         setEstadoPozo(Math.min(3, Math.max(0, valor)));
         break;
       case 'valvula':
-        setEstadoValvula(Math.min(1, Math.max(0, valor)));
+        setEstadoValvula(Math.min(4, Math.max(0, valor))); // Ahora es 0-4
         break;
     }
+  };
+  
+  // Obtener etiqueta descriptiva para el estado actual de la válvula
+  const getValveStateLabel = (state: number): string => {
+    const labels = ['Cerrada', 'Apertura 25%', 'Apertura 50%', 'Apertura 75%', 'Completamente Abierta'];
+    return labels[Math.min(4, Math.max(0, state))];
   };
 
   // Probar conexión a Firebase
@@ -350,14 +356,14 @@ const DepuradorSistemaAgua = () => {
             <div>
               <label className="text-gray-200 block mb-2">
                 {tipoDispositivo === 'tanque' ? 'Nivel de Agua (%)' : 
-                 tipoDispositivo === 'valvula' ? 'Estado (0: Cerrada, 1: Abierta)' : 
+                 tipoDispositivo === 'valvula' ? 'Estado de Apertura (0-4)' : 
                  'Estado (0-3) [0: Reposo, 1: Activo, 2: Error, 3: Mantenimiento]'}:
               </label>
               <div className="flex items-center gap-3">
                 <input 
                   type="range" 
                   min={0} 
-                  max={tipoDispositivo === 'tanque' ? 100 : tipoDispositivo === 'valvula' ? 1 : 3} 
+                  max={tipoDispositivo === 'tanque' ? 100 : tipoDispositivo === 'valvula' ? 4 : 3} 
                   step={1}
                   value={obtenerValorActual()}
                   onChange={(e) => actualizarValor(e.target.value)}
@@ -370,8 +376,14 @@ const DepuradorSistemaAgua = () => {
 
               <div className="text-white mt-2">
                 {tipoDispositivo === 'valvula' && (
-                  <div className={`inline-block px-2 py-1 rounded text-xs ${obtenerValorActual() === 1 ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}>
-                    {obtenerValorActual() === 1 ? 'Abierta' : 'Cerrada'}
+                  <div className={`inline-block px-2 py-1 rounded text-xs ${
+                    estadoValvula === 0 ? 'bg-blue-500/20 text-blue-300' :
+                    estadoValvula === 1 ? 'bg-blue-400/20 text-blue-300' :
+                    estadoValvula === 2 ? 'bg-green-500/20 text-green-300' :
+                    estadoValvula === 3 ? 'bg-green-400/20 text-green-300' :
+                    'bg-green-300/20 text-green-300'
+                  }`}>
+                    {getValveStateLabel(estadoValvula)}
                   </div>
                 )}
                 {tipoDispositivo === 'bomba' && (
@@ -593,7 +605,7 @@ const DepuradorSistemaAgua = () => {
     return (
       <button
         onClick={toggleDebugger}
-        className="fixed bottom-6 right-6 bg-gray-800 hover:bg-gray-700 text-white p-3 rounded-full shadow-lg flex items-center justify-center z-40"
+        className="fixed bottom-6 right-6 bg-gray-800 hover:bg-gray-700 text-white p-3 rounded-full shadow-lg flex items-center justify-center z-50"
         title="Abrir Depurador"
       >
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

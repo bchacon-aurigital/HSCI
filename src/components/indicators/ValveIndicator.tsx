@@ -5,25 +5,30 @@ interface ValveIndicatorProps {
   openPercent?: number;
 }
 
-export const ValveIndicator = ({ status = 0, openPercent = 0 }: ValveIndicatorProps) => {
+export const ValveIndicator = ({ status = 0, openPercent }: ValveIndicatorProps) => {
   const uniqueId = useId();
-  // Asegurarse de que el status esté en el rango válido (0-3)
-  const safeStatus = (typeof status === 'number' && status >= 0 && status <= 3) ? status : 0;
+  // Asegurarse de que el status esté en el rango válido (0-4)
+  const safeStatus = (typeof status === 'number' && status >= 0 && status <= 4) ? Math.round(status) : 0;
+  
+  // Calculamos el porcentaje de apertura basado en el status (0-4)
+  const calculatedOpenPercent = openPercent !== undefined ? openPercent : (safeStatus / 4) * 100;
   
   const [animatedStatus, setAnimatedStatus] = useState(safeStatus);
   const [animatedOpenPercent, setAnimatedOpenPercent] = useState(0);
   const [pulseScale, setPulseScale] = useState(1);
-  const [rotationAngle, setRotationAngle] = useState(safeStatus === 1 ? 90 : 0);
+  const [rotationAngle, setRotationAngle] = useState(safeStatus > 0 ? (safeStatus / 4) * 90 : 0);
 
-  // Define arrays con valores seguros
-  const statusColors = ['#3b82f6', '#22c55e', '#ef4444', '#f97316'];
+  // Colores para los diferentes estados - del 0 al 4
+  const statusColors = ['#3b82f6', '#60a5fa', '#22c55e', '#16a34a', '#15803d'];
   const statusGradients = [
-    ['#3b82f6', '#1d4ed8'], // Azul - En Reposo
-    ['#22c55e', '#16a34a'], // Verde - Abierta
-    ['#ef4444', '#b91c1c'], // Rojo - Fallo Detectado
-    ['#f97316', '#c2410c']  // Naranja - Fuera de Servicio
+    ['#3b82f6', '#1d4ed8'], // Azul oscuro - Cerrada (0%)
+    ['#60a5fa', '#3b82f6'], // Azul claro - Parcialmente abierta (25%)
+    ['#22c55e', '#16a34a'], // Verde claro - Medio abierta (50%)
+    ['#16a34a', '#15803d'], // Verde medio - Mayormente abierta (75%)
+    ['#15803d', '#166534']  // Verde oscuro - Completamente abierta (100%)
   ];
-  const labels = ['En Reposo', 'Abierta', 'Fallo Detectado', 'Fuera de Servicio'];
+  
+  const labels = ['Cerrada', 'Apertura 25%', 'Apertura 50%', 'Apertura 75%', 'Completamente Abierta'];
 
   // Status animation
   useEffect(() => {
@@ -36,10 +41,10 @@ export const ValveIndicator = ({ status = 0, openPercent = 0 }: ValveIndicatorPr
 
   // Rotation animation for valve handle
   useEffect(() => {
-    const targetAngle = animatedStatus === 1 ? 90 : 0;
-    const step = animatedStatus === 1 ? 5 : -5;
+    const targetAngle = (animatedStatus / 4) * 90;
+    const step = targetAngle > rotationAngle ? 2 : -2;
     
-    if (rotationAngle !== targetAngle) {
+    if (Math.abs(rotationAngle - targetAngle) > 1) {
       const timer = setTimeout(() => {
         setRotationAngle(prev => {
           const newAngle = prev + step;
@@ -56,9 +61,7 @@ export const ValveIndicator = ({ status = 0, openPercent = 0 }: ValveIndicatorPr
 
   // Open percentage animation
   useEffect(() => {
-    // Asegurarse de que openPercent sea un número válido
-    const safeOpenPercent = typeof openPercent === 'number' ? openPercent : 0;
-    const targetPercent = animatedStatus === 1 ? safeOpenPercent : 0;
+    const targetPercent = calculatedOpenPercent;
     const duration = 1000;
     const interval = 10;
     const steps = duration / interval;
@@ -77,13 +80,16 @@ export const ValveIndicator = ({ status = 0, openPercent = 0 }: ValveIndicatorPr
       
       return () => clearTimeout(timer);
     }
-  }, [animatedStatus, animatedOpenPercent, openPercent]);
+  }, [animatedStatus, animatedOpenPercent, calculatedOpenPercent]);
 
   // Error pulse animation
   useEffect(() => {
     let timer: ReturnType<typeof setInterval>;
     
-    if (animatedStatus === 2) {
+    // Hacemos que pulse solo cuando hay un error (esto podría ser determinado de otra manera si es necesario)
+    const shouldPulse = false;
+    
+    if (shouldPulse) {
       timer = setInterval(() => {
         setPulseScale(prev => prev === 1 ? 1.1 : 1);
       }, 500);
@@ -95,19 +101,20 @@ export const ValveIndicator = ({ status = 0, openPercent = 0 }: ValveIndicatorPr
   }, [animatedStatus]);
 
   // Calculate valve opening based on rotation angle
-  const valveOpeningY = animatedStatus === 1 ? 54 - (animatedOpenPercent / 100) * 8 : 54;
+  const valveOpeningY = 54 - (animatedOpenPercent / 100) * 8;
   
   // Generate flow particles
   const generateFlowParticles = () => {
-    if (animatedStatus !== 1) return null;
+    if (animatedStatus === 0) return null;
     
     const particles = [];
-    const particleCount = 8;
+    const particleCount = Math.ceil((animatedStatus / 4) * 8); // Más partículas cuanto más abierta
     
     for (let i = 0; i < particleCount; i++) {
       const delay = i * 0.3;
       const position = i * 3;
-      const size = 0.8;
+      // Tamaño de partícula basado en la apertura
+      const size = 0.5 + (animatedOpenPercent / 100) * 0.5;
       
       particles.push(
         <circle 
@@ -169,8 +176,8 @@ export const ValveIndicator = ({ status = 0, openPercent = 0 }: ValveIndicatorPr
     return particles;
   };
 
-  // Asegurar que tenemos valores válidos para los gradientes
-  const safeGradientIdx = animatedStatus >= 0 && animatedStatus < statusGradients.length ? animatedStatus : 0;
+  // Asegurar que tenemos un índice de gradiente válido
+  const safeGradientIdx = Math.min(4, Math.max(0, animatedStatus));
   const safeGradient = statusGradients[safeGradientIdx];
   const safeStartColor = safeGradient[0];
   const safeEndColor = safeGradient[1];
@@ -208,7 +215,7 @@ export const ValveIndicator = ({ status = 0, openPercent = 0 }: ValveIndicatorPr
           strokeWidth="2" 
           filter="url(#valveShadow)"
           style={{
-            transform: animatedStatus === 2 ? `scale(${pulseScale})` : 'scale(1)',
+            transform: `scale(${pulseScale})`,
             transformOrigin: '50px 50px',
             transition: 'transform 0.3s ease'
           }}
@@ -229,7 +236,7 @@ export const ValveIndicator = ({ status = 0, openPercent = 0 }: ValveIndicatorPr
           style={{
             transform: `rotate(${rotationAngle}deg)`,
             transformOrigin: '50px 25px',
-            transition: 'transform 0.1s linear'
+            transition: 'transform 0.2s linear'
           }}
         >
           <rect 
@@ -262,8 +269,8 @@ export const ValveIndicator = ({ status = 0, openPercent = 0 }: ValveIndicatorPr
           strokeWidth="0.5" 
         />
         
-        {/* Flow indicator */}
-        {animatedStatus === 1 && (
+        {/* Flow indicator - intensity based on openness */}
+        {animatedStatus > 0 && (
           <rect 
             x="35" 
             y="48" 
@@ -325,29 +332,32 @@ export const ValveIndicator = ({ status = 0, openPercent = 0 }: ValveIndicatorPr
           fill={statusColors[safeGradientIdx]} 
           filter="url(#valveGlow)" 
           style={{
-            transform: animatedStatus === 2 ? `scale(${pulseScale})` : 'scale(1)',
+            transform: pulseScale !== 1 ? `scale(${pulseScale})` : 'scale(1)',
             transformOrigin: '65px 25px',
             transition: 'transform 0.3s ease'
           }}
         >
-          {animatedStatus === 2 && (
-            <animate attributeName="opacity" values="0.9;1;0.9" dur="0.5s" repeatCount="indefinite" />
-          )}
+          {/* Pulsación suave para todos los estados */}
+          <animate attributeName="opacity" values="0.9;1;0.9" dur="2s" repeatCount="indefinite" />
         </circle>
       </svg>
       
       <div className="absolute bottom-3 left-0 right-0 flex justify-center">
         <div className={`px-3 py-1 rounded-full text-xs font-medium flex items-center ${
           safeGradientIdx === 0 ? 'bg-blue-100 text-blue-800' : 
-          safeGradientIdx === 1 ? 'bg-green-100 text-green-800' : 
-          safeGradientIdx === 2 ? 'bg-red-100 text-red-800' : 'bg-orange-100 text-orange-800'
+          safeGradientIdx === 1 ? 'bg-blue-200 text-blue-800' : 
+          safeGradientIdx === 2 ? 'bg-green-100 text-green-800' : 
+          safeGradientIdx === 3 ? 'bg-green-200 text-green-800' : 
+          'bg-green-300 text-green-800'
         }`}>
           <span className={`mr-1.5 h-2 w-2 inline-block rounded-full ${
             safeGradientIdx === 0 ? 'bg-blue-500' : 
-            safeGradientIdx === 1 ? 'bg-green-500' : 
-            safeGradientIdx === 2 ? 'bg-red-500' : 'bg-orange-500'
+            safeGradientIdx === 1 ? 'bg-blue-400' : 
+            safeGradientIdx === 2 ? 'bg-green-500' : 
+            safeGradientIdx === 3 ? 'bg-green-600' : 
+            'bg-green-700'
           }`} style={{ 
-            animation: safeGradientIdx === 2 ? 'pulse 0.8s infinite' : 'pulse 2s infinite' 
+            animation: 'pulse 2s infinite' 
           }}></span>
           {labels[safeGradientIdx]}
         </div>

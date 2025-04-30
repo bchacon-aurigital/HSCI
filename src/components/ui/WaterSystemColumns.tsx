@@ -1,6 +1,6 @@
 'use client';
-import React, { useState, useEffect } from 'react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { RefreshCw, Clock, AlertTriangle } from 'lucide-react';
 import Login from '../Login';
 import WaterTankCard from './WaterTankCard';
 import MultiDeviceCard from './MultiDeviceCard';
@@ -15,6 +15,8 @@ export default function WaterSystemColumns() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
+  const [isRealTime, setIsRealTime] = useState<boolean>(false);
+  const realTimeIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleLogin = (codigo: string) => {
     setLoading(true);
@@ -24,6 +26,39 @@ export default function WaterSystemColumns() {
   };
 
   const { groupedDevices, loading: devicesLoading, reloadDevices } = useDeviceGroups(codigoAsada);
+
+  // Función para activar/desactivar modo tiempo real
+  const toggleRealTime = () => {
+    const newState = !isRealTime;
+    setIsRealTime(newState);
+    
+    // Si se activa el modo tiempo real, configurar intervalo
+    if (newState) {
+      if (realTimeIntervalRef.current) {
+        clearInterval(realTimeIntervalRef.current);
+      }
+      realTimeIntervalRef.current = setInterval(() => {
+        reloadDevices().catch(err => {
+          console.error('Error en actualización en tiempo real:', err);
+          // No mostramos error visual para no interrumpir la experiencia
+        });
+      }, 2000); // Actualización cada 2 segundos
+    } 
+    // Si se desactiva, limpiar el intervalo
+    else if (realTimeIntervalRef.current) {
+      clearInterval(realTimeIntervalRef.current);
+      realTimeIntervalRef.current = null;
+    }
+  };
+
+  // Limpiar intervalo al desmontar el componente
+  useEffect(() => {
+    return () => {
+      if (realTimeIntervalRef.current) {
+        clearInterval(realTimeIntervalRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (codigoAsada) {
@@ -43,6 +78,14 @@ export default function WaterSystemColumns() {
         setError(`Error al inicializar ASADA: ${err.message || 'Error desconocido'}`);
         setLoading(false);
       }
+    }
+  }, [codigoAsada]);
+
+  // Desactivar tiempo real si cambia el código de ASADA
+  useEffect(() => {
+    if (isRealTime && realTimeIntervalRef.current) {
+      clearInterval(realTimeIntervalRef.current);
+      setIsRealTime(false);
     }
   }, [codigoAsada]);
 
@@ -147,14 +190,27 @@ export default function WaterSystemColumns() {
                         </div>
                         <h1 className="text-xl font-semibold text-blue-300">Centro de Control ASADA</h1>
                       </div>
-                      <button
-                        onClick={handleReloadDevices}
-                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200"
-                        disabled={devicesLoading}
-                      >
-                        <RefreshCw className={`w-5 h-5 ${devicesLoading ? 'animate-spin' : ''}`} />
-                        {devicesLoading ? 'Actualizando...' : 'Actualizar Datos'}
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={toggleRealTime}
+                          className={`flex items-center gap-2 px-4 py-2 ${isRealTime 
+                            ? 'bg-green-600 hover:bg-green-700' 
+                            : 'bg-gray-600 hover:bg-gray-700'
+                          } text-white rounded-lg transition-colors duration-200`}
+                          disabled={devicesLoading}
+                        >
+                          <Clock className={`w-5 h-5 ${isRealTime ? 'text-green-200 animate-pulse' : ''}`} />
+                          {isRealTime ? 'Tiempo Real Activo' : 'Activar Tiempo Real'}
+                        </button>
+                        <button
+                          onClick={handleReloadDevices}
+                          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200"
+                          disabled={devicesLoading}
+                        >
+                          <RefreshCw className={`w-5 h-5 ${devicesLoading ? 'animate-spin' : ''}`} />
+                          {devicesLoading ? 'Actualizando...' : 'Actualizar Datos'}
+                        </button>
+                      </div>
                     </div>
                     <h2 className="text-4xl md:text-5xl font-bold text-white mb-3 text-shadow">
                       {nombreAsada}
@@ -162,6 +218,14 @@ export default function WaterSystemColumns() {
                     <p className="text-blue-200 text-lg max-w-2xl">
                       Panel centralizado de monitoreo y control • Visualización de todos los sistemas activos
                     </p>
+                    {isRealTime && (
+                      <div className="mt-3">
+                        <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+                          <span className="mr-1 h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                          Actualizando automáticamente cada 2 segundos
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </header>
