@@ -17,18 +17,26 @@ export default function WaterSystemColumns() {
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
   const [isRealTime, setIsRealTime] = useState<boolean>(false);
   const realTimeIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  // Añadir estado para controlar si la ASADA es la de control
+  const [isControlAsada, setIsControlAsada] = useState<boolean>(false);
 
   const handleLogin = (codigo: string) => {
     setLoading(true);
     setError(null);
     setCodigoAsada(codigo);
     setIsLoggedIn(true);
+    
+    // Verificar si la ASADA es la de control
+    setIsControlAsada(codigo.toLowerCase() === 'control');
   };
 
   const { groupedDevices, loading: devicesLoading, reloadDevices } = useDeviceGroups(codigoAsada);
 
   // Función para activar/desactivar modo tiempo real
   const toggleRealTime = () => {
+    // Solo permitir si es la ASADA de control
+    if (!isControlAsada) return;
+    
     const newState = !isRealTime;
     setIsRealTime(newState);
     
@@ -68,6 +76,11 @@ export default function WaterSystemColumns() {
             setNombreAsada(name);
             setLoading(false);
             setError(null);
+            
+            // Verificar si la ASADA es la de control (por nombre también)
+            if (name.toLowerCase().includes('control')) {
+              setIsControlAsada(true);
+            }
           })
           .catch(err => {
             console.error('Error al cargar dispositivos:', err);
@@ -87,6 +100,9 @@ export default function WaterSystemColumns() {
       clearInterval(realTimeIntervalRef.current);
       setIsRealTime(false);
     }
+    
+    // Verificar si la nueva ASADA es la de control
+    setIsControlAsada(codigoAsada.toLowerCase() === 'control');
   }, [codigoAsada]);
 
   const toggleGroupCollapse = (groupName: string) => {
@@ -191,17 +207,20 @@ export default function WaterSystemColumns() {
                         <h1 className="text-xl font-semibold text-blue-300">Centro de Control ASADA</h1>
                       </div>
                       <div className="flex gap-2">
-                        <button
-                          onClick={toggleRealTime}
-                          className={`flex items-center gap-2 px-4 py-2 ${isRealTime 
-                            ? 'bg-green-600 hover:bg-green-700' 
-                            : 'bg-gray-600 hover:bg-gray-700'
-                          } text-white rounded-lg transition-colors duration-200`}
-                          disabled={devicesLoading}
-                        >
-                          <Clock className={`w-5 h-5 ${isRealTime ? 'text-green-200 animate-pulse' : ''}`} />
-                          {isRealTime ? 'Tiempo Real Activo' : 'Activar Tiempo Real'}
-                        </button>
+                        {/* Solo mostrar el botón de tiempo real si es la ASADA de control */}
+                        {isControlAsada && (
+                          <button
+                            onClick={toggleRealTime}
+                            className={`flex items-center gap-2 px-4 py-2 ${isRealTime 
+                              ? 'bg-green-600 hover:bg-green-700' 
+                              : 'bg-gray-600 hover:bg-gray-700'
+                            } text-white rounded-lg transition-colors duration-200`}
+                            disabled={devicesLoading}
+                          >
+                            <Clock className={`w-5 h-5 ${isRealTime ? 'text-green-200 animate-pulse' : ''}`} />
+                            {isRealTime ? 'Tiempo Real Activo' : 'Activar Tiempo Real'}
+                          </button>
+                        )}
                         <button
                           onClick={handleReloadDevices}
                           className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200"
@@ -218,7 +237,7 @@ export default function WaterSystemColumns() {
                     <p className="text-blue-200 text-lg max-w-2xl">
                       Panel centralizado de monitoreo y control • Visualización de todos los sistemas activos
                     </p>
-                    {isRealTime && (
+                    {isRealTime && isControlAsada && (
                       <div className="mt-3">
                         <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
                           <span className="mr-1 h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse"></span>
