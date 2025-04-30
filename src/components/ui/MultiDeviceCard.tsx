@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
-import { Clock, AlertTriangle, Activity, Settings, Thermometer, Droplet, Gauge } from 'lucide-react';
+import { Clock, AlertTriangle, Activity, Settings, Thermometer, Droplet, Gauge, Zap } from 'lucide-react';
 import { PumpIndicator } from '../indicators/PumpIndicator';
 import { WellIndicator } from '../indicators/WellIndicator';
 import { ValveIndicator } from '../indicators/ValveIndicator';
@@ -160,6 +160,16 @@ export default function MultiDeviceCard({
         <h3 className="text-lg font-medium text-white mb-4">Datos de sensores</h3>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {hasData('AMPS') && (
+            <div className="flex items-center bg-gray-700/50 p-3 rounded-lg">
+              <Zap className="text-blue-400 mr-3" size={20} />
+              <div>
+                <p className="text-xs text-gray-400">CONSUMO BOMBA</p>
+                <p className="font-bold text-gray-100">{data.AMPS}</p>
+              </div>
+            </div>
+          )}
+
           {hasData('PRESAYA') && (
             <div className="flex items-center bg-gray-700/50 p-3 rounded-lg">
               <Gauge className="text-blue-400 mr-3" size={20} />
@@ -266,8 +276,6 @@ export default function MultiDeviceCard({
                         statusAsNumber = Number(rawValue) || 0;
                       }
                       
-                      const isActive = statusAsNumber === 1;
-                      
                       return (
                         <div key={key} className="flex flex-col items-center">
                           <h4 className="text-sm font-medium text-gray-300 mb-2">{device.name}</h4>
@@ -359,7 +367,7 @@ export default function MultiDeviceCard({
         
         {renderSensorDetails()}
         
-        {(hasData('PRESAYA') || hasData('PRESION') || hasData('PRESRED') || 
+        {(hasData('PRESAYA') || hasData('AMPS') || hasData('PRESION') || hasData('PRESRED') || 
           hasData('TEMP1') || hasData('TEMP2') || hasData('ppm')) && (
           <button 
             onClick={() => setShowDetails(!showDetails)} 

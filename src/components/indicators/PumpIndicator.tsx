@@ -7,7 +7,9 @@ interface IndicatorProps {
 export const PumpIndicator = ({ status }: IndicatorProps) => {
   const [rotationAngle, setRotationAngle] = useState(0);
   const [pulseScale, setPulseScale] = useState(1);
-  const [animatedStatus, setAnimatedStatus] = useState(status);
+
+  const clampStatus = (s: number) => (s >= 3 ? 3 : s);
+const [animatedStatus, setAnimatedStatus] = useState(clampStatus(status));
 
   const statusColors = ['#3b82f6', '#22c55e', '#ef4444', '#f97316'];
   const statusGradients = [
@@ -17,13 +19,12 @@ export const PumpIndicator = ({ status }: IndicatorProps) => {
     ['#f97316', '#ea580c']  
   ];
   const labels = ['En Reposo', 'En Operación', 'Fallo Detectado', 'Fuera de Servicio'];
-  
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setAnimatedStatus(status);
+    const timeoutId = setTimeout(() => {
+      setAnimatedStatus(clampStatus(status));
     }, 100);
-    
-    return () => clearTimeout(timer);
+  
+    return () => clearTimeout(timeoutId);
   }, [status]);
   
   useEffect(() => {

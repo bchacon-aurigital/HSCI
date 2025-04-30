@@ -2,29 +2,49 @@
 import { Device, MultiDevice } from '../types/types';
 
 export const devices: (Device | MultiDevice)[] = [
-  /* { name: 'TANQUE PRINCIPAL', url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/TPOJO.json', type: 'tank', group: 'ojo-de-agua', order: 1 },
-   { name: 'LOS RODRIGUEZ', key: 'ROD', type: 'tank', group: 'los-rodriguez', order: 2 },
-   { name: 'SACRAMENTO', key: 'SACRA', type: 'tank', group: 'sacramento', order: 3 },
-   { name: 'SONIA ARAUJO', key: 'SONIA', type: 'tank', group: 'sonia-araujo', order: 4 },
-   { name: 'BAJO PAIRE', key: 'BAJOPAI', type: 'tank', group: 'bajo-paires', order: 5 },
-   { name: 'JULIO ALFARO', key: 'JULIO', type: 'tank', group: 'julio-alfaro', order: 6 },
-   { name: 'LAS MELISAS', key: 'MELI', type: 'tank', group: 'las-melisas', order: 7 },
-   { name: 'SAN GERARDO', key: 'ZSG', type: 'tank', group: 'san-gerardo', order: 8 },
-   { name: 'VICTOR JIMENEZ', key: 'VICTORJ', type: 'tank', group: 'victor-jimenez', order: 9 },
-   { name: 'OCIDENTE', key: 'OCCI', type: 'tank', group: 'occidente', order: 10 },
- */
-  { name: 'BOMBA1', url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/CATSA_R.json', pumpKey: 'BOMBA1', type: 'pump', group: 'control1', order: 1 },
-  { name: 'BOMBA2', url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/CATSA_R.json', pumpKey: 'BOMBA2', type: 'pump', group: 'control1', order: 2 },
-  {
-    name: 'Sistema de Válvulas Control',
-    url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/CATSA_R.json',
-    type: 'multi',
-    group: 'control',
-    order: 3,
-    multiDevices: [
-      { name: 'Válvula 1', type: 'valve', key: 'VAL1' },
-      { name: 'Válvula 2', type: 'valve', key: 'VAL2' },
-      { name: 'Válvula 3', type: 'valve', key: 'VAL3' }
-    ]
-  }
+  { name: 'TANQUE PRINCIPAL', url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/TPOJO.json', pumpKey: 'valorreal', type: 'tank', group: 'ojo-de-agua-principal', order: 1 },
+
+  //OJO 
+  { name: 'TANQUE OJO DE AGUA', key: 'OJO', pumpKey: 'TANQUE', type: 'tank', group: 'ojo-de-agua', order: 1 },
+  { name: 'BOMBA 1', key: 'OJO', pumpKey: 'BOMBA1', type: 'pump', group: 'ojo-de-agua', order: 2 },
+  { name: 'BOMBA 2', key: 'OJO', pumpKey: 'BOMBA2', type: 'pump', group: 'ojo-de-agua', order: 3 },
+  { name: 'BOMBA 3', key: 'OJO', pumpKey: 'BOMBA3', type: 'pump', group: 'ojo-de-agua', order: 4 },
+
+
+  //ROD
+  { name: 'TANQUE LOS RODRIGUEZ', key: 'ROD', type: 'tank', group: 'Los-rodriguez', order: 1 },
+  { name: 'BOMBA DE POZO', key: 'ROD', pumpKey: 'DATAPANEL', type: 'well', group: 'Los-rodriguez', order: 2 },
+
+  //SACRA
+  { name: 'TANQUE SACRAMENTO', key: 'SACRA', type: 'tank', group: 'Sacramento', order: 1 },
+  { name: 'BOMBA DE POZO', key: 'SACRA', pumpKey: 'databomb', type: 'well', group: 'Sacramento', order: 2 },
+
+  //SONIA
+  { name: 'TANQUE SACRAMENTO', key: 'SACRA', type: 'tank', group: 'Sonia-araujo', order: 1 },
+  { name: 'BOMBA DE POZO', key: 'SACRA', pumpKey: 'databomb', type: 'well', group: 'Sonia-araujo', order: 2 },
+
+  //BAJOPAI
+  { name: 'TANQUE BAJO PAIRE', key: 'BAJOPAI', type: 'tank', group: 'Bajo-paires', order: 1 },
+  { name: 'BOMBA DE POZO', key: 'BAJOPAI', pumpKey: 'DATAPANEL', type: 'well', group: 'Bajo-paires', order: 2 },
+
+  //JULIO
+  { name: 'TANQUE JULIO ALFARO', key: 'JULIO', type: 'tank', group: 'Julio-alfaro', order: 1 },
+  { name: 'BOMBA DE POZO', key: 'JULIO', pumpKey: 'DATAPANEL', type: 'well', group: 'Julio-alfaro', order: 2 },
+
+  //MELI
+  { name: 'TANQUE LAS MELISAS', key: 'MELI', type: 'tank', group: 'Las-melisas', order: 1 },
+  { name: 'BOMBA DE POZO', key: 'MELI', pumpKey: 'DATAPANEL', type: 'well', group: 'Las-melisas', order: 2 },
+
+  //ZSG
+  { name: 'TANQUE SAN GERARDO', key: 'ZSG', type: 'tank', group: 'San-gerardo', order: 1 },
+  { name: 'BOMBA DE POZO', key: 'ZSG', pumpKey: 'DATAPANEL', type: 'well', group: 'San-gerardo', order: 2 },
+
+  //VICTORJ
+  { name: 'TANQUE VICTOR JIMENEZ', key: 'VICTORJ', type: 'tank', group: 'Victor-jimenez', order: 1 },
+  { name: 'BOMBA DE POZO', key: 'VICTORJ', pumpKey: 'DATAPANEL', type: 'well', group: 'Victor-jimenez', order: 2 },
+
+  //OCCI
+  { name: 'TANQUE OCIDENTE', key: 'OCCI', type: 'tank', group: 'Occidente', order: 1 },
+  { name: 'BOMBA DE POZO', key: 'OCCI', pumpKey: 'DATAPANEL', type: 'well', group: 'Occidente', order: 2 }
+
 ];

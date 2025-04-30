@@ -12,10 +12,10 @@ export const setGroupedURLsForAsada = (asadaCode: string) => {
         ]
       };
       break;
-    case 'codigo2':
+    case 'asroa2537':
       groupedURLs = {
         'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/ASROA/.json': [
-          'ROD', 'SACRA', 'SONIA', 'BAJOPAI', 'JULIO', 'MELI', 'ZSG', 'VICTORJ', 'OCCI', 
+          'OJO', 'ROD', 'SACRA', 'SONIA', 'BAJOPAI', 'JULIO', 'MELI', 'ZSG', 'VICTORJ', 'OCCI', 
         ]
       };
       break;

@@ -20,7 +20,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
     setTimeout(() => {
       // const validCodes = ['codigo1', 'codigo2', 'codigo3'];
-      const validCodes = ['codigo1', 'codigo2',];
+      const validCodes = ['codigo1', 'asroa2537', 'codigo3'];
       if (validCodes.includes(codigo)) {
         setError(null);
         onLogin(codigo);
