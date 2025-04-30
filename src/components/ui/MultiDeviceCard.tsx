@@ -17,35 +17,6 @@ export default function MultiDeviceCard({
 }: MultiDeviceCardProps) {
   const { data, error, loading } = useDeviceData(identifier, undefined, codigoAsada);
   const [showDetails, setShowDetails] = useState(false);
-  
-  // Función de ayuda para renderizar indicadores con manejo de errores
-  const renderDeviceIndicator = (device: any, status: number) => {
-    try {
-      switch (device.type) {
-        case 'pump':
-          return <PumpIndicator status={status} />;
-        case 'well':
-          return <WellIndicator status={status} />;
-        case 'valve':
-          return <ValveIndicator status={status} />;
-        default:
-          return (
-            <div className="text-yellow-400 p-4 flex items-center">
-              <AlertTriangle className="h-5 w-5 mr-2" />
-              Tipo de dispositivo no soportado
-            </div>
-          );
-      }
-    } catch (error) {
-      console.error(`Error al renderizar indicador para ${device.name}:`, error);
-      return (
-        <div className="text-red-400 p-4 flex items-center">
-          <AlertTriangle className="h-5 w-5 mr-2" />
-          Error al renderizar indicador
-        </div>
-      );
-    }
-  };
 
   if (loading) {
     return (
@@ -98,39 +69,21 @@ export default function MultiDeviceCard({
     );
   }
 
-  // Función para verificar si hay datos específicos en el objeto data
-  const hasData = (key: string) => {
-    if (!data || !key) return false;
-    return key in data && data[key] !== undefined && data[key] !== null;
-  };
+  const hasData = (key: string) => data && key in data && data[key] !== undefined && data[key] !== null;
 
-  // Filtrar dispositivos activos de manera segura
-  const activeDevices = devices.filter(device => {
-    const key = device.pumpKey || device.key || '';
-    return hasData(key);
-  });
+  const activeDevices = devices.filter(
+    (device) => hasData(device.pumpKey || device.key || '')
+  );
   
   const activeDeviceCount = activeDevices.length;
   
-  // Contar dispositivos activos de manera segura
-  const onDeviceCount = activeDevices.filter(device => {
-    try {
-      const key = device.pumpKey || device.key || '';
-      if (!hasData(key)) return false;
-      
-      // Verificar diferentes formatos posibles de estado activo
-      const value = data[key];
-      if (typeof value === 'number') return value === 1;
-      if (typeof value === 'boolean') return value === true;
-      if (typeof value === 'string') return value === '1' || value.toLowerCase() === 'on';
+  const onDeviceCount = activeDevices.filter(
+    (device) => {
+      const value = device.pumpKey ? data[device.pumpKey] : data[device.key || ''];
       return Number(value) === 1;
-    } catch (e) {
-      console.error('Error al determinar estado del dispositivo:', e);
-      return false;
     }
-  }).length;
+  ).length;
 
-  // Agrupar las válvulas de manera segura
   const valveDevices = activeDevices.filter(device => device.type === 'valve');
   const otherDevices = activeDevices.filter(device => device.type !== 'valve');
 
@@ -151,7 +104,6 @@ export default function MultiDeviceCard({
     );
   }
 
-  // Renderizar tarjeta de indicadores de sensores
   const renderSensorDetails = () => {
     if (!showDetails) return null;
 
@@ -160,7 +112,7 @@ export default function MultiDeviceCard({
         <h3 className="text-lg font-medium text-white mb-4">Datos de sensores</h3>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {hasData('AMPS') && (
+        {hasData('AMPS') && (
             <div className="flex items-center bg-gray-700/50 p-3 rounded-lg">
               <Zap className="text-blue-400 mr-3" size={20} />
               <div>
@@ -238,7 +190,7 @@ export default function MultiDeviceCard({
     <Card className="bg-gray-900 border-gray-800 shadow-lg overflow-hidden">
       <CardHeader className="bg-gray-800 pb-2">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-gray-100">{groupName}</h2>
+          <h2 className="text-xl font-semibold text-gray-100"> </h2>
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-400">
               <span className="font-medium">{onDeviceCount}</span>/{activeDeviceCount} en operación
@@ -250,7 +202,6 @@ export default function MultiDeviceCard({
        
       <CardContent className="pt-4">
         <div className="space-y-6">
-          {/* Sección de válvulas (si hay más de una) */}
           {valveDevices.length > 0 && (
             <div className="grid grid-cols-1 gap-4">
               <div className={`flex flex-col items-center bg-gray-800 rounded-lg p-4 transition-all duration-300 border-l-4 ${onDeviceCount > 0 ? 'border-l-green-500' : 'border-l-gray-700'}`}>
@@ -258,109 +209,54 @@ export default function MultiDeviceCard({
                 
                 <div className="grid grid-cols-1 2xl:grid-cols-3 gap-6 w-full">
                   {valveDevices.map((device) => {
-                    try {
-                      const key = device.pumpKey || device.key || '';
-                      if (!hasData(key)) return null;
-                      
-                      let statusAsNumber = 0;
-                      const rawValue = data[key];
-                      
-                      // Convertir valor a número de manera segura
-                      if (typeof rawValue === 'number') {
-                        statusAsNumber = rawValue;
-                      } else if (typeof rawValue === 'boolean') {
-                        statusAsNumber = rawValue ? 1 : 0;
-                      } else if (typeof rawValue === 'string') {
-                        statusAsNumber = rawValue === '1' || rawValue.toLowerCase() === 'on' || rawValue.toLowerCase() === 'true' ? 1 : 0;
-                      } else {
-                        statusAsNumber = Number(rawValue) || 0;
-                      }
-                      
-                      return (
-                        <div key={key} className="flex flex-col items-center">
-                          <h4 className="text-sm font-medium text-gray-300 mb-2">{device.name}</h4>
-                          <div className="transform scale-75 md:scale-90 lg:scale-100">
-                            {renderDeviceIndicator(device, statusAsNumber)}
-                          </div>
+                    const statusAsNumber = Number(device.pumpKey ? data[device.pumpKey] : data[device.key || '']);
+                    const isActive = statusAsNumber === 1;
+                    
+                    return (
+                      <div key={device.key || device.pumpKey} className="flex flex-col items-center">
+                        <h4 className="text-sm font-medium text-gray-300 mb-2">{device.name}</h4>
+                        <div className="transform scale-75 md:scale-90 lg:scale-100">
+                          <ValveIndicator status={statusAsNumber} />
                         </div>
-                      );
-                    } catch (error) {
-                      console.error(`Error al renderizar ${device.name}:`, error);
-                      return (
-                        <div key={device.key || device.pumpKey || Math.random().toString()} className="flex flex-col items-center">
-                          <h4 className="text-sm font-medium text-gray-300 mb-2">{device.name}</h4>
-                          <div className="bg-red-900/30 p-3 rounded-md">
-                            <AlertTriangle className="text-red-400" size={24} />
-                            <p className="text-xs text-red-300 mt-1">Error al renderizar</p>
-                          </div>
-                        </div>
-                      );
-                    }
+                      </div>
+                    );
                   })}
                 </div>
               </div>
             </div>
           )}
           
-          {/* Otros dispositivos (no válvulas) */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
             {otherDevices.map((device) => {
-              try {
-                const key = device.pumpKey || device.key || '';
-                if (!hasData(key)) return null;
-                
-                let statusAsNumber = 0;
-                const rawValue = data[key];
-                
-                // Convertir valor a número de manera segura
-                if (typeof rawValue === 'number') {
-                  statusAsNumber = rawValue;
-                } else if (typeof rawValue === 'boolean') {
-                  statusAsNumber = rawValue ? 1 : 0;
-                } else if (typeof rawValue === 'string') {
-                  statusAsNumber = rawValue === '1' || rawValue.toLowerCase() === 'on' || rawValue.toLowerCase() === 'true' ? 1 : 0;
-                } else {
-                  statusAsNumber = Number(rawValue) || 0;
-                }
-                
-                const isActive = statusAsNumber === 1;
-                
-                return (
-                  <div 
-                    key={key} 
-                    className={`flex flex-col items-center bg-gray-800 rounded-lg p-4 transition-all duration-300 ${
-                      isActive 
-                        ? 'border-l-4 border-l-green-500 shadow-lg shadow-green-900/20' 
-                        : 'border-l-4 border-l-gray-700'
-                    }`}
-                  >
-                    <h3 className="text-lg font-medium text-gray-200 mb-2">{device.name}</h3>
-   
-                    {renderDeviceIndicator(device, statusAsNumber)}
-                     
-                    <div className="flex items-center justify-center w-full mt-4 py-2 px-3 rounded-md bg-gray-900/50 border border-gray-700/30">
-                      <Activity className={isActive ? 'text-green-400' : 'text-gray-500'} size={18} />
-                      <span className="ml-2 text-sm font-medium text-gray-200">
-                        {isActive ? 'En operación' : 'En reposo'}
-                      </span>
-                    </div>
+              const statusAsNumber = Number(device.pumpKey ? data[device.pumpKey] : data[device.key || '']);
+              const isActive = statusAsNumber === 1;
+               
+              return (
+                <div 
+                  key={device.pumpKey || device.key} 
+                  className={`flex flex-col items-center bg-gray-800 rounded-lg p-4 transition-all duration-300 ${
+                    isActive 
+                      ? 'border-l-4 border-l-green-500 shadow-lg shadow-green-900/20' 
+                      : 'border-l-4 border-l-gray-700'
+                  }`}
+                >
+                  <h3 className="text-lg font-medium text-gray-200 mb-2">{device.name}</h3>
+ 
+                  {device.type === 'pump' && (
+                    <PumpIndicator status={statusAsNumber} />
+                  )}
+                  {device.type === 'well' && (
+                    <WellIndicator status={statusAsNumber} />
+                  )}
+                   
+                  <div className="flex items-center justify-center w-full mt-4 py-2 px-3 rounded-md bg-gray-900/50 border border-gray-700/30">
+                    <Activity className={isActive ? 'text-green-400' : 'text-gray-500'} size={18} />
+                    <span className="ml-2 text-sm font-medium text-gray-200">
+                      {isActive ? 'En operación' : 'En reposo'}
+                    </span>
                   </div>
-                );
-              } catch (error) {
-                console.error(`Error al renderizar ${device.name}:`, error);
-                return (
-                  <div 
-                    key={device.pumpKey || device.key || Math.random().toString()} 
-                    className="flex flex-col items-center bg-gray-800 rounded-lg p-4 border-l-4 border-l-red-500"
-                  >
-                    <h3 className="text-lg font-medium text-gray-200 mb-2">{device.name}</h3>
-                    <div className="bg-red-900/30 p-4 rounded-md w-full text-center">
-                      <AlertTriangle className="text-red-400 mx-auto mb-2" size={32} />
-                      <p className="text-red-300">Error al cargar dispositivo</p>
-                    </div>
-                  </div>
-                );
-              }
+                </div>
+              );
             })}
           </div>
         </div>
@@ -392,9 +288,7 @@ export default function MultiDeviceCard({
           <Clock className="text-blue-400" size={18} />
           <div>
             <p className="text-xs text-gray-400">Última sincronización</p>
-            <p className="font-medium text-gray-100">
-              {data && data.fecha ? formatDate(data.fecha) : 'Desconocido'}
-            </p>
+            <p className="font-medium text-gray-100">{formatDate(data.fecha)}</p>
           </div>
         </div>
       </CardFooter>
