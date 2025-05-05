@@ -21,7 +21,7 @@ export const devices: (Device | MultiDevice)[] = [
 
   //SONIA
   { name: 'TANQUE SONIA', key: 'SONIA', type: 'tank', group: 'Sonia-araujo', order: 1 },
-  { name: 'BOMBA DE POZO', key: 'SONIA', pumpKey: 'databomb', type: 'well', group: 'Sonia-araujo', order: 2 },
+  { name: 'BOMBA DE POZO', key: 'SONIA', pumpKey: 'DATAPANEL', type: 'well', group: 'Sonia-araujo', order: 2 },
 
   //BAJOPAI
   { name: 'TANQUE BAJO PAIRE', key: 'BAJOPAI', type: 'tank', group: 'Bajo-paires', order: 1 },
