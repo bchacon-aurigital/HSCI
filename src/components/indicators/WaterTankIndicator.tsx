@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useId } from 'react';
+import React, { useState, useEffect, useId, useRef } from 'react';
 
 interface WaterTankIndicatorProps {
   percentage: number;
@@ -12,36 +12,62 @@ export const WaterTankIndicator = ({ percentage, id }: WaterTankIndicatorProps) 
   const uniqueId = useId();
   const tankId = id || uniqueId;
   
+  // Refs para controlar los intervalos
+  const percentageAnimationInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+  const waveTickInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+  
   const waterGradientId = `waterGradient-${tankId}`;
   const tankGradientId = `tankGradient-${tankId}`;
   const glowId = `glow-${tankId}`;
   
   useEffect(() => {
+    // Limpiar intervalo anterior si existe
+    if (percentageAnimationInterval.current) {
+      clearInterval(percentageAnimationInterval.current);
+      percentageAnimationInterval.current = null;
+    }
+    
     const duration = 1500; 
     const interval = 10; 
     const steps = duration / interval;
     const increment = percentage / steps;
     let currentPercentage = 0;
     
-    const timer = setInterval(() => {
+    percentageAnimationInterval.current = setInterval(() => {
       currentPercentage += increment;
       if (currentPercentage >= percentage) {
-        clearInterval(timer);
+        if (percentageAnimationInterval.current) {
+          clearInterval(percentageAnimationInterval.current);
+          percentageAnimationInterval.current = null;
+        }
         setAnimatedPercentage(percentage);
       } else {
         setAnimatedPercentage(currentPercentage);
       }
     }, interval);
     
-    return () => clearInterval(timer);
+    return () => {
+      if (percentageAnimationInterval.current) {
+        clearInterval(percentageAnimationInterval.current);
+        percentageAnimationInterval.current = null;
+      }
+    };
   }, [percentage]);
   
   useEffect(() => {
-    const timer = setInterval(() => {
-      setWaveTick(prev => (prev + 1) % 100);
-    }, 100);
+    // Configurar el intervalo para la onda solo una vez en el montaje
+    if (waveTickInterval.current === null) {
+      waveTickInterval.current = setInterval(() => {
+        setWaveTick(prev => (prev + 1) % 100);
+      }, 100);
+    }
     
-    return () => clearInterval(timer);
+    return () => {
+      if (waveTickInterval.current) {
+        clearInterval(waveTickInterval.current);
+        waveTickInterval.current = null;
+      }
+    };
   }, []);
 
   const getFillColor = (level: number) => {

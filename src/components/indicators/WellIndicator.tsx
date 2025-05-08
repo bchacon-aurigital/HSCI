@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useId } from 'react';
+import React, { useState, useEffect, useId, useRef } from 'react';
 
 interface IndicatorProps {
   status: number;
@@ -12,6 +12,11 @@ export const WellIndicator = ({ status, level = 50 }: IndicatorProps) => {
   const [animatedStatus, setAnimatedStatus] = useState(status);
   const [waterRipple, setWaterRipple] = useState(0);
   const [pulseScale, setPulseScale] = useState(1);
+  
+  // Refs para evitar recrear intervalos en cada renderizado
+  const waterRippleInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pulseScaleInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+  const levelAnimationInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const statusColors = ['#3b82f6', '#22c55e', '#ef4444', '#f97316'];
   const statusGradients = [
@@ -23,53 +28,79 @@ export const WellIndicator = ({ status, level = 50 }: IndicatorProps) => {
   const labels = ['En Reposo', 'Extracción Activa', 'Fallo Detectado', 'Fuera de Servicio'];
 
   useEffect(() => {
+    // Limpiar intervalo anterior si existe
+    if (levelAnimationInterval.current) {
+      clearInterval(levelAnimationInterval.current);
+    }
+    
     const duration = 1500;
     const interval = 10;
     const steps = duration / interval;
     const increment = level / steps;
     let currentLevel = 0;
 
-    const timer = setInterval(() => {
+    levelAnimationInterval.current = setInterval(() => {
       currentLevel += increment;
       if (currentLevel >= level) {
-        clearInterval(timer);
+        if (levelAnimationInterval.current) {
+          clearInterval(levelAnimationInterval.current);
+          levelAnimationInterval.current = null;
+        }
         setAnimatedLevel(level);
       } else {
         setAnimatedLevel(currentLevel);
       }
     }, interval);
 
-    return () => clearInterval(timer);
+    return () => {
+      if (levelAnimationInterval.current) {
+        clearInterval(levelAnimationInterval.current);
+        levelAnimationInterval.current = null;
+      }
+    };
   }, [level]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setAnimatedStatus(status);
-    }, 100);
-
-    return () => clearTimeout(timer);
+    setAnimatedStatus(status);
   }, [status]);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setWaterRipple(prev => (prev + 1) % 100);
-    }, 100);
-
-    return () => clearInterval(timer);
+    // Configurar el intervalo de ripple solo una vez en el montaje
+    if (waterRippleInterval.current === null) {
+      waterRippleInterval.current = setInterval(() => {
+        setWaterRipple(prev => (prev + 1) % 100);
+      }, 100);
+    }
+    
+    return () => {
+      if (waterRippleInterval.current) {
+        clearInterval(waterRippleInterval.current);
+        waterRippleInterval.current = null;
+      }
+    };
   }, []);
 
   useEffect(() => {
-    let timer: ReturnType<typeof setInterval>;
+    // Limpiar intervalo anterior si existe
+    if (pulseScaleInterval.current) {
+      clearInterval(pulseScaleInterval.current);
+      pulseScaleInterval.current = null;
+    }
 
     if (animatedStatus === 2) {
-      timer = setInterval(() => {
+      pulseScaleInterval.current = setInterval(() => {
         setPulseScale(prev => prev === 1 ? 1.1 : 1);
       }, 500);
     } else {
       setPulseScale(1);
     }
 
-    return () => clearInterval(timer);
+    return () => {
+      if (pulseScaleInterval.current) {
+        clearInterval(pulseScaleInterval.current);
+        pulseScaleInterval.current = null;
+      }
+    };
   }, [animatedStatus]);
 
   const wellHeight = 80;

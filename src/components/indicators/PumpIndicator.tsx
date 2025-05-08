@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 interface IndicatorProps {
   status: number;
@@ -7,9 +7,14 @@ interface IndicatorProps {
 export const PumpIndicator = ({ status }: IndicatorProps) => {
   const [rotationAngle, setRotationAngle] = useState(0);
   const [pulseScale, setPulseScale] = useState(1);
-
+  
   const clampStatus = (s: number) => (s >= 3 ? 3 : s);
-const [animatedStatus, setAnimatedStatus] = useState(clampStatus(status));
+  const [animatedStatus, setAnimatedStatus] = useState(clampStatus(status));
+  
+  // Refs para controlar los intervalos
+  const statusTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const rotationIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pulseIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const statusColors = ['#3b82f6', '#22c55e', '#ef4444', '#f97316'];
   const statusGradients = [
@@ -19,40 +24,68 @@ const [animatedStatus, setAnimatedStatus] = useState(clampStatus(status));
     ['#f97316', '#ea580c']  
   ];
   const labels = ['En Reposo', 'En Operación', 'Fallo Detectado', 'Fuera de Servicio'];
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      setAnimatedStatus(clampStatus(status));
-    }, 100);
   
-    return () => clearTimeout(timeoutId);
+  useEffect(() => {
+    // Limpiar timeout anterior si existe
+    if (statusTimeoutRef.current) {
+      clearTimeout(statusTimeoutRef.current);
+    }
+    
+    // Solo actualizar el estado directamente
+    setAnimatedStatus(clampStatus(status));
+  
+    return () => {
+      if (statusTimeoutRef.current) {
+        clearTimeout(statusTimeoutRef.current);
+        statusTimeoutRef.current = null;
+      }
+    };
   }, [status]);
   
   useEffect(() => {
-    let timer: ReturnType<typeof setInterval>;
+    // Limpiar intervalo anterior si existe
+    if (rotationIntervalRef.current) {
+      clearInterval(rotationIntervalRef.current);
+      rotationIntervalRef.current = null;
+    }
     
     if (animatedStatus === 1) { 
-      timer = setInterval(() => {
+      rotationIntervalRef.current = setInterval(() => {
         setRotationAngle(prev => (prev + 5) % 360);
       }, 50);
     } else {
       setRotationAngle(0);
     }
     
-    return () => clearInterval(timer);
+    return () => {
+      if (rotationIntervalRef.current) {
+        clearInterval(rotationIntervalRef.current);
+        rotationIntervalRef.current = null;
+      }
+    };
   }, [animatedStatus]);
   
   useEffect(() => {
-    let timer: ReturnType<typeof setInterval>;
+    // Limpiar intervalo anterior si existe
+    if (pulseIntervalRef.current) {
+      clearInterval(pulseIntervalRef.current);
+      pulseIntervalRef.current = null;
+    }
     
     if (animatedStatus === 2) {
-      timer = setInterval(() => {
+      pulseIntervalRef.current = setInterval(() => {
         setPulseScale(prev => prev === 1 ? 1.1 : 1);
       }, 500);
     } else {
       setPulseScale(1);
     }
     
-    return () => clearInterval(timer);
+    return () => {
+      if (pulseIntervalRef.current) {
+        clearInterval(pulseIntervalRef.current);
+        pulseIntervalRef.current = null;
+      }
+    };
   }, [animatedStatus]);
 
   const generateFanBlades = () => {
