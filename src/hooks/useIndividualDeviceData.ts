@@ -14,7 +14,7 @@ export function useIndividualDeviceData(url: string, pumpKey?: string) {
         if (!res.ok) throw new Error('Error de conexión');
         const result = await res.json();
         // Si se especifica pumpKey, extrae ese dato; de lo contrario, retorna el objeto completo
-        const deviceData = pumpKey ? result[pumpKey] : result;
+        const deviceData = pumpKey ? { ...result, valor: result[pumpKey] } : result;
         setData(deviceData);
         setError(null);
       } catch (err) {

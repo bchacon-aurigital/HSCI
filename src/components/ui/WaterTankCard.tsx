@@ -90,6 +90,7 @@ export default function WaterTankCard({
   
   if (type === 'tank') {
     let tankValue;
+    let tankData = data;
 
     if (typeof data === 'number') {
       tankValue = data;
@@ -111,6 +112,8 @@ export default function WaterTankCard({
             tankValue = parsedValue;
           }
         }
+        // Mantener el objeto de datos original para la fecha
+        tankData = data;
       } 
       else if (tankValue === undefined && 'valor' in data) {
         if (typeof data.valor === 'number') {
@@ -186,7 +189,7 @@ export default function WaterTankCard({
             <Clock className="text-blue-400" size={18} />
             <div>
               <p className="text-xs text-gray-400">Registro actualizado</p>
-              <p className="font-medium text-gray-100">{formatDate(data.fecha)}</p>
+              <p className="font-medium text-gray-100">{formatDate(tankData.fecha)}</p>
             </div>
           </CardFooter>
         )}
