@@ -19,6 +19,8 @@ export default function WaterSystemColumns() {
   const realTimeIntervalRef = useRef<NodeJS.Timeout | null>(null);
   // Añadir estado para controlar si la ASADA es la de control
   const [isControlAsada, setIsControlAsada] = useState<boolean>(false);
+  // Estado global para alertas
+  const [deviceAlerts, setDeviceAlerts] = useState<Record<string, boolean>>({});
 
   const handleLogin = (codigo: string) => {
     setLoading(true);
@@ -105,6 +107,38 @@ export default function WaterSystemColumns() {
     setIsControlAsada(codigoAsada.toLowerCase() === 'control');
   }, [codigoAsada]);
 
+  // Inicializar columnas cerradas por defecto cuando groupedDevices cambie
+  useEffect(() => {
+    if (groupedDevices && groupedDevices.length > 0) {
+      const initialState: Record<string, boolean> = {};
+      groupedDevices.forEach(group => {
+        initialState[group.name] = true;
+      });
+      setCollapsedGroups(initialState);
+    }
+  }, [groupedDevices]);
+
+  // Función para verificar si un grupo tiene algún dispositivo en alerta
+  const hasGroupAlert = (groupName: string) => {
+    // Buscar dispositivos de este grupo en el estado de alertas
+    for (const deviceId in deviceAlerts) {
+      // Formato: "grupo:::dispositivo"
+      if (deviceId.startsWith(`${groupName}:::`) && deviceAlerts[deviceId]) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  // Función para registrar alerta de un dispositivo
+  const registerAlert = (groupName: string, deviceId: string, hasAlert: boolean) => {
+    const alertKey = `${groupName}:::${deviceId}`;
+    setDeviceAlerts(prev => ({
+      ...prev,
+      [alertKey]: hasAlert
+    }));
+  };
+
   const toggleGroupCollapse = (groupName: string) => {
     setCollapsedGroups(prev => ({
       ...prev,
@@ -120,7 +154,7 @@ export default function WaterSystemColumns() {
   };
 
   // Manejo de renderizado seguro
-  const renderDeviceCard = (device: any, identifier: string) => {
+  const renderDeviceCard = (device: any, identifier: string, groupName: string) => {
     try {
       if ('multiDevices' in device) {
         const multiDevice = device as MultiDevice;
@@ -131,6 +165,7 @@ export default function WaterSystemColumns() {
             identifier={identifier}
             devices={multiDevice.multiDevices}
             codigoAsada={codigoAsada}
+            onAlertChange={(hasAlert) => registerAlert(groupName, identifier, hasAlert)}
           />
         );
       } else {
@@ -142,6 +177,7 @@ export default function WaterSystemColumns() {
             type={device.type as BaseDeviceType}
             pumpKey={device.pumpKey}
             codigoAsada={codigoAsada}
+            onAlertChange={(hasAlert) => registerAlert(groupName, identifier, hasAlert)}
           />
         );
       }
@@ -266,16 +302,16 @@ export default function WaterSystemColumns() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {groupedDevices.map((group) => (
                     <div key={group.name} className="flex flex-col h-full">
-                      <div className="bg-[#172236] border border-blue-500/20 rounded-lg shadow-lg overflow-hidden mb-4">
-                        <div className="bg-gradient-to-r from-blue-900/50 to-blue-800/30 p-4 border-b border-blue-500/20">
+                      <div className={`bg-[#172236] border ${hasGroupAlert(group.name) ? 'border-red-500/70' : 'border-blue-500/20'} rounded-lg shadow-lg overflow-hidden mb-4`}>
+                        <div className={`bg-gradient-to-r ${hasGroupAlert(group.name) ? 'from-red-900/50 to-red-800/30' : 'from-blue-900/50 to-blue-800/30'} p-4 border-b ${hasGroupAlert(group.name) ? 'border-red-500/20' : 'border-blue-500/20'}`}>
                           <div className="flex justify-between items-center">
                             <h2 className="text-xl font-bold text-white flex items-center">
-                              <div className="h-9 w-9 rounded-full bg-blue-600/40 flex items-center justify-center mr-3 shadow-inner shadow-blue-500/10">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <div className={`h-9 w-9 rounded-full ${hasGroupAlert(group.name) ? 'bg-red-600/40' : 'bg-blue-600/40'} flex items-center justify-center mr-3 shadow-inner ${hasGroupAlert(group.name) ? 'shadow-red-500/10' : 'shadow-blue-500/10'}`}>
+                                <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${hasGroupAlert(group.name) ? 'text-red-300' : 'text-blue-300'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                                 </svg>
                               </div>
-                              <span className="bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
+                              <span className={`bg-gradient-to-r ${hasGroupAlert(group.name) ? 'from-red-100 to-red-200' : 'from-white to-blue-100'} bg-clip-text text-transparent`}>
                                 {group.name.split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                               </span>
                             </h2>
@@ -296,6 +332,22 @@ export default function WaterSystemColumns() {
                             </button>
                           </div>
                         </div>
+                        {/* Renderizar hijos invisibles si la columna está cerrada para que notifiquen alerta */}
+                        {collapsedGroups[group.name] && (
+                          <div style={{ display: 'none' }}>
+                            {[...group.devices]
+                              .sort((a, b) => a.order - b.order)
+                              .map((device) => {
+                                try {
+                                  const identifier = device.url ? device.url : device.key!;
+                                  return renderDeviceCard(device, identifier, group.name);
+                                } catch (error) {
+                                  return null;
+                                }
+                              })}
+                          </div>
+                        )}
+                        {/* Renderizado visible solo si la columna está expandida */}
                         {!collapsedGroups[group.name] && (
                           <div className="p-4 space-y-4">
                             {[...group.devices]
@@ -303,7 +355,7 @@ export default function WaterSystemColumns() {
                               .map((device) => {
                                 try {
                                   const identifier = device.url ? device.url : device.key!;
-                                  return renderDeviceCard(device, identifier);
+                                  return renderDeviceCard(device, identifier, group.name);
                                 } catch (error) {
                                   console.error('Error al procesar dispositivo:', error);
                                   return (

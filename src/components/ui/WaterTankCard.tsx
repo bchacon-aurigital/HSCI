@@ -23,6 +23,7 @@ interface WaterTankCardProps {
   type: BaseDeviceType; 
   pumpKey?: string;
   codigoAsada: string;
+  onAlertChange?: (hasAlert: boolean) => void;
 }
 
 export default function WaterTankCard({
@@ -31,11 +32,48 @@ export default function WaterTankCard({
   type,
   pumpKey,
   codigoAsada,
+  onAlertChange,
 }: WaterTankCardProps) {
   const pumpKeyParam = type === 'pump' || type === 'well' ? undefined : pumpKey;
   const { data, error, loading } = useDeviceData(identifier, pumpKeyParam, codigoAsada);
-
   const [showDetails, setShowDetails] = useState(false);
+
+  let tankValue;
+  // Calcular alerta para cualquier tipo
+  let hasAlert = false;
+  if (type === 'tank') {
+    if (typeof data === 'number') {
+      tankValue = data;
+    } else if (typeof data === 'string') {
+      const parsed = Number(data);
+      if (!isNaN(parsed)) tankValue = parsed;
+    } else if (data && typeof data === 'object') {
+      if (pumpKey && pumpKey in data) {
+        const pumpKeyValue = data[pumpKey];
+        if (typeof pumpKeyValue === 'number') tankValue = pumpKeyValue;
+        else if (pumpKeyValue !== null && pumpKeyValue !== undefined) {
+          const parsedValue = Number(pumpKeyValue);
+          if (!isNaN(parsedValue)) tankValue = parsedValue;
+        }
+      } else if ('valor' in data) {
+        if (typeof data.valor === 'number') tankValue = data.valor;
+        else if (data.valor !== null && data.valor !== undefined) {
+          const parsedValue = Number(data.valor);
+          if (!isNaN(parsedValue)) tankValue = parsedValue;
+        }
+      }
+    }
+    hasAlert = tankValue !== undefined && !isNaN(tankValue) && tankValue < 25;
+  } else if (type === 'pump' || type === 'well') {
+    const statusAsNumber = Number(
+      pumpKey ? (data as any)?.[pumpKey] : (data as any)?.[identifier],
+    );
+    hasAlert = statusAsNumber === 2 || statusAsNumber === 3;
+  }
+
+  React.useEffect(() => {
+    if (onAlertChange) onAlertChange(hasAlert);
+  }, [hasAlert, onAlertChange]);
 
   const hasData = (key: string) =>
     typeof data === 'object' &&
@@ -89,43 +127,7 @@ export default function WaterTankCard({
   }
   
   if (type === 'tank') {
-    let tankValue;
     let tankData = data;
-
-    if (typeof data === 'number') {
-      tankValue = data;
-    } else if (typeof data === 'string') {
-      const parsed = Number(data);
-      if (!isNaN(parsed)) {
-        tankValue = parsed;
-      }
-    }
-
-    if (data && typeof data === 'object') {
-      if (pumpKey && pumpKey in data) {
-        const pumpKeyValue = data[pumpKey];
-        if (typeof pumpKeyValue === 'number') {
-          tankValue = pumpKeyValue;
-        } else if (pumpKeyValue !== null && pumpKeyValue !== undefined) {
-          const parsedValue = Number(pumpKeyValue);
-          if (!isNaN(parsedValue)) {
-            tankValue = parsedValue;
-          }
-        }
-        // Mantener el objeto de datos original para la fecha
-        tankData = data;
-      } 
-      else if (tankValue === undefined && 'valor' in data) {
-        if (typeof data.valor === 'number') {
-          tankValue = data.valor;
-        } else if (data.valor !== null && data.valor !== undefined) {
-          const parsedValue = Number(data.valor);
-          if (!isNaN(parsedValue)) {
-            tankValue = parsedValue;
-          }
-        }
-      }
-    }
 
     const hasTankValue = tankValue !== undefined && tankValue !== null && !isNaN(tankValue);
     const isLowLevel = hasTankValue && tankValue < 25;
@@ -202,6 +204,8 @@ export default function WaterTankCard({
       pumpKey ? (data as any)?.[pumpKey] : (data as any)?.[identifier],
     );
     const hasValue = !isNaN(statusAsNumber);
+    const isError = statusAsNumber === 2 || statusAsNumber === 3;
+
     const isActive = statusAsNumber === 1;
 
     const renderSensorDetails = () => {

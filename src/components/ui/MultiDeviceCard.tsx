@@ -9,14 +9,38 @@ import { useDeviceData } from '../../hooks/useDeviceData';
 import { formatDate } from '../../utils/utils';
 import { MultiDeviceCardProps } from '../../app/types/types';
 
+interface MultiDeviceCardWithAlertProps extends MultiDeviceCardProps {
+  onAlertChange?: (hasAlert: boolean) => void;
+}
+
 export default function MultiDeviceCard({
   groupName,
   identifier,
   devices,
-  codigoAsada, 
-}: MultiDeviceCardProps) {
+  codigoAsada,
+  onAlertChange,
+}: MultiDeviceCardWithAlertProps) {
   const { data, error, loading } = useDeviceData(identifier, undefined, codigoAsada);
   const [showDetails, setShowDetails] = useState(false);
+
+  // Detectar alerta en dispositivos hijos
+  React.useEffect(() => {
+    let hasAlert = false;
+    devices.forEach((device) => {
+      let status = undefined;
+      if (device.pumpKey && data && data[device.pumpKey] !== undefined) {
+        status = Number(data[device.pumpKey]);
+      } else if (device.key && data && data[device.key] !== undefined) {
+        status = Number(data[device.key]);
+      }
+      if (device.type === 'valve' || device.type === 'pump' || device.type === 'well') {
+        if (status === 2 || status === 3) {
+          hasAlert = true;
+        }
+      }
+    });
+    if (onAlertChange) onAlertChange(hasAlert);
+  }, [devices, data, onAlertChange]);
 
   if (loading) {
     return (
