@@ -1,18 +1,11 @@
-// src/hooks/useDeviceData.ts
 import { useAggregatedData } from './useAggregatedData';
 import { useIndividualDeviceData } from './useIndividualDeviceData';
 
 export const useDeviceData = (identifier: string, pumpKey?: string, codigoAsada?: string) => {
-  // Siempre llamamos a ambos hooks incondicionalmente, siguiendo las reglas de hooks
-  const individualResult = useIndividualDeviceData(identifier, pumpKey);
-  const aggregatedResult = useAggregatedData(codigoAsada || '');
-  
-  // Luego usamos lógica condicional con los resultados
   if (identifier.startsWith('http')) {
-    // Usamos el resultado del hook individualResult que ya fue llamado
-    return individualResult;
+    return useIndividualDeviceData(identifier, pumpKey);
   } else if (codigoAsada) {
-    const { data, loading, error } = aggregatedResult;
+    const { data, loading, error } = useAggregatedData(codigoAsada);
 
     if (!loading && (data[identifier] === undefined || data[identifier] === null)) {
       console.warn("No data found for key:", identifier);

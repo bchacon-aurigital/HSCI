@@ -22,9 +22,14 @@ export default function MultiDeviceCard({
 }: MultiDeviceCardWithAlertProps) {
   const { data, error, loading } = useDeviceData(identifier, undefined, codigoAsada);
   const [showDetails, setShowDetails] = useState(false);
+  
+  // Ref para rastrear el estado anterior de la alerta
+  const previousAlertRef = React.useRef(false);
 
   // Detectar alerta en dispositivos hijos
   React.useEffect(() => {
+    if (!data || !onAlertChange) return;
+    
     let hasAlert = false;
     devices.forEach((device) => {
       let status = undefined;
@@ -39,7 +44,12 @@ export default function MultiDeviceCard({
         }
       }
     });
-    if (onAlertChange) onAlertChange(hasAlert);
+    
+    // Solo notificar cambios si realmente hay un cambio
+    if (previousAlertRef.current !== hasAlert) {
+      previousAlertRef.current = hasAlert;
+      onAlertChange(hasAlert);
+    }
   }, [devices, data, onAlertChange]);
 
   if (loading) {

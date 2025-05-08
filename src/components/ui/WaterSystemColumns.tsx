@@ -133,10 +133,18 @@ export default function WaterSystemColumns() {
   // Función para registrar alerta de un dispositivo
   const registerAlert = (groupName: string, deviceId: string, hasAlert: boolean) => {
     const alertKey = `${groupName}:::${deviceId}`;
-    setDeviceAlerts(prev => ({
-      ...prev,
-      [alertKey]: hasAlert
-    }));
+    setDeviceAlerts(prev => {
+      // Evitar actualizaciones innecesarias que causan bucles infinitos
+      // Solo actualizar el estado si el valor realmente cambió
+      if (prev[alertKey] === hasAlert) {
+        return prev; // Devolver el estado anterior sin cambios
+      }
+      // Solo si hay un cambio real, actualizar el estado
+      return {
+        ...prev,
+        [alertKey]: hasAlert
+      };
+    });
   };
 
   const toggleGroupCollapse = (groupName: string) => {

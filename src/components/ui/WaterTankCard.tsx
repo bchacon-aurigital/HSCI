@@ -37,10 +37,14 @@ export default function WaterTankCard({
   const pumpKeyParam = type === 'pump' || type === 'well' ? undefined : pumpKey;
   const { data, error, loading } = useDeviceData(identifier, pumpKeyParam, codigoAsada);
   const [showDetails, setShowDetails] = useState(false);
+  
+  // Ref para rastrear el estado anterior de la alerta
+  const previousAlertRef = React.useRef(false);
 
   let tankValue;
   // Calcular alerta para cualquier tipo
   let hasAlert = false;
+  
   if (type === 'tank') {
     if (typeof data === 'number') {
       tankValue = data;
@@ -72,7 +76,13 @@ export default function WaterTankCard({
   }
 
   React.useEffect(() => {
-    if (onAlertChange) onAlertChange(hasAlert);
+    if (!onAlertChange) return;
+    
+    // Solo notificar cambios si realmente ha cambiado el estado
+    if (previousAlertRef.current !== hasAlert) {
+      previousAlertRef.current = hasAlert;
+      onAlertChange(hasAlert);
+    }
   }, [hasAlert, onAlertChange]);
 
   const hasData = (key: string) =>
