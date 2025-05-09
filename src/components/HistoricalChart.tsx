@@ -58,9 +58,13 @@ export default function HistoricalChart({
 
   // Función para cargar datos según la fecha seleccionada
   const loadDataForDate = async (selectedDate: Date) => {
-    const year = selectedDate.getFullYear();
-    const month = selectedDate.getMonth() + 1; // getMonth() devuelve 0-11
-    const day = selectedDate.getDate();
+    // Ajustar la fecha para compensar el desfase de zona horaria
+    // Creamos una nueva fecha con la zona horaria local para evitar problemas con UTC
+    const adjustedDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate() + 1);
+    
+    const year = adjustedDate.getFullYear();
+    const month = adjustedDate.getMonth() + 1; // getMonth() devuelve 0-11
+    const day = adjustedDate.getDate();
     
     setLoading(true);
     setError(null);
@@ -371,4 +375,4 @@ export default function HistoricalChart({
       </Card>
     </div>
   );
-} 
+}

@@ -159,6 +159,9 @@ export default function WaterSystemColumns() {
 
   const handleReloadDevices = () => {
     setError(null);
+    // Mostrar indicador de carga
+    setLoading(true);
+    
     // Forzar actualización de datos inmediatamente
     triggerRefresh()
       .then(() => {
@@ -166,8 +169,13 @@ export default function WaterSystemColumns() {
         // Recargar dispositivos sin reiniciar el estado de los grupos colapsados
         return reloadDevices();
       })
+      .then(() => {
+        // Ocultar indicador de carga cuando todo esté listo
+        setLoading(false);
+      })
       .catch(err => {
         setError(`Error al recargar dispositivos: ${err.message || 'Error desconocido'}`);
+        setLoading(false);
       });
   };
 
