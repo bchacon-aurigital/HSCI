@@ -2,7 +2,8 @@
 import { Device, MultiDevice } from '../types/types';
 
 export const devices: (Device | MultiDevice)[] = [
-  { name: 'TANQUE PRINCIPAL', url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/TPOJO.json', pumpKey: 'valorreal', type: 'tank', group: 'ojo-de-agua-principal', order: 1 },
+  { name: 'TANQUE Principal', url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/TPOJO.json', pumpKey: 'valorreal', type: 'tank', group: 'ojo-de-agua-principal', order: 1 },
+  { name: 'TANQUE Italticos', url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/ASROA/TAEREO.json', type: 'tank', group: 'ojo-de-agua-principal', order: 2 },
 
   //OJO 
   { name: 'TANQUE OJO DE AGUA', key: 'OJO', pumpKey: 'TANQUE', type: 'tank', group: 'ojo-de-agua', order: 1 },

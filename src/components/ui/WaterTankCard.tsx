@@ -37,12 +37,11 @@ export default function WaterTankCard({
   const pumpKeyParam = type === 'pump' || type === 'well' ? undefined : pumpKey;
   const { data, error, loading } = useDeviceData(identifier, pumpKeyParam, codigoAsada);
   const [showDetails, setShowDetails] = useState(false);
+  const [isDeviceExpanded, setIsDeviceExpanded] = useState(false);
   
-  // Ref para rastrear el estado anterior de la alerta
   const previousAlertRef = React.useRef(false);
 
   let tankValue;
-  // Calcular alerta para cualquier tipo
   let hasAlert = false;
   
   if (type === 'tank') {
@@ -78,7 +77,6 @@ export default function WaterTankCard({
   React.useEffect(() => {
     if (!onAlertChange) return;
     
-    // Solo notificar cambios si realmente ha cambiado el estado
     if (previousAlertRef.current !== hasAlert) {
       previousAlertRef.current = hasAlert;
       onAlertChange(hasAlert);
@@ -291,18 +289,45 @@ export default function WaterTankCard({
         <CardContent className="pt-4">
           {hasValue ? (
             <div className="flex flex-col items-center space-y-6">
-              {type === 'pump' && <PumpIndicator status={statusAsNumber} />}
-              {type === 'well' && <WellIndicator status={statusAsNumber} />}
-
-              <div className="flex items-center justify-center w-full py-3 px-4 rounded-lg bg-gray-800/80 border border-gray-700/50">
-                <Activity
-                  className={isActive ? 'text-green-400' : 'text-gray-500'}
-                  size={24}
-                />
-                <span className="ml-3 font-medium text-gray-100">
-                  {isActive ? 'En operación' : 'En reposo'}
-                </span>
+              {/* Cabecera desplegable para el dispositivo */}
+              <div 
+                className="w-full flex items-center justify-between cursor-pointer py-2 px-3 rounded-lg bg-gray-800/80 border border-gray-700/50" 
+                onClick={() => setIsDeviceExpanded(!isDeviceExpanded)}
+              >
+                <div className="flex items-center">
+                  <Activity
+                    className={isActive ? 'text-green-400' : 'text-gray-500'}
+                    size={20}
+                  />
+                  <span className="ml-3 font-medium text-gray-100">
+                    {isActive ? 'En operación' : 'En reposo'}
+                  </span>
+                </div>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className={`h-5 w-5 text-gray-400 transition-transform duration-300 ${
+                    isDeviceExpanded ? 'rotate-180' : ''
+                  }`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
               </div>
+              
+              {/* Contenido desplegable */}
+              {isDeviceExpanded && (
+                <div className="w-full flex flex-col items-center space-y-4">
+                  {type === 'pump' && <PumpIndicator status={statusAsNumber} />}
+                  {type === 'well' && <WellIndicator status={statusAsNumber} />}
+                </div>
+              )}
 
               {renderSensorDetails()}
 

@@ -22,11 +22,10 @@ export default function MultiDeviceCard({
 }: MultiDeviceCardWithAlertProps) {
   const { data, error, loading } = useDeviceData(identifier, undefined, codigoAsada);
   const [showDetails, setShowDetails] = useState(false);
+  const [expandedDevices, setExpandedDevices] = useState<Record<string, boolean>>({});
   
-  // Ref para rastrear el estado anterior de la alerta
   const previousAlertRef = React.useRef(false);
 
-  // Detectar alerta en dispositivos hijos
   React.useEffect(() => {
     if (!data || !onAlertChange) return;
     
@@ -45,7 +44,6 @@ export default function MultiDeviceCard({
       }
     });
     
-    // Solo notificar cambios si realmente hay un cambio
     if (previousAlertRef.current !== hasAlert) {
       previousAlertRef.current = hasAlert;
       onAlertChange(hasAlert);
@@ -262,35 +260,62 @@ export default function MultiDeviceCard({
           
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
             {otherDevices.map((device) => {
+              const deviceKey = device.pumpKey || device.key || '';
               const statusAsNumber = Number(device.pumpKey ? data[device.pumpKey] : data[device.key || '']);
               const isActive = statusAsNumber === 1;
-               
+              const isDeviceExpanded = expandedDevices[deviceKey] || false;
+              
+              const toggleDeviceExpanded = () => {
+                setExpandedDevices(prev => ({
+                  ...prev,
+                  [deviceKey]: !prev[deviceKey]
+                }));
+              };
+              
               return (
                 <div 
-                  key={device.pumpKey || device.key} 
+                  key={deviceKey} 
                   className={`flex flex-col items-center bg-gray-800 rounded-lg p-4 transition-all duration-300 ${
                     isActive 
                       ? 'border-l-4 border-l-green-500 shadow-lg shadow-green-900/20' 
                       : 'border-l-4 border-l-gray-700'
                   }`}
                 >
-                  <h3 className="text-lg font-medium text-gray-200 mb-2">{device.name}</h3>
- 
-                  {device.type === 'pump' && (
-                    <PumpIndicator status={statusAsNumber} />
-                  )}
-                  {device.type === 'well' && (
-                    <WellIndicator status={statusAsNumber} />
-                  )}
+                   <div 
+                     className="w-full flex items-center justify-between cursor-pointer" 
+                     onClick={toggleDeviceExpanded}
+                   >
+                     <h3 className="text-lg font-medium text-gray-200">{device.name}</h3>
+                     <svg 
+                       xmlns="http://www.w3.org/2000/svg" 
+                       className={`h-5 w-5 text-gray-400 transition-transform duration-300 ${isDeviceExpanded ? 'rotate-180' : ''}`} 
+                       fill="none" 
+                       viewBox="0 0 24 24" 
+                       stroke="currentColor"
+                     >
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                     </svg>
+                    </div>
                    
-                  <div className="flex items-center justify-center w-full mt-4 py-2 px-3 rounded-md bg-gray-900/50 border border-gray-700/30">
-                    <Activity className={isActive ? 'text-green-400' : 'text-gray-500'} size={18} />
-                    <span className="ml-2 text-sm font-medium text-gray-200">
-                      {isActive ? 'En operación' : 'En reposo'}
-                    </span>
+                   {isDeviceExpanded && (
+                     <div className="w-full mt-4 flex flex-col items-center">
+                       {device.type === 'pump' && (
+                         <PumpIndicator status={statusAsNumber} />
+                       )}
+                       {device.type === 'well' && (
+                         <WellIndicator status={statusAsNumber} />
+                       )}
+                       
+                       <div className="flex items-center justify-center w-full mt-4 py-2 px-3 rounded-md bg-gray-900/50 border border-gray-700/30">
+                         <Activity className={isActive ? 'text-green-400' : 'text-gray-500'} size={18} />
+                         <span className="ml-2 text-sm font-medium text-gray-200">
+                           {isActive ? 'En operación' : 'En reposo'}
+                         </span>
+                       </div>
+                     </div>
+                   )}
                   </div>
-                </div>
-              );
+                );
             })}
           </div>
         </div>
