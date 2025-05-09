@@ -7,6 +7,7 @@ import MultiDeviceCard from './MultiDeviceCard';
 import { useDeviceGroups } from '../../hooks/useDeviceGroups';
 import { BaseDeviceType, MultiDevice } from '../../app/types/types';
 import { loadDevicesForAsada } from '../../hooks/dynamicDeviceLoader';
+import { setRealTimeMode, triggerRefresh } from '../../hooks/useAggregatedData';
 
 export default function WaterSystemColumns() {
   const [codigoAsada, setCodigoAsada] = useState<string>('');
@@ -18,7 +19,7 @@ export default function WaterSystemColumns() {
   const [isRealTime, setIsRealTime] = useState<boolean>(false);
   const realTimeIntervalRef = useRef<NodeJS.Timeout | null>(null);
   // Añadir estado para controlar si la ASADA es la de control
-  const [isControlAsada, setIsControlAsada] = useState<boolean>(false);
+  const [isControlAsada, setIsControlAsada] = useState<boolean>(true);
   // Estado global para alertas
   const [deviceAlerts, setDeviceAlerts] = useState<Record<string, boolean>>({});
 
@@ -27,48 +28,55 @@ export default function WaterSystemColumns() {
     setError(null);
     setCodigoAsada(codigo);
     setIsLoggedIn(true);
-    
-    // Verificar si la ASADA es la de control
-    setIsControlAsada(codigo.toLowerCase() === 'control');
+
   };
 
   const { groupedDevices, loading: devicesLoading, reloadDevices } = useDeviceGroups(codigoAsada);
 
   // Función para activar/desactivar modo tiempo real
   const toggleRealTime = () => {
-    // Solo permitir si es la ASADA de control
-    if (!isControlAsada) return;
-    
     const newState = !isRealTime;
     setIsRealTime(newState);
     
-    // Si se activa el modo tiempo real, configurar intervalo
+    // Actualizamos la variable global para que otros componentes
+    // puedan verificar si el modo tiempo real está activo
+    window.isRealTimeActive = newState;
+    
+    // Usar la función centralizada para controlar el modo tiempo real
+    setRealTimeMode(newState);
+    
+    // Si se activa, forzar una actualización inmediata
     if (newState) {
-      if (realTimeIntervalRef.current) {
-        clearInterval(realTimeIntervalRef.current);
-      }
-      realTimeIntervalRef.current = setInterval(() => {
-        reloadDevices().catch(err => {
-          console.error('Error en actualización en tiempo real:', err);
-          // No mostramos error visual para no interrumpir la experiencia
-        });
-      }, 2000); // Actualización cada 2 segundos
-    } 
-    // Si se desactiva, limpiar el intervalo
-    else if (realTimeIntervalRef.current) {
-      clearInterval(realTimeIntervalRef.current);
-      realTimeIntervalRef.current = null;
+      triggerRefresh().catch(err => {
+        console.error('Error en actualización en tiempo real:', err);
+      });
     }
   };
 
   // Limpiar intervalo al desmontar el componente
   useEffect(() => {
+    // Inicializar variable global de tiempo real
+    window.isRealTimeActive = isRealTime;
+    
     return () => {
-      if (realTimeIntervalRef.current) {
-        clearInterval(realTimeIntervalRef.current);
+      // Desactivar el modo tiempo real al desmontar
+      if (isRealTime) {
+        window.isRealTimeActive = false;
+        setRealTimeMode(false);
       }
     };
-  }, []);
+  }, [isRealTime]);
+
+  // Desactivar tiempo real solo si cambia el código de ASADA
+  useEffect(() => {
+    // Solo desactivar si cambia el codigoAsada y el modo tiempo real está activo
+    if (codigoAsada && isRealTime) {
+      console.log("Desactivando tiempo real por cambio de ASADA");
+      window.isRealTimeActive = false;
+      setRealTimeMode(false);
+      setIsRealTime(false);
+    }
+  }, [codigoAsada]); // Solo depende de codigoAsada, no de isRealTime
 
   useEffect(() => {
     if (codigoAsada) {
@@ -79,10 +87,7 @@ export default function WaterSystemColumns() {
             setLoading(false);
             setError(null);
             
-            // Verificar si la ASADA es la de control (por nombre también)
-            if (name.toLowerCase().includes('control')) {
-              setIsControlAsada(true);
-            }
+ 
           })
           .catch(err => {
             console.error('Error al cargar dispositivos:', err);
@@ -96,25 +101,23 @@ export default function WaterSystemColumns() {
     }
   }, [codigoAsada]);
 
-  // Desactivar tiempo real si cambia el código de ASADA
-  useEffect(() => {
-    if (isRealTime && realTimeIntervalRef.current) {
-      clearInterval(realTimeIntervalRef.current);
-      setIsRealTime(false);
-    }
-    
-    // Verificar si la nueva ASADA es la de control
-    setIsControlAsada(codigoAsada.toLowerCase() === 'control');
-  }, [codigoAsada]);
-
   // Inicializar columnas cerradas por defecto cuando groupedDevices cambie
   useEffect(() => {
     if (groupedDevices && groupedDevices.length > 0) {
-      const initialState: Record<string, boolean> = {};
+      // Solo inicializar para grupos nuevos, preservar estado de grupos existentes
+      const initialState: Record<string, boolean> = {...collapsedGroups};
+      
       groupedDevices.forEach(group => {
-        initialState[group.name] = true;
+        // Solo establecer el estado para grupos que no tengan un estado definido
+        if (initialState[group.name] === undefined) {
+          initialState[group.name] = true;
+        }
       });
-      setCollapsedGroups(initialState);
+      
+      // Solo actualizar si hay cambios
+      if (JSON.stringify(initialState) !== JSON.stringify(collapsedGroups)) {
+        setCollapsedGroups(initialState);
+      }
     }
   }, [groupedDevices]);
 
@@ -156,9 +159,16 @@ export default function WaterSystemColumns() {
 
   const handleReloadDevices = () => {
     setError(null);
-    reloadDevices().catch(err => {
-      setError(`Error al recargar dispositivos: ${err.message || 'Error desconocido'}`);
-    });
+    // Forzar actualización de datos inmediatamente
+    triggerRefresh()
+      .then(() => {
+        console.log("Datos actualizados manualmente");
+        // Recargar dispositivos sin reiniciar el estado de los grupos colapsados
+        return reloadDevices();
+      })
+      .catch(err => {
+        setError(`Error al recargar dispositivos: ${err.message || 'Error desconocido'}`);
+      });
   };
 
   // Manejo de renderizado seguro

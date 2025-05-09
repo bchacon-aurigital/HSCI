@@ -56,134 +56,158 @@ export default function HistoricalChart({
     return { year, month: parseInt(month).toString(), day: parseInt(day).toString() };
   };
 
-  const fetchHistoricalData = async () => {
+  // Función para cargar datos según la fecha seleccionada
+  const loadDataForDate = async (selectedDate: Date) => {
+    const year = selectedDate.getFullYear();
+    const month = selectedDate.getMonth() + 1; // getMonth() devuelve 0-11
+    const day = selectedDate.getDate();
+    
     setLoading(true);
     setError(null);
     
     try {
-      const { year, month, day } = getFormattedDateParts();
-      
-      // URL fija para ASROA
+      // Usamos una URL fija para ASROA como indicado
       const url = `https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/ASROA/HISTORICO/BP/NIVELES/${year}/${month}/${day}.json`;
-      console.log(`Obteniendo datos históricos de: ${url}`);
       
-      const response = await fetch(url);
+      // Uso de sessionStorage para cachear peticiones a la misma fecha
+      const cacheKey = `historical_${year}_${month}_${day}_${deviceKey}`;
+      const cachedData = sessionStorage.getItem(cacheKey);
       
-      if (!response.ok) {
-        throw new Error(`Error de red: ${response.status}`);
-      }
-      
-      const dayData = await response.json();
-      
-      if (!dayData) {
-        throw new Error(`No hay datos para el día ${day}/${month}/${year}`);
-      }
-      
-      // Procesar los datos para la gráfica
-      const chartLabels: string[] = [];
-      const chartValues: number[] = [];
-      
-      // Verificar si es un objeto o un array
-      if (Array.isArray(dayData)) {
-        // Es un array
-        dayData.forEach((item, index) => {
-          // Verificar que el item no sea nulo y tenga datos
-          if (item && item.DATA && item.DATA.VALOR) {
-            const timeLabel = item.DATA.TIME 
-              ? formatLabviewTimeToHourMinute(Number(item.DATA.TIME)) 
-              : `Registro ${index + 1}`;
-            chartLabels.push(`Toma ${index + 1} (${timeLabel})`);
-            chartValues.push(Number(item.DATA.VALOR));
-          }
-        });
+      if (cachedData) {
+        console.log(`Usando datos en caché para ${day}/${month}/${year}`);
+        const parsedData = JSON.parse(cachedData);
+        processHistoricalData(parsedData, deviceKey);
       } else {
-        // Es un objeto
-        Object.entries(dayData).forEach(([key, value]: [string, any]) => {
-          if (value && value.DATA && value.DATA.VALOR) {
-            let timeLabel;
-            if (value.DATA.TIME) {
-              timeLabel = formatLabviewTimeToHourMinute(Number(value.DATA.TIME));
-            } else {
-              timeLabel = 'N/D';
-            }
-            
-            // Determinar el identificador de la toma
-            let tomaLabel;
-            if (key.startsWith('T')) {
-              // Si comienza con 'T', usar la clave como está
-              tomaLabel = key; 
-            } else {
-              // Si es otro tipo de clave (numérica), considerarla como el número de toma
-              tomaLabel = `Toma ${key}`;
-            }
-            
-            chartLabels.push(`${tomaLabel} (${timeLabel})`);
-            chartValues.push(Number(value.DATA.VALOR));
+        console.log(`Obteniendo datos para ${day}/${month}/${year} desde API`);
+        const response = await fetch(url);
+      
+        if (!response.ok) {
+          if (response.status === 404) {
+            setChartData(null);
+            setError(`No hay datos disponibles para ${day}/${month}/${year}`);
+          } else {
+            throw new Error(`Error de red: ${response.status}`);
           }
-        });
+          setLoading(false);
+          return;
+        }
+      
+        const data = await response.json();
+        
+        // Guardar en caché
+        sessionStorage.setItem(cacheKey, JSON.stringify(data));
+        
+        // Procesar datos para el dispositivo seleccionado
+        processHistoricalData(data, deviceKey);
       }
-      
-      // Ordenar los datos por tiempo si es posible
-      const combinedData = chartLabels.map((label, i) => ({ label, value: chartValues[i] }));
-      
-      // Ordenar por número de toma
-      combinedData.sort((a, b) => {
-        // Extraer el número de toma
-        const tomaRegexA = a.label.match(/Toma (\d+)/);
-        const tomaRegexB = b.label.match(/Toma (\d+)/);
-        
-        if (tomaRegexA && tomaRegexB) {
-          return parseInt(tomaRegexA[1], 10) - parseInt(tomaRegexB[1], 10);
-        }
-        
-        // Si no podemos extraer el número de toma, intentar con etiquetas T
-        const tRegexA = a.label.match(/^T(\d+)/);
-        const tRegexB = b.label.match(/^T(\d+)/);
-        
-        if (tRegexA && tRegexB) {
-          return parseInt(tRegexA[1], 10) - parseInt(tRegexB[1], 10);
-        }
-        
-        // Si todo falla, ordenar alfabéticamente
-        return a.label.localeCompare(b.label);
-      });
-      
-      // Actualizar los datos ordenados
-      const sortedLabels = combinedData.map(d => d.label);
-      const sortedValues = combinedData.map(d => d.value);
-      
-      setChartData({
-        labels: sortedLabels,
-        datasets: [
-          {
-            label: 'Nivel del tanque (%)',
-            data: sortedValues,
-            borderColor: 'rgb(53, 162, 235)',
-            backgroundColor: 'rgba(53, 162, 235, 0.5)',
-            pointRadius: 5,
-            pointBackgroundColor: 'rgb(53, 162, 235)',
-            pointBorderColor: 'white',
-            pointBorderWidth: 1,
-            pointHoverRadius: 7,
-            pointHoverBackgroundColor: 'rgb(53, 162, 235)',
-            pointHoverBorderColor: 'white',
-            pointHoverBorderWidth: 2,
-            tension: 0.3
-          }
-        ]
-      });
-      
+    } catch (error: any) {
+      console.error('Error al cargar datos históricos:', error);
+      setError(`Error al cargar datos: ${error.message || 'Error desconocido'}`);
+      setChartData(null);
+    } finally {
       setLoading(false);
-    } catch (err: any) {
-      console.error('Error al obtener datos históricos:', err);
-      setError(err.message || 'Error desconocido');
-      setLoading(false);
-      setChartData({ labels: [], datasets: [{ data: [] }] });
     }
   };
 
+  const processHistoricalData = (data: any, deviceKey: string) => {
+    // Procesar los datos para la gráfica
+    const chartLabels: string[] = [];
+    const chartValues: number[] = [];
+    
+    // Verificar si es un objeto o un array
+    if (Array.isArray(data)) {
+      // Es un array
+      data.forEach((item, index) => {
+        // Verificar que el item no sea nulo y tenga datos
+        if (item && item.DATA && item.DATA.VALOR) {
+          const timeLabel = item.DATA.TIME 
+            ? formatLabviewTimeToHourMinute(Number(item.DATA.TIME)) 
+            : `Registro ${index + 1}`;
+          chartLabels.push(`Toma ${index + 1} (${timeLabel})`);
+          chartValues.push(Number(item.DATA.VALOR));
+        }
+      });
+    } else {
+      // Es un objeto
+      Object.entries(data).forEach(([key, value]: [string, any]) => {
+        if (value && value.DATA && value.DATA.VALOR) {
+          let timeLabel;
+          if (value.DATA.TIME) {
+            timeLabel = formatLabviewTimeToHourMinute(Number(value.DATA.TIME));
+          } else {
+            timeLabel = 'N/D';
+          }
+          
+          // Determinar el identificador de la toma
+          let tomaLabel;
+          if (key.startsWith('T')) {
+            // Si comienza con 'T', usar la clave como está
+            tomaLabel = key; 
+          } else {
+            // Si es otro tipo de clave (numérica), considerarla como el número de toma
+            tomaLabel = `Toma ${key}`;
+          }
+          
+          chartLabels.push(`${tomaLabel} (${timeLabel})`);
+          chartValues.push(Number(value.DATA.VALOR));
+        }
+      });
+    }
+    
+    // Ordenar los datos por tiempo si es posible
+    const combinedData = chartLabels.map((label, i) => ({ label, value: chartValues[i] }));
+    
+    // Ordenar por número de toma
+    combinedData.sort((a, b) => {
+      // Extraer el número de toma
+      const tomaRegexA = a.label.match(/Toma (\d+)/);
+      const tomaRegexB = b.label.match(/Toma (\d+)/);
+      
+      if (tomaRegexA && tomaRegexB) {
+        return parseInt(tomaRegexA[1], 10) - parseInt(tomaRegexB[1], 10);
+      }
+      
+      // Si no podemos extraer el número de toma, intentar con etiquetas T
+      const tRegexA = a.label.match(/^T(\d+)/);
+      const tRegexB = b.label.match(/^T(\d+)/);
+      
+      if (tRegexA && tRegexB) {
+        return parseInt(tRegexA[1], 10) - parseInt(tRegexB[1], 10);
+      }
+      
+      // Si todo falla, ordenar alfabéticamente
+      return a.label.localeCompare(b.label);
+    });
+    
+    // Actualizar los datos ordenados
+    const sortedLabels = combinedData.map(d => d.label);
+    const sortedValues = combinedData.map(d => d.value);
+    
+    setChartData({
+      labels: sortedLabels,
+      datasets: [
+        {
+          label: 'Nivel del tanque (%)',
+          data: sortedValues,
+          borderColor: 'rgb(53, 162, 235)',
+          backgroundColor: 'rgba(53, 162, 235, 0.5)',
+          pointRadius: 5,
+          pointBackgroundColor: 'rgb(53, 162, 235)',
+          pointBorderColor: 'white',
+          pointBorderWidth: 1,
+          pointHoverRadius: 7,
+          pointHoverBackgroundColor: 'rgb(53, 162, 235)',
+          pointHoverBorderColor: 'white',
+          pointHoverBorderWidth: 2,
+          tension: 0.3
+        }
+      ]
+    });
+  };
+
   useEffect(() => {
-    fetchHistoricalData();
+    const date = new Date(selectedDate);
+    loadDataForDate(date);
   }, [selectedDate]);
 
   const { year, month, day } = getFormattedDateParts();

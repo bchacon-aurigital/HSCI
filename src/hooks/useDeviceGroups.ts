@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { loadDevicesForAsada } from './dynamicDeviceLoader';
 import { Device } from '../app/types/types';
+import { triggerRefresh, subscribeToDataUpdates } from './useAggregatedData';
 
 export const useDeviceGroups = (codigoAsada: string) => {
   const [devices, setDevices] = useState<Device[]>([]);
@@ -11,6 +12,8 @@ export const useDeviceGroups = (codigoAsada: string) => {
     if (!codigoAsada) return;
     setLoading(true);
     try {
+      // Usar triggerRefresh para actualizar los datos agregados
+      await triggerRefresh();
       const { devices: deviceList } = await loadDevicesForAsada(codigoAsada);
       setDevices(deviceList);
     } catch (error) {
@@ -20,12 +23,31 @@ export const useDeviceGroups = (codigoAsada: string) => {
     }
   }, [codigoAsada]);
 
+  // Cargar dispositivos inicialmente
   useEffect(() => {
     reloadDevices();
+    
+    // Suscribirse a las actualizaciones de datos agregados
+    const unsubscribe = subscribeToDataUpdates(() => {
+      // Cuando los datos se actualicen, recargar los dispositivos sin mostrar el indicador de carga
+      if (codigoAsada) {
+        loadDevicesForAsada(codigoAsada)
+          .then(({ devices: deviceList }) => {
+            setDevices(deviceList);
+          })
+          .catch(error => {
+            console.error('Error al actualizar los dispositivos:', error);
+          });
+      }
+    });
+    
+    return () => {
+      unsubscribe();
+    };
   }, [codigoAsada, reloadDevices]);
 
   const groupedDevices = useMemo(() => {
-    if (loading) return [];
+    if (loading && devices.length === 0) return [];
 
     const groupMap: Record<string, Device[]> = {};
     devices.forEach((device) => {
