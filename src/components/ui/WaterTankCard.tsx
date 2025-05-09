@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
 import {
   Clock,
@@ -9,6 +9,7 @@ import {
   Zap,
   Gauge,
   Thermometer,
+  History,
 } from 'lucide-react';
 import { WaterTankIndicator } from '../indicators/WaterTankIndicator';
 import { PumpIndicator } from '../indicators/PumpIndicator';
@@ -16,6 +17,8 @@ import { WellIndicator } from '../indicators/WellIndicator';
 import { useDeviceData } from '../../hooks/useDeviceData';
 import { formatDate } from '../../utils/utils';
 import { BaseDeviceType } from '../../app/types/types';
+import { checkHistoricalDataAvailability } from '../../utils/historicalDataUtils';
+import HistoricalChart from '../HistoricalChart';
 
 interface WaterTankCardProps {
   identifier: string;
@@ -38,6 +41,8 @@ export default function WaterTankCard({
   const { data, error, loading } = useDeviceData(identifier, pumpKeyParam, codigoAsada);
   const [showDetails, setShowDetails] = useState(false);
   const [isDeviceExpanded, setIsDeviceExpanded] = useState(false);
+  const [showHistorical, setShowHistorical] = useState(false);
+  const [hasHistorical, setHasHistorical] = useState(false);
   
   const previousAlertRef = React.useRef(false);
 
@@ -73,6 +78,13 @@ export default function WaterTankCard({
     );
     hasAlert = statusAsNumber === 2 || statusAsNumber === 3;
   }
+
+  useEffect(() => {
+    if (codigoAsada) {
+      // Simplificación: solo mostrar históricos para ASROA sin hacer petición
+      setHasHistorical(codigoAsada === 'ASROA');
+    }
+  }, [codigoAsada]);
 
   React.useEffect(() => {
     if (!onAlertChange) return;
@@ -141,69 +153,91 @@ export default function WaterTankCard({
     const isLowLevel = hasTankValue && tankValue < 25;
 
     return (
-      <Card
-        className={`bg-gray-900 border-gray-800 shadow-lg transition-all duration-300 ${
-          isLowLevel ? 'border-l-4 border-l-red-500' : ''
-        }`}
-      >
-        <CardHeader className="bg-gray-800 pb-2">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-gray-100">{name}</h2>
-            {isLowLevel && <AlertTriangle className="text-red-500" size={24} />}
-          </div>
-        </CardHeader>
-        <CardContent className="pt-4">
-          {hasTankValue ? (
-            <div className="flex flex-col items-center space-y-6">
-              <WaterTankIndicator percentage={tankValue} />
+      <>
+        <Card
+          className={`bg-gray-900 border-gray-800 shadow-lg transition-all duration-300 ${
+            isLowLevel ? 'border-l-4 border-l-red-500' : ''
+          }`}
+        >
+          <CardHeader className="bg-gray-800 pb-2">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-gray-100">{name}</h2>
+              {isLowLevel && <AlertTriangle className="text-red-500" size={24} />}
+            </div>
+          </CardHeader>
+          <CardContent className="pt-4">
+            {hasTankValue ? (
+              <div className="flex flex-col items-center space-y-6">
+                <WaterTankIndicator percentage={tankValue} />
 
-              <div className="flex items-center justify-center w-full py-3 px-4 rounded-lg bg-gray-800/80 border border-gray-700/50">
-                <Droplet
-                  className={`mr-3 ${
-                    tankValue < 25
-                      ? 'text-red-500'
-                      : tankValue < 50
-                      ? 'text-yellow-400'
-                      : 'text-green-400'
-                  }`}
-                  size={24}
-                />
-                <span className="text-xl font-bold text-gray-100">{tankValue}%</span>
-                <span className="ml-2 text-gray-400">de capacidad disponible</span>
-              </div>
-
-              {isLowLevel && (
-                <div className="flex items-center w-full py-3 px-4 rounded-lg bg-red-950/30 border border-red-900">
-                  <AlertTriangle className="text-red-500 mr-3 animate-pulse" size={20} />
-                  <div>
-                    <span className="text-red-400 font-medium block">
-                      Nivel crítico de agua
-                    </span>
-                    <span className="text-red-300/80 text-sm">
-                      Se requiere revisión inmediata del suministro
-                    </span>
-                  </div>
+                <div className="flex items-center justify-center w-full py-3 px-4 rounded-lg bg-gray-800/80 border border-gray-700/50">
+                  <Droplet
+                    className={`mr-3 ${
+                      tankValue < 25
+                        ? 'text-red-500'
+                        : tankValue < 50
+                        ? 'text-yellow-400'
+                        : 'text-green-400'
+                    }`}
+                    size={24}
+                  />
+                  <span className="text-xl font-bold text-gray-100">{tankValue}%</span>
+                  <span className="ml-2 text-gray-400">de capacidad disponible</span>
                 </div>
-              )}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center py-8">
-              <AlertTriangle className="text-gray-500 mb-2" size={32} />
-              <p className="text-gray-300">No hay datos para este tanque</p>
-            </div>
-          )}
-        </CardContent>
 
-        {hasData('fecha') && (
-          <CardFooter className="bg-gray-800/50 pt-4 pb-3 flex items-center gap-3">
-            <Clock className="text-blue-400" size={18} />
-            <div>
-              <p className="text-xs text-gray-400">Registro actualizado</p>
-              <p className="font-medium text-gray-100">{formatDate(tankData.fecha)}</p>
-            </div>
-          </CardFooter>
+                {isLowLevel && (
+                  <div className="flex items-center w-full py-3 px-4 rounded-lg bg-red-950/30 border border-red-900">
+                    <AlertTriangle className="text-red-500 mr-3 animate-pulse" size={20} />
+                    <div>
+                      <span className="text-red-400 font-medium block">
+                        Nivel crítico de agua
+                      </span>
+                      <span className="text-red-300/80 text-sm">
+                        Se requiere revisión inmediata del suministro
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Mostrar botón en todos los tanques */}
+                {type === 'tank' && (
+                  <button
+                    onClick={() => setShowHistorical(true)}
+                    className="flex items-center py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+                  >
+                    <History className="mr-2" size={18} />
+                    Ver histórico ASADA
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center py-8">
+                <AlertTriangle className="text-gray-500 mb-2" size={32} />
+                <p className="text-gray-300">No hay datos para este tanque</p>
+              </div>
+            )}
+          </CardContent>
+
+          {hasData('fecha') && (
+            <CardFooter className="bg-gray-800/50 pt-4 pb-3 flex items-center gap-3">
+              <Clock className="text-blue-400" size={18} />
+              <div>
+                <p className="text-xs text-gray-400">Registro actualizado</p>
+                <p className="font-medium text-gray-100">{formatDate(tankData.fecha)}</p>
+              </div>
+            </CardFooter>
+          )}
+        </Card>
+
+        {showHistorical && (
+          <HistoricalChart
+            codigoAsada={codigoAsada}
+            deviceKey={identifier}
+            deviceName={name}
+            onClose={() => setShowHistorical(false)}
+          />
         )}
-      </Card>
+      </>
     );
   }
 
@@ -224,7 +258,6 @@ export default function WaterTankCard({
           <h3 className="text-lg font-medium text-white mb-4">Datos de sensores</h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* AMPS siempre visible, muestra N/D si no hay datos */}
             <div className="flex items-center bg-gray-700/50 p-3 rounded-lg">
               <Zap className="text-blue-400 mr-3" size={20} />
               <div>
@@ -289,7 +322,6 @@ export default function WaterTankCard({
         <CardContent className="pt-4">
           {hasValue ? (
             <div className="flex flex-col items-center space-y-6">
-              {/* Cabecera desplegable para el dispositivo */}
               <div 
                 className="w-full flex items-center justify-between cursor-pointer py-2 px-3 rounded-lg bg-gray-800/80 border border-gray-700/50" 
                 onClick={() => setIsDeviceExpanded(!isDeviceExpanded)}
@@ -321,7 +353,6 @@ export default function WaterTankCard({
                 </svg>
               </div>
               
-              {/* Contenido desplegable */}
               {isDeviceExpanded && (
                 <div className="w-full flex flex-col items-center space-y-4">
                   {type === 'pump' && <PumpIndicator status={statusAsNumber} />}
