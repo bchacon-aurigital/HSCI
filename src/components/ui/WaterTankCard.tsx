@@ -147,7 +147,7 @@ export default function WaterTankCard({
   }
   
   if (type === 'tank') {
-    let tankData = data;
+    const tankData = data;
 
     const hasTankValue = tankValue !== undefined && tankValue !== null && !isNaN(tankValue);
     const isLowLevel = hasTankValue && tankValue < 25;
