@@ -37,7 +37,7 @@ export default function MultiDeviceCard({
       } else if (device.key && data && data[device.key] !== undefined) {
         status = Number(data[device.key]);
       }
-      if (device.type === 'valve' || device.type === 'pump' || device.type === 'well') {
+      if (device.type === 'pump' || device.type === 'well') {
         if (status === 2 || status === 3) {
           hasAlert = true;
         }

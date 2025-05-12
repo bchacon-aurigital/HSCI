@@ -19,7 +19,7 @@ export default function WaterSystemColumns() {
   const [isRealTime, setIsRealTime] = useState<boolean>(false);
   const realTimeIntervalRef = useRef<NodeJS.Timeout | null>(null);
   // Añadir estado para controlar si la ASADA es la de control
-  const [isControlAsada, setIsControlAsada] = useState<boolean>(true);
+  const [isControlAsada, setIsControlAsada] = useState<boolean>(false);
   // Estado global para alertas
   const [deviceAlerts, setDeviceAlerts] = useState<Record<string, boolean>>({});
 
@@ -87,7 +87,9 @@ export default function WaterSystemColumns() {
             setLoading(false);
             setError(null);
             
- 
+            // Actualizar el estado de isControlAsada basado en el código de asada
+            setIsControlAsada(codigoAsada === 'codigo2');
+            console.log(`ASADA Control: ${codigoAsada === 'codigo2' ? 'SÍ' : 'NO'}`);
           })
           .catch(err => {
             console.error('Error al cargar dispositivos:', err);

@@ -79,8 +79,8 @@ export const setGroupedURLsForAsada = (asadaCode: string) => {
       break;
     case 'codigo2':
       groupedURLs = {
-        'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/TERCERA_ASADA/.json': [
-          'TANQUE1', 'BOMBA1', 'POZO1'
+        'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/.json': [
+          'CATSA_R'
         ]
       };
       break;
