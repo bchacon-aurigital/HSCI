@@ -26,6 +26,7 @@ interface WaterTankCardProps {
   type: BaseDeviceType; 
   pumpKey?: string;
   codigoAsada: string;
+  historicoKey?: string;
   onAlertChange?: (hasAlert: boolean) => void;
 }
 
@@ -35,6 +36,7 @@ export default function WaterTankCard({
   type,
   pumpKey,
   codigoAsada,
+  historicoKey,
   onAlertChange,
 }: WaterTankCardProps) {
   const pumpKeyParam = type === 'pump' || type === 'well' ? undefined : pumpKey;
@@ -79,53 +81,23 @@ export default function WaterTankCard({
     hasAlert = statusAsNumber === 2 || statusAsNumber === 3;
   }
 
-  // Estado para almacenar la clave histórica del dispositivo
-  const [deviceHistoricoKey, setDeviceHistoricoKey] = useState<string | null>(null);
-
+  // Verificar si hay datos históricos disponibles cuando se monta el componente
   useEffect(() => {
-    if (codigoAsada) {
-      // Verificar si el dispositivo tiene datos históricos disponibles
-      const checkHistorical = async () => {
-        try {
-          // Obtener la clave histórica del dispositivo directamente de la configuración
-          let historicoKey = null;
-          
-          if (identifier) {
-            // Buscar el historicoKey en la configuración del dispositivo
-            import('../../app/data/devicesConfig2').then(({ devices }) => {
-              // Encontrar el dispositivo actual en la configuración
-              const device = devices.find(d => d.key === identifier && d.type === 'tank');
-              
-              if (device && 'historicoKey' in device) {
-                historicoKey = device.historicoKey;
-                setDeviceHistoricoKey(historicoKey);
-                
-                // Solo verificamos disponibilidad si hay historicoKey
-                if (historicoKey) {
-                  console.log(`Verificando datos históricos para ${codigoAsada} con clave: ${historicoKey}`);
-                  checkHistoricalDataAvailability(codigoAsada, historicoKey).then(hasHistoricalData => {
-                    setHasHistorical(hasHistoricalData);
-                  });
-                } else {
-                  setHasHistorical(false);
-                }
-              } else {
-                setDeviceHistoricoKey(null);
-                setHasHistorical(false);
-              }
-            });
-          } else {
-            setHasHistorical(false);
-          }
-        } catch (error) {
+    if (codigoAsada && historicoKey) {
+      // Solo verificamos disponibilidad si hay historicoKey proporcionado
+      console.log(`Verificando datos históricos para ${codigoAsada} con clave: ${historicoKey}`);
+      checkHistoricalDataAvailability(codigoAsada, historicoKey)
+        .then(hasHistoricalData => {
+          setHasHistorical(hasHistoricalData);
+        })
+        .catch(error => {
           console.error('Error al verificar datos históricos:', error);
           setHasHistorical(false);
-        }
-      };
-      
-      checkHistorical();
+        });
+    } else {
+      setHasHistorical(false);
     }
-  }, [codigoAsada, identifier]);
+  }, [codigoAsada, historicoKey]);
 
   React.useEffect(() => {
     if (!onAlertChange) return;
@@ -274,7 +246,7 @@ export default function WaterTankCard({
           <HistoricalChart
             codigoAsada={codigoAsada}
             deviceKey={identifier}
-            historicoKey={deviceHistoricoKey || undefined}
+            historicoKey={historicoKey}
             deviceName={name}
             onClose={() => setShowHistorical(false)}
           />

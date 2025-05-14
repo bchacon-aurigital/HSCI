@@ -205,6 +205,7 @@ export default function WaterSystemColumns() {
             type={device.type as BaseDeviceType}
             pumpKey={device.pumpKey}
             codigoAsada={codigoAsada}
+            historicoKey={device.historicoKey}
             onAlertChange={(hasAlert) => registerAlert(groupName, identifier, hasAlert)}
           />
         );
