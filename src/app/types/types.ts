@@ -9,6 +9,7 @@ export interface Device {
   pumpKey?: string;
   group: string;
   order: number;
+  historicoKey?: string;
 }
 
 export interface MultiDeviceInfo {

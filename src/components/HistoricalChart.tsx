@@ -31,6 +31,7 @@ ChartJS.register(
 interface HistoricalChartProps {
   codigoAsada: string;
   deviceKey: string;
+  historicoKey?: string; // Añadimos historicoKey como parámetro opcional
   deviceName: string;
   onClose: () => void;
 }
@@ -38,6 +39,7 @@ interface HistoricalChartProps {
 export default function HistoricalChart({ 
   codigoAsada, 
   deviceKey, 
+  historicoKey, // Nuevo parámetro
   deviceName,
   onClose 
 }: HistoricalChartProps) {
@@ -70,17 +72,24 @@ export default function HistoricalChart({
     setError(null);
     
     try {
-      // Usamos una URL fija para ASROA como indicado
-      const url = `https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/ASROA/HISTORICO/BP/NIVELES/${year}/${month}/${day}.json`;
+      // Usamos SOLO el historicoKey para construir la URL dinámica
+      // Si no hay historicoKey, no debería mostrarse el botón de historial
+      if (!historicoKey) {
+        setError('No hay clave histórica definida para este dispositivo');
+        setLoading(false);
+        return;
+      }
+      
+      const url = `https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/ASROA/HISTORICO/${historicoKey}/NIVELES/${year}/${month}/${day}.json`;
       
       // Uso de sessionStorage para cachear peticiones a la misma fecha
-      const cacheKey = `historical_${year}_${month}_${day}_${deviceKey}`;
+      const cacheKey = `historical_${year}_${month}_${day}_${historicoKey}`;
       const cachedData = sessionStorage.getItem(cacheKey);
       
       if (cachedData) {
         console.log(`Usando datos en caché para ${day}/${month}/${year}`);
         const parsedData = JSON.parse(cachedData);
-        processHistoricalData(parsedData, deviceKey);
+        processHistoricalData(parsedData, historicoKey);
       } else {
         console.log(`Obteniendo datos para ${day}/${month}/${year} desde API`);
         const response = await fetch(url);
@@ -102,7 +111,7 @@ export default function HistoricalChart({
         sessionStorage.setItem(cacheKey, JSON.stringify(data));
         
         // Procesar datos para el dispositivo seleccionado
-        processHistoricalData(data, deviceKey);
+        processHistoricalData(data, historicoKey);
       }
     } catch (error: any) {
       console.error('Error al cargar datos históricos:', error);
@@ -119,6 +128,14 @@ export default function HistoricalChart({
     const chartValues: number[] = [];
     const chartTimeLabels: string[] = []; // Para almacenar solo las horas para móviles
     
+    // Verificar si data es null o undefined
+    if (!data) {
+      console.error('No hay datos para procesar');
+      setError('No hay datos disponibles para este dispositivo');
+      setChartData(null);
+      return;
+    }
+    
     // Verificar si es un objeto o un array
     if (Array.isArray(data)) {
       // Es un array
@@ -133,32 +150,39 @@ export default function HistoricalChart({
           chartValues.push(Number(item.DATA.VALOR));
         }
       });
-    } else {
+    } else if (typeof data === 'object') {
       // Es un objeto
-      Object.entries(data).forEach(([key, value]: [string, any]) => {
-        if (value && value.DATA && value.DATA.VALOR) {
-          let timeLabel;
-          if (value.DATA.TIME) {
-            timeLabel = formatLabviewTimeToHourMinute(Number(value.DATA.TIME));
-          } else {
-            timeLabel = 'N/D';
+      try {
+        Object.entries(data).forEach(([key, value]: [string, any]) => {
+          if (value && value.DATA && value.DATA.VALOR) {
+            let timeLabel;
+            if (value.DATA.TIME) {
+              timeLabel = formatLabviewTimeToHourMinute(Number(value.DATA.TIME));
+            } else {
+              timeLabel = 'N/D';
+            }
+            
+            // Determinar el identificador de la toma
+            let tomaLabel;
+            if (key.startsWith('T')) {
+              // Si comienza con 'T', usar la clave como está
+              tomaLabel = key; 
+            } else {
+              // Si es otro tipo de clave (numérica), considerarla como el número de toma
+              tomaLabel = `Toma ${key}`;
+            }
+            
+            chartLabels.push(`${tomaLabel} (${timeLabel})`);
+            chartTimeLabels.push(timeLabel); // Solo la hora para móviles
+            chartValues.push(Number(value.DATA.VALOR));
           }
-          
-          // Determinar el identificador de la toma
-          let tomaLabel;
-          if (key.startsWith('T')) {
-            // Si comienza con 'T', usar la clave como está
-            tomaLabel = key; 
-          } else {
-            // Si es otro tipo de clave (numérica), considerarla como el número de toma
-            tomaLabel = `Toma ${key}`;
-          }
-          
-          chartLabels.push(`${tomaLabel} (${timeLabel})`);
-          chartTimeLabels.push(timeLabel); // Solo la hora para móviles
-          chartValues.push(Number(value.DATA.VALOR));
-        }
-      });
+        });
+      } catch (error) {
+        console.error('Error al procesar datos históricos:', error);
+        setError(`Error al procesar datos: ${error.message || 'Error desconocido'}`);
+        setChartData(null);
+        return;
+      }
     }
     
     // Ordenar los datos por tiempo si es posible

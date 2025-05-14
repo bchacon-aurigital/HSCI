@@ -1,9 +1,14 @@
-// Función para verificar si una ASADA tiene datos históricos disponibles
-export async function hasHistoricalData(codigoAsada: string): Promise<boolean> {
+export async function hasHistoricalData(codigoAsada: string, historicoKey?: string): Promise<boolean> {
   try {
-    // Ahora solo verificamos a nivel de ASADA, no a nivel de dispositivo
-    const url = `https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/ASROA/HISTORICO/BP/NIVELES.json`;
-    console.log(`Verificando datos históricos a nivel de ASADA`);
+    if (!codigoAsada) {
+      console.error('Código de ASADA no proporcionado');
+      return false;
+    }
+    
+    const keyToUse = historicoKey;
+    
+    const url = `https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/ASROA/HISTORICO/${keyToUse}/NIVELES.json`;
+    console.log(`Verificando datos históricos para ASADA: ${codigoAsada} con clave: ${keyToUse}`);
     
     const response = await fetch(url);
     
@@ -14,46 +19,56 @@ export async function hasHistoricalData(codigoAsada: string): Promise<boolean> {
     
     const data = await response.json();
     
-    // Verificar si existe la estructura de datos históricos
-    return !!data;
+    return data !== null && data !== undefined;
   } catch (error) {
-    console.error('Error al verificar datos históricos:', error);
+    console.error(`Error al verificar datos históricos para ${codigoAsada} con clave ${historicoKey}:`, error);
     return false;
   }
 }
 
-// Cache para almacenar resultados de verificación y evitar peticiones repetidas
 const historicalDataCache: Record<string, boolean> = {
-  'ASROA': true  // Inicializar con ASROA disponible
+  'ASROA': true  
 };
 
-// Función con caché para verificar datos históricos
-export async function checkHistoricalDataAvailability(codigoAsada: string): Promise<boolean> {
-  // Simplificación: siempre devolver true para ASROA
-  if (codigoAsada === 'ASROA') {
-    return true;
+export async function checkHistoricalDataAvailability(codigoAsada: string, historicoKey?: string): Promise<boolean> {
+  if (!codigoAsada) {
+    return false;
   }
   
-  // Para otras ASADAS, usar la caché
-  if (historicalDataCache[codigoAsada] !== undefined) {
-    return historicalDataCache[codigoAsada];
+  const cacheKey = historicoKey ? `${codigoAsada}_${historicoKey}` : codigoAsada;
+  
+  if (historicalDataCache[cacheKey] !== undefined) {
+    return historicalDataCache[cacheKey];
   }
   
-  // Para simplificar, por ahora solo ASROA tiene históricos
-  historicalDataCache[codigoAsada] = false;
-  return false;
+  try {
+    const hasData = await hasHistoricalData(codigoAsada, historicoKey);
+    historicalDataCache[cacheKey] = hasData;
+    return hasData;
+  } catch (error) {
+    console.error(`Error al verificar disponibilidad de datos históricos para ${codigoAsada} con clave ${historicoKey}:`, error);
+    historicalDataCache[cacheKey] = false;
+    return false;
+  }
 }
 
-// Función para limpiar la caché (útil si se quiere verificar nuevamente)
-export function clearHistoricalDataCache(codigoAsada?: string): void {
+export function clearHistoricalDataCache(codigoAsada?: string, historicoKey?: string): void {
   if (codigoAsada) {
-    delete historicalDataCache[codigoAsada];
+    if (historicoKey) {
+      delete historicalDataCache[`${codigoAsada}_${historicoKey}`];
+      delete historicalDataCache[codigoAsada];
+    } else {
+      Object.keys(historicalDataCache).forEach(key => {
+        if (key === codigoAsada || key.startsWith(`${codigoAsada}_`)) {
+          delete historicalDataCache[key];
+        }
+      });
+    }
   } else {
-    // Si no se especifica una ASADA, limpiar toda la caché excepto ASROA que siempre está disponible
     Object.keys(historicalDataCache).forEach(key => {
-      if (key !== 'ASROA') {
+      if (key !== 'ASROA' && !key.startsWith('ASROA_')) {
         delete historicalDataCache[key];
       }
     });
   }
-} 
+}

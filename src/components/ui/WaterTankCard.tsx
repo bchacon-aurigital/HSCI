@@ -79,12 +79,53 @@ export default function WaterTankCard({
     hasAlert = statusAsNumber === 2 || statusAsNumber === 3;
   }
 
+  // Estado para almacenar la clave histórica del dispositivo
+  const [deviceHistoricoKey, setDeviceHistoricoKey] = useState<string | null>(null);
+
   useEffect(() => {
     if (codigoAsada) {
-      // Simplificación: solo mostrar históricos para ASROA sin hacer petición
-      setHasHistorical(codigoAsada === 'ASROA');
+      // Verificar si el dispositivo tiene datos históricos disponibles
+      const checkHistorical = async () => {
+        try {
+          // Obtener la clave histórica del dispositivo directamente de la configuración
+          let historicoKey = null;
+          
+          if (identifier) {
+            // Buscar el historicoKey en la configuración del dispositivo
+            import('../../app/data/devicesConfig2').then(({ devices }) => {
+              // Encontrar el dispositivo actual en la configuración
+              const device = devices.find(d => d.key === identifier && d.type === 'tank');
+              
+              if (device && 'historicoKey' in device) {
+                historicoKey = device.historicoKey;
+                setDeviceHistoricoKey(historicoKey);
+                
+                // Solo verificamos disponibilidad si hay historicoKey
+                if (historicoKey) {
+                  console.log(`Verificando datos históricos para ${codigoAsada} con clave: ${historicoKey}`);
+                  checkHistoricalDataAvailability(codigoAsada, historicoKey).then(hasHistoricalData => {
+                    setHasHistorical(hasHistoricalData);
+                  });
+                } else {
+                  setHasHistorical(false);
+                }
+              } else {
+                setDeviceHistoricoKey(null);
+                setHasHistorical(false);
+              }
+            });
+          } else {
+            setHasHistorical(false);
+          }
+        } catch (error) {
+          console.error('Error al verificar datos históricos:', error);
+          setHasHistorical(false);
+        }
+      };
+      
+      checkHistorical();
     }
-  }, [codigoAsada]);
+  }, [codigoAsada, identifier]);
 
   React.useEffect(() => {
     if (!onAlertChange) return;
@@ -199,8 +240,8 @@ export default function WaterTankCard({
                   </div>
                 )}
 
-                {/* Mostrar botón en todos los tanques */}
-                {type === 'tank' && (
+                {/* Mostrar botón solo en tanques con datos históricos disponibles */}
+                {type === 'tank' && hasHistorical && (
                   <button
                     onClick={() => setShowHistorical(true)}
                     className="flex items-center py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
@@ -233,6 +274,7 @@ export default function WaterTankCard({
           <HistoricalChart
             codigoAsada={codigoAsada}
             deviceKey={identifier}
+            historicoKey={deviceHistoricoKey || undefined}
             deviceName={name}
             onClose={() => setShowHistorical(false)}
           />
