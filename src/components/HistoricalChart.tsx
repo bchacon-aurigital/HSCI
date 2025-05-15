@@ -222,7 +222,7 @@ export default function HistoricalChart({
           label: 'Nivel del tanque (%)',
           data: sortedValues,
           borderColor: 'rgb(53, 162, 235)',
-          backgroundColor: 'rgba(53, 162, 235, 0.5)', a
+          backgroundColor: 'rgba(53, 162, 235, 0.5)', 
           fill: true,           
           pointRadius: 0, 
           pointHoverRadius: isMobile ? 5 : 7, 
