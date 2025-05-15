@@ -9,14 +9,14 @@ import {
   Title,
   Tooltip,
   Legend,
-  TimeScale
+  TimeScale,
+  Filler 
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import { Card, CardContent, CardHeader } from './ui/card';
 import { Calendar, X, Info } from 'lucide-react';
 import { formatLabviewTimeToHourMinute, formatLabviewTimeToFullDateTime } from '../utils/timeUtils';
 
-// Registrar los componentes de chart.js
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -25,7 +25,8 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  TimeScale
+  TimeScale,
+  Filler  
 );
 
 interface HistoricalChartProps {
@@ -221,16 +222,15 @@ export default function HistoricalChart({
           label: 'Nivel del tanque (%)',
           data: sortedValues,
           borderColor: 'rgb(53, 162, 235)',
-          backgroundColor: 'rgba(53, 162, 235, 0.5)',
-          pointRadius: isMobile ? 3 : 5,
-          pointBackgroundColor: 'rgb(53, 162, 235)',
-          pointBorderColor: 'white',
-          pointBorderWidth: isMobile ? 0.5 : 1,
-          pointHoverRadius: isMobile ? 5 : 7,
+          backgroundColor: 'rgba(53, 162, 235, 0.5)', a
+          fill: true,           
+          pointRadius: 0, 
+          pointHoverRadius: isMobile ? 5 : 7, 
           pointHoverBackgroundColor: 'rgb(53, 162, 235)',
           pointHoverBorderColor: 'white',
           pointHoverBorderWidth: isMobile ? 1 : 2,
-          tension: 0.3
+          tension: 0.3,
+          borderWidth: 3
         }
       ]
     });

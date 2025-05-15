@@ -2,6 +2,7 @@
 import { Device, MultiDevice } from '../types/types';
 
 export const devices: (Device | MultiDevice)[] = [
+  { name: 'TANQUE', key:'CATSA_R', type: 'tank', group: 'control1', order: 1 },
   { name: 'BOMBA1', key:'CATSA_R', pumpKey: 'BOMBA1', type: 'pump', group: 'control1', order: 1 },
   { name: 'BOMBA2', key:'CATSA_R', pumpKey: 'BOMBA2', type: 'pump', group: 'control1', order: 2 },
   {
