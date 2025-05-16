@@ -66,7 +66,7 @@ export default function HistoricalChart({
     // Usamos la fecha tal cual, sin ajustar
     const year = selectedDate.getFullYear();
     const month = selectedDate.getMonth() + 1; // getMonth() devuelve 0-11
-    const day = selectedDate.getDate();
+    const day = selectedDate.getDate() + 1;
     
     setLoading(true);
     setError(null);
