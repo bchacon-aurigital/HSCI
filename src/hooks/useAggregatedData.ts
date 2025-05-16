@@ -84,7 +84,7 @@ export const setGroupedURLsForAsada = (asadaCode: string) => {
         ]
       };
       break;
-    case 'codigo3':
+    case 'alajuela2025':
       groupedURLs = {
         'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/.json': [
           'TVIILAELIA'
