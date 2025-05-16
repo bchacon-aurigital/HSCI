@@ -25,7 +25,7 @@ export const devices: (Device | MultiDevice)[] = [
   { name: 'BOMBA DE POZO', key: 'SONIA', pumpKey: 'DATAPANEL', type: 'well', group: 'Sonia-araujo', order: 2 },
 
   //BAJOPAI
-  { name: 'TANQUE BAJO PAIRE', key: 'BAJOPAI', type: 'tank', group: 'Bajo-paires', order: 1, historicoKey: 'BP' },
+  { name: 'TANQUE BAJO PAIRE', key: 'BAJOPAI', type: 'tank', group: 'Bajo-paires', order: 1, historicoKey: 'BP', databaseKey: 'ASROA' },
   { name: 'BOMBA DE POZO', key: 'BAJOPAI', pumpKey: 'DATAPANEL', type: 'well', group: 'Bajo-paires', order: 2 },
 
   //JULIO
@@ -33,7 +33,7 @@ export const devices: (Device | MultiDevice)[] = [
   { name: 'BOMBA DE POZO', key: 'JULIO', pumpKey: 'DATAPANEL', type: 'well', group: 'Julio-alfaro', order: 2 },
 
   //MELI
-  { name: 'TANQUE LAS MELISAS', key: 'MELI', type: 'tank', group: 'Las-melisas', order: 1, historicoKey: 'MELI' },
+  { name: 'TANQUE LAS MELISAS', key: 'MELI', type: 'tank', group: 'Las-melisas', order: 1, historicoKey: 'MELI', databaseKey: 'ASROA' },
   { name: 'BOMBA DE POZO', key: 'MELI', pumpKey: 'DATAPANEL', type: 'well', group: 'Las-melisas', order: 2 },
 
   //ZSG

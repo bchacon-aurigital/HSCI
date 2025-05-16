@@ -32,17 +32,19 @@ ChartJS.register(
 interface HistoricalChartProps {
   codigoAsada: string;
   deviceKey: string;
-  historicoKey?: string; // Añadimos historicoKey como parámetro opcional
+  historicoKey?: string;
   deviceName: string;
   onClose: () => void;
+  databaseKey?: string;
 }
 
 export default function HistoricalChart({ 
   codigoAsada, 
   deviceKey, 
-  historicoKey, // Nuevo parámetro
+  historicoKey,
   deviceName,
-  onClose 
+  onClose,
+  databaseKey
 }: HistoricalChartProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -61,27 +63,29 @@ export default function HistoricalChart({
 
   // Función para cargar datos según la fecha seleccionada
   const loadDataForDate = async (selectedDate: Date) => {
-    // Ajustar la fecha para compensar el desfase de zona horaria
-    // Creamos una nueva fecha con la zona horaria local para evitar problemas con UTC
-    const adjustedDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate() + 1);
-    
-    const year = adjustedDate.getFullYear();
-    const month = adjustedDate.getMonth() + 1; // getMonth() devuelve 0-11
-    const day = adjustedDate.getDate();
+    // Usamos la fecha tal cual, sin ajustar
+    const year = selectedDate.getFullYear();
+    const month = selectedDate.getMonth() + 1; // getMonth() devuelve 0-11
+    const day = selectedDate.getDate();
     
     setLoading(true);
     setError(null);
     
     try {
-      // Usamos SOLO el historicoKey para construir la URL dinámica
-      // Si no hay historicoKey, no debería mostrarse el botón de historial
+      // Verificamos que existan tanto historicoKey como databaseKey
       if (!historicoKey) {
         setError('No hay clave histórica definida para este dispositivo');
         setLoading(false);
         return;
       }
       
-      const url = `https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/ASROA/HISTORICO/${historicoKey}/NIVELES/${year}/${month}/${day}.json`;
+      if (!databaseKey) {
+        setError('No hay base de datos definida para este dispositivo');
+        setLoading(false);
+        return;
+      }
+      
+      const url = `https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/${databaseKey}/HISTORICO/${historicoKey}/NIVELES/${year}/${month}/${day}.json`;
       
       // Uso de sessionStorage para cachear peticiones a la misma fecha
       const cacheKey = `historical_${year}_${month}_${day}_${historicoKey}`;
@@ -372,7 +376,7 @@ export default function HistoricalChart({
           <div className="flex items-center">
             <Calendar className="text-blue-400 mr-2" size={isMobile ? 16 : 18} />
             <h2 className={`${isMobile ? 'text-base' : 'text-xl'} font-semibold text-gray-100 truncate`}>
-              Histórico de ASADA - {day}/{month}/{year}
+              Histórico {deviceName} - {day}/{month}/{year}
             </h2>
           </div>
           <button 

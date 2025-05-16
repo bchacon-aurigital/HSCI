@@ -10,6 +10,7 @@ export interface Device {
   group: string;
   order: number;
   historicoKey?: string;
+  databaseKey?: string;
 }
 
 export interface MultiDeviceInfo {

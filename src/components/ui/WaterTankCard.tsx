@@ -27,6 +27,7 @@ interface WaterTankCardProps {
   pumpKey?: string;
   codigoAsada: string;
   historicoKey?: string;
+  databaseKey?: string;
   onAlertChange?: (hasAlert: boolean) => void;
 }
 
@@ -37,6 +38,7 @@ export default function WaterTankCard({
   pumpKey,
   codigoAsada,
   historicoKey,
+  databaseKey,
   onAlertChange,
 }: WaterTankCardProps) {
   const pumpKeyParam = type === 'pump' || type === 'well' ? undefined : pumpKey;
@@ -83,10 +85,9 @@ export default function WaterTankCard({
 
   // Verificar si hay datos históricos disponibles cuando se monta el componente
   useEffect(() => {
-    if (codigoAsada && historicoKey) {
-      // Solo verificamos disponibilidad si hay historicoKey proporcionado
-      console.log(`Verificando datos históricos para ${codigoAsada} con clave: ${historicoKey}`);
-      checkHistoricalDataAvailability(codigoAsada, historicoKey)
+    if (codigoAsada && historicoKey && databaseKey) {
+      // Solo verificamos disponibilidad si hay historicoKey y databaseKey proporcionados
+      checkHistoricalDataAvailability(codigoAsada, historicoKey, databaseKey)
         .then(hasHistoricalData => {
           setHasHistorical(hasHistoricalData);
         })
@@ -97,7 +98,7 @@ export default function WaterTankCard({
     } else {
       setHasHistorical(false);
     }
-  }, [codigoAsada, historicoKey]);
+  }, [codigoAsada, historicoKey, databaseKey, name]);
 
   React.useEffect(() => {
     if (!onAlertChange) return;
@@ -219,7 +220,7 @@ export default function WaterTankCard({
                     className="flex items-center py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
                   >
                     <History className="mr-2" size={18} />
-                    Ver histórico ASADA
+                    Ver histórico
                   </button>
                 )}
               </div>
@@ -248,6 +249,7 @@ export default function WaterTankCard({
             deviceKey={identifier}
             historicoKey={historicoKey}
             deviceName={name}
+            databaseKey={databaseKey}
             onClose={() => setShowHistorical(false)}
           />
         )}
