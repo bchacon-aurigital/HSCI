@@ -10,7 +10,7 @@ export const loadDevicesForAsada = async (codigoAsada: string) => {
     case 'codigo2':
       const { devices: asada3Devices } = await import('../app/data/devicesConfig3');
       return { name: 'ASADA Control', devices: asada3Devices };
-    case 'codigo3':
+    case 'alajuela2025':
       const { devices: asada4Devices } = await import('../app/data/devicesConfig4');
       return { name: 'ASADA Control', devices: asada4Devices };
     default:
