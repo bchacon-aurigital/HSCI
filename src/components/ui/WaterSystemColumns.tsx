@@ -105,18 +105,19 @@ export default function WaterSystemColumns() {
 
   // Inicializar columnas cerradas por defecto cuando groupedDevices cambie
   useEffect(() => {
-    if (groupedDevices && groupedDevices.length > 0) {
-      // Solo inicializar para grupos nuevos, preservar estado de grupos existentes
-      const initialState: Record<string, boolean> = {...collapsedGroups};
-      
+  
+    if (groupedDevices.length > 0 && Object.keys(collapsedGroups).length === 0) {
+      const initialState: Record<string, boolean> = {};
       groupedDevices.forEach(group => {
-        // Solo establecer el estado para grupos que no tengan un estado definido
-        if (initialState[group.name] === undefined) {
-          initialState[group.name] = true;
-        }
+        initialState[group.name] = false; // false = expandido
+      });
+      setCollapsedGroups(initialState);
+    } else if (groupedDevices.length > 0) {
+      const initialState: Record<string, boolean> = {};
+      groupedDevices.forEach(group => {
+        initialState[group.name] = collapsedGroups[group.name] || false;
       });
       
-      // Solo actualizar si hay cambios
       if (JSON.stringify(initialState) !== JSON.stringify(collapsedGroups)) {
         setCollapsedGroups(initialState);
       }
@@ -139,16 +140,19 @@ export default function WaterSystemColumns() {
   const registerAlert = (groupName: string, deviceId: string, hasAlert: boolean) => {
     const alertKey = `${groupName}:::${deviceId}`;
     setDeviceAlerts(prev => {
-      // Evitar actualizaciones innecesarias que causan bucles infinitos
-      // Solo actualizar el estado si el valor realmente cambió
       if (prev[alertKey] === hasAlert) {
         return prev; // Devolver el estado anterior sin cambios
       }
-      // Solo si hay un cambio real, actualizar el estado
-      return {
-        ...prev,
-        [alertKey]: hasAlert
-      };
+      
+      const newState = { ...prev };
+      
+      if (hasAlert) {
+        newState[alertKey] = true;
+      } else {
+        delete newState[alertKey];
+      }
+      
+      return newState;
     });
   };
 
