@@ -22,6 +22,8 @@ export default function WaterSystemColumns() {
   const [isControlAsada, setIsControlAsada] = useState<boolean>(false);
   // Estado global para alertas
   const [deviceAlerts, setDeviceAlerts] = useState<Record<string, boolean>>({});
+  // Estado para advertencias (amarillas)
+  const [deviceWarnings, setDeviceWarnings] = useState<Record<string, boolean>>({});
 
   const handleLogin = (codigo: string) => {
     setLoading(true);
@@ -126,19 +128,29 @@ export default function WaterSystemColumns() {
 
   // Función para verificar si un grupo tiene algún dispositivo en alerta
   const hasGroupAlert = (groupName: string) => {
-    // Buscar dispositivos de este grupo en el estado de alertas
+    // Primero verificar alertas críticas (rojas) - mayor prioridad
     for (const deviceId in deviceAlerts) {
       // Formato: "grupo:::dispositivo"
       if (deviceId.startsWith(`${groupName}:::`) && deviceAlerts[deviceId]) {
-        return true;
+        return 'critical';
       }
     }
-    return false;
+    
+    // Si no hay alertas críticas, verificar advertencias (amarillas)
+    for (const deviceId in deviceWarnings) {
+      if (deviceId.startsWith(`${groupName}:::`) && deviceWarnings[deviceId]) {
+        return 'warning';
+      }
+    }
+    
+    // No hay alertas
+    return null;
   };
 
   // Función para registrar alerta de un dispositivo
   const registerAlert = (groupName: string, deviceId: string, hasAlert: boolean) => {
     const alertKey = `${groupName}:::${deviceId}`;
+    
     setDeviceAlerts(prev => {
       if (prev[alertKey] === hasAlert) {
         return prev; // Devolver el estado anterior sin cambios
@@ -150,6 +162,27 @@ export default function WaterSystemColumns() {
         newState[alertKey] = true;
       } else {
         delete newState[alertKey];
+      }
+      
+      return newState;
+    });
+  };
+  
+  // Función para registrar advertencia de un dispositivo
+  const registerWarning = (groupName: string, deviceId: string, hasWarning: boolean) => {
+    const warningKey = `${groupName}:::${deviceId}`;
+    
+    setDeviceWarnings(prev => {
+      if (prev[warningKey] === hasWarning) {
+        return prev; // Devolver el estado anterior sin cambios
+      }
+      
+      const newState = { ...prev };
+      
+      if (hasWarning) {
+        newState[warningKey] = true;
+      } else {
+        delete newState[warningKey];
       }
       
       return newState;
@@ -212,6 +245,7 @@ export default function WaterSystemColumns() {
             historicoKey={device.historicoKey}
             databaseKey={device.databaseKey}
             onAlertChange={(hasAlert) => registerAlert(groupName, identifier, hasAlert)}
+            onWarningChange={(hasWarning) => registerWarning(groupName, identifier, hasWarning)}
           />
         );
       }
@@ -334,79 +368,112 @@ export default function WaterSystemColumns() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {groupedDevices.map((group) => (
-                    <div key={group.name} className="flex flex-col h-full">
-                      <div className={`bg-[#172236] border ${hasGroupAlert(group.name) ? 'border-red-500/70' : 'border-blue-500/20'} rounded-lg shadow-lg overflow-hidden mb-4`}>
-                        <div className={`bg-gradient-to-r ${hasGroupAlert(group.name) ? 'from-red-900/50 to-red-800/30' : 'from-blue-900/50 to-blue-800/30'} p-4 border-b ${hasGroupAlert(group.name) ? 'border-red-500/20' : 'border-blue-500/20'}`}>
-                          <div className="flex justify-between items-center">
-                            <h2 className="text-xl font-bold text-white flex items-center">
-                              <div className={`h-9 w-9 rounded-full ${hasGroupAlert(group.name) ? 'bg-red-600/40' : 'bg-blue-600/40'} flex items-center justify-center mr-3 shadow-inner ${hasGroupAlert(group.name) ? 'shadow-red-500/10' : 'shadow-blue-500/10'}`}>
-                                <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${hasGroupAlert(group.name) ? 'text-red-300' : 'text-blue-300'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                                </svg>
-                              </div>
-                              <span className={`bg-gradient-to-r ${hasGroupAlert(group.name) ? 'from-red-100 to-red-200' : 'from-white to-blue-100'} bg-clip-text text-transparent`}>
-                                {group.name.split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                              </span>
-                            </h2>
-                            <button 
-                              onClick={() => toggleGroupCollapse(group.name)}
-                              className="p-2 rounded-full hover:bg-blue-700/40 transition-all duration-200 hover:shadow-md hover:shadow-blue-900/30"
-                              aria-label={collapsedGroups[group.name] ? "Expandir" : "Comprimir"}
-                            >
-                              {collapsedGroups[group.name] ? (
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
-                              ) : (
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                                </svg>
-                              )}
-                            </button>
+                  {groupedDevices.map((group) => {
+                    // Obtener el estado de alerta del grupo
+                    const groupAlert = hasGroupAlert(group.name);
+                    
+                    return (
+                      <div key={group.name} className="flex flex-col h-full">
+                        <div className={`bg-[#172236] border ${
+                          groupAlert === 'critical' ? 'border-red-600 border-l-4' : 
+                          groupAlert === 'warning' ? 'border-yellow-500/70 border-l-4' : 
+                          'border-blue-500/20'
+                        } rounded-lg shadow-lg overflow-hidden mb-4`}>
+                          <div className={`bg-gradient-to-r ${
+                            groupAlert === 'critical' ? 'from-red-900/50 to-red-800/30' : 
+                            groupAlert === 'warning' ? 'from-yellow-900/50 to-yellow-800/30' : 
+                            'from-blue-900/50 to-blue-800/30'
+                          } p-4 border-b ${
+                            groupAlert === 'critical' ? 'border-red-500/20' : 
+                            groupAlert === 'warning' ? 'border-yellow-500/20' : 
+                            'border-blue-500/20'
+                          }`}>
+                            <div className="flex justify-between items-center">
+                              <h2 className="text-xl font-bold text-white flex items-center">
+                                <div className={`h-9 w-9 rounded-full ${
+                                  groupAlert === 'critical' ? 'bg-red-600/40' : 
+                                  groupAlert === 'warning' ? 'bg-yellow-600/40' : 
+                                  'bg-blue-600/40'
+                                } flex items-center justify-center mr-3 shadow-inner ${
+                                  groupAlert === 'critical' ? 'shadow-red-500/10' : 
+                                  groupAlert === 'warning' ? 'shadow-yellow-500/10' : 
+                                  'shadow-blue-500/10'
+                                }`}>
+                                  <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${
+                                    groupAlert === 'critical' ? 'text-red-300' : 
+                                    groupAlert === 'warning' ? 'text-yellow-300' : 
+                                    'text-blue-300'
+                                  }`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                  </svg>
+                                </div>
+                                <span className={`bg-gradient-to-r ${
+                                  groupAlert === 'critical' ? 'from-red-100 to-red-200' : 
+                                  groupAlert === 'warning' ? 'from-yellow-100 to-yellow-200' : 
+                                  'from-white to-blue-100'
+                                } bg-clip-text text-transparent`}>
+                                  {group.name.split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                                </span>
+                              </h2>
+                              <button 
+                                onClick={() => toggleGroupCollapse(group.name)}
+                                className="p-2 rounded-full hover:bg-blue-700/40 transition-all duration-200 hover:shadow-md hover:shadow-blue-900/30"
+                                aria-label={collapsedGroups[group.name] ? "Expandir" : "Comprimir"}
+                              >
+                                {collapsedGroups[group.name] ? (
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                  </svg>
+                                ) : (
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                                  </svg>
+                                )}
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                        {/* Renderizar hijos invisibles si la columna está cerrada para que notifiquen alerta */}
-                        {collapsedGroups[group.name] && (
-                          <div style={{ display: 'none' }}>
-                            {[...group.devices]
-                              .sort((a, b) => a.order - b.order)
-                              .map((device) => {
-                                try {
-                                  const identifier = device.url ? device.url : device.key!;
-                                  return renderDeviceCard(device, identifier, group.name);
-                                } catch (error) {
-                                  return null;
-                                }
-                              })}
-                          </div>
-                        )}
-                        {/* Renderizado visible solo si la columna está expandida */}
-                        {!collapsedGroups[group.name] && (
-                          <div className="p-4 space-y-4">
-                            {[...group.devices]
-                              .sort((a, b) => a.order - b.order)
-                              .map((device) => {
-                                try {
-                                  const identifier = device.url ? device.url : device.key!;
-                                  return renderDeviceCard(device, identifier, group.name);
-                                } catch (error) {
-                                  console.error('Error al procesar dispositivo:', error);
-                                  return (
-                                    <div key={`error-${Math.random()}`} className="bg-red-900/30 p-4 rounded-lg shadow-md">
-                                      <div className="flex items-center text-red-400">
-                                        <AlertTriangle className="h-5 w-5 mr-2" />
-                                        <p>Error al procesar dispositivo</p>
+                          {/* Renderizar hijos invisibles si la columna está cerrada para que notifiquen alerta */}
+                          {collapsedGroups[group.name] && (
+                            <div style={{ display: 'none' }}>
+                              {[...group.devices]
+                                .sort((a, b) => a.order - b.order)
+                                .map((device) => {
+                                  try {
+                                    const identifier = device.url ? device.url : device.key!;
+                                    return renderDeviceCard(device, identifier, group.name);
+                                  } catch (error) {
+                                    return null;
+                                  }
+                                })}
+                            </div>
+                          )}
+                          {/* Renderizado visible solo si la columna está expandida */}
+                          {!collapsedGroups[group.name] && (
+                            <div className="p-4 space-y-4">
+                              {[...group.devices]
+                                .sort((a, b) => a.order - b.order)
+                                .map((device) => {
+                                  try {
+                                    const identifier = device.url ? device.url : device.key!;
+                                    return renderDeviceCard(device, identifier, group.name);
+                                  } catch (error) {
+                                    console.error('Error al procesar dispositivo:', error);
+                                    return (
+                                      <div key={`error-${Math.random()}`} className="bg-red-900/30 p-4 rounded-lg shadow-md">
+                                        <div className="flex items-center text-red-400">
+                                          <AlertTriangle className="h-5 w-5 mr-2" />
+                                          <p>Error al procesar dispositivo</p>
+                                        </div>
                                       </div>
-                                    </div>
-                                  );
-                                }
-                              })}
-                          </div>
-                        )}
+                                    );
+                                  }
+                                })}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
 

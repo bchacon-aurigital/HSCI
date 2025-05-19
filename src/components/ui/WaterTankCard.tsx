@@ -29,6 +29,7 @@ interface WaterTankCardProps {
   historicoKey?: string;
   databaseKey?: string;
   onAlertChange?: (hasAlert: boolean) => void;
+  onWarningChange?: (hasWarning: boolean) => void;
 }
 
 export default function WaterTankCard({
@@ -40,6 +41,7 @@ export default function WaterTankCard({
   historicoKey,
   databaseKey,
   onAlertChange,
+  onWarningChange,
 }: WaterTankCardProps) {
   const pumpKeyParam = type === 'pump' || type === 'well' ? undefined : pumpKey;
   const { data, error, loading } = useDeviceData(identifier, pumpKeyParam, codigoAsada);
@@ -49,9 +51,11 @@ export default function WaterTankCard({
   const [hasHistorical, setHasHistorical] = useState(false);
   
   const previousAlertRef = React.useRef(false);
+  const previousWarningRef = React.useRef(false);
 
   let tankValue;
   let hasAlert = false;
+  let hasWarning = false;
   
   if (type === 'tank') {
     if (typeof data === 'number') {
@@ -75,7 +79,21 @@ export default function WaterTankCard({
         }
       }
     }
-    hasAlert = tankValue !== undefined && !isNaN(tankValue) && tankValue < 25;
+    
+    // Detectar diferentes niveles de alerta
+    if (tankValue !== undefined && !isNaN(tankValue)) {
+      // Alerta crítica (roja) - nivel muy bajo (<25%)
+      hasAlert = tankValue < 25;
+      
+      // Advertencia (amarilla) - nivel bajo (entre 25% y 50%)
+      hasWarning = !hasAlert && tankValue >= 25 && tankValue <= 50;
+      
+      if (hasAlert) {
+        console.log(`ALERTA CRÍTICA en tanque ${name}: ${tankValue}%`);
+      } else if (hasWarning) {
+        console.log(`ADVERTENCIA en tanque ${name}: ${tankValue}%`);
+      }
+    }
   } else if (type === 'pump' || type === 'well') {
     const statusAsNumber = Number(
       pumpKey ? (data as any)?.[pumpKey] : (data as any)?.[identifier],
@@ -100,6 +118,7 @@ export default function WaterTankCard({
     }
   }, [codigoAsada, historicoKey, databaseKey, name]);
 
+  // Notificar cambios en el estado de alerta al componente padre
   React.useEffect(() => {
     if (!onAlertChange) return;
     
@@ -108,6 +127,16 @@ export default function WaterTankCard({
       onAlertChange(hasAlert);
     }
   }, [hasAlert, onAlertChange]);
+  
+  // Notificar cambios en el estado de advertencia al componente padre
+  React.useEffect(() => {
+    if (!onWarningChange) return;
+    
+    if (previousWarningRef.current !== hasWarning) {
+      previousWarningRef.current = hasWarning;
+      onWarningChange(hasWarning);
+    }
+  }, [hasWarning, onWarningChange]);
 
   const hasData = (key: string) =>
     typeof data === 'object' &&
@@ -170,13 +199,15 @@ export default function WaterTankCard({
       <>
         <Card
           className={`bg-gray-900 border-gray-800 shadow-lg transition-all duration-300 ${
-            isLowLevel ? 'border-l-4 border-l-red-500' : ''
+            isLowLevel ? 'border-l-4 border-l-red-500' : 
+            hasWarning ? 'border-l-4 border-l-yellow-500' : ''
           }`}
         >
           <CardHeader className="bg-gray-800 pb-2">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold text-gray-100">{name}</h2>
               {isLowLevel && <AlertTriangle className="text-red-500" size={24} />}
+              {hasWarning && <AlertTriangle className="text-yellow-500" size={24} />}
             </div>
           </CardHeader>
           <CardContent className="pt-4">
@@ -189,7 +220,7 @@ export default function WaterTankCard({
                     className={`mr-3 ${
                       tankValue < 25
                         ? 'text-red-500'
-                        : tankValue < 50
+                        : tankValue <= 50
                         ? 'text-yellow-400'
                         : 'text-green-400'
                     }`}
@@ -208,6 +239,20 @@ export default function WaterTankCard({
                       </span>
                       <span className="text-red-300/80 text-sm">
                         Se requiere revisión inmediata del suministro
+                      </span>
+                    </div>
+                  </div>
+                )}
+                
+                {hasWarning && (
+                  <div className="flex items-center w-full py-3 px-4 rounded-lg bg-yellow-950/30 border border-yellow-900">
+                    <AlertTriangle className="text-yellow-500 mr-3" size={20} />
+                    <div>
+                      <span className="text-yellow-400 font-medium block">
+                        Nivel bajo de agua
+                      </span>
+                      <span className="text-yellow-300/80 text-sm">
+                        Se recomienda revisión del suministro
                       </span>
                     </div>
                   </div>
