@@ -8,6 +8,7 @@ import { useDeviceGroups } from '../../hooks/useDeviceGroups';
 import { BaseDeviceType, MultiDevice } from '../../app/types/types';
 import { loadDevicesForAsada } from '../../hooks/dynamicDeviceLoader';
 import { setRealTimeMode, triggerRefresh } from '../../hooks/useAggregatedData';
+import { setRealTimeModeForDevices } from '../../hooks/useIndividualDeviceData';
 
 export default function WaterSystemColumns() {
   const [codigoAsada, setCodigoAsada] = useState<string>('');
@@ -44,8 +45,9 @@ export default function WaterSystemColumns() {
     // puedan verificar si el modo tiempo real está activo
     window.isRealTimeActive = newState;
     
-    // Usar la función centralizada para controlar el modo tiempo real
-    setRealTimeMode(newState);
+    // Activar modo tiempo real para AMBOS sistemas
+    setRealTimeMode(newState);              // Para datos agregados
+    setRealTimeModeForDevices(newState);    // Para dispositivos individuales
     
     // Si se activa, forzar una actualización inmediata
     if (newState) {
@@ -61,10 +63,11 @@ export default function WaterSystemColumns() {
     window.isRealTimeActive = isRealTime;
     
     return () => {
-      // Desactivar el modo tiempo real al desmontar
+      // Desactivar AMBOS sistemas de tiempo real al desmontar
       if (isRealTime) {
         window.isRealTimeActive = false;
-        setRealTimeMode(false);
+        setRealTimeMode(false);              // Desactivar datos agregados
+        setRealTimeModeForDevices(false);    // Desactivar dispositivos individuales
       }
     };
   }, [isRealTime]);
@@ -75,7 +78,8 @@ export default function WaterSystemColumns() {
     if (codigoAsada && isRealTime) {
       console.log("Desactivando tiempo real por cambio de ASADA");
       window.isRealTimeActive = false;
-      setRealTimeMode(false);
+      setRealTimeMode(false);              // Desactivar datos agregados
+      setRealTimeModeForDevices(false);    // Desactivar dispositivos individuales
       setIsRealTime(false);
     }
   }, [codigoAsada]); // Solo depende de codigoAsada, no de isRealTime
