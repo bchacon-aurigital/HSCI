@@ -15,8 +15,10 @@ import {
 } from 'chart.js';
 import { Line, Bar } from 'react-chartjs-2';
 import { Card, CardContent, CardHeader } from './ui/card';
-import { Calendar, X, Info } from 'lucide-react';
+import { Calendar, X, Info, Activity, Droplets } from 'lucide-react';
 import { formatLabviewTimeToHourMinute, formatLabviewTimeToFullDateTime } from '../utils/timeUtils';
+import { TabSelector } from './ui/TabSelector';
+import { checkPumpDataAvailability } from '../utils/checkPumpDataAvailability';
 
 ChartJS.register(
   CategoryScale,
@@ -52,21 +54,89 @@ export default function HistoricalChart({
   const [error, setError] = useState<string | null>(null);
   const [chartData, setChartData] = useState<any>(null);
   
-  // Estado para controlar si se muestran niveles o estado de bombas
-  const [showPumpStatus, setShowPumpStatus] = useState(false);
+  // Estado para controlar qué pestaña está activa
+  const [activeTab, setActiveTab] = useState<'levels' | 'pumps'>('levels');
+  
+  // Estado para saber si hay datos de bombas disponibles
+  const [hasPumpData, setHasPumpData] = useState(false);
+  const [checkingPumpData, setCheckingPumpData] = useState(true);
   
   // Usar un solo estado para la fecha seleccionada
   const [selectedDate, setSelectedDate] = useState<string>(
     new Date().toISOString().split('T')[0]
   );
 
+  // Detectar si estamos en un dispositivo móvil
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    // Verificar al cargar
+    checkIfMobile();
+    
+    // Verificar al cambiar el tamaño de la ventana
+    window.addEventListener('resize', checkIfMobile);
+    
+    // Limpiar el event listener
+    return () => window.removeEventListener('resize', checkIfMobile);
+  }, []);
+
+  // Verificar disponibilidad de datos de bombas al montar el componente
+  useEffect(() => {
+    if (databaseKey && historicoKey) {
+      setCheckingPumpData(true);
+      checkPumpDataAvailability(databaseKey, historicoKey)
+        .then(hasData => {
+          setHasPumpData(hasData);
+          setCheckingPumpData(false);
+          console.log(`Datos de bombas disponibles para ${deviceName}: ${hasData}`);
+        })
+        .catch(error => {
+          console.error('Error al verificar datos de bombas:', error);
+          setHasPumpData(false);
+          setCheckingPumpData(false);
+        });
+    } else {
+      setHasPumpData(false);
+      setCheckingPumpData(false);
+    }
+  }, [databaseKey, historicoKey, deviceName]);
+
+  // Configurar las pestañas
+  const tabs = [
+    {
+      id: 'levels',
+      label: 'Niveles',
+      icon: <Droplets className="w-4 h-4" />,
+      disabled: false
+    },
+    {
+      id: 'pumps',
+      label: 'Estado de Bombas',
+      icon: <Activity className="w-4 h-4" />,
+      disabled: !hasPumpData || checkingPumpData,
+      tooltip: checkingPumpData 
+        ? 'Verificando disponibilidad...' 
+        : !hasPumpData 
+        ? 'No hay datos de bombas disponibles para este tanque' 
+        : undefined
+    }
+  ];
+
+  // Manejar cambio de pestaña
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId as 'levels' | 'pumps');
+  };
   // Extraer año, mes y día de la fecha seleccionada
   const getFormattedDateParts = () => {
     const [year, month, day] = selectedDate.split('-');
     return { year, month: parseInt(month).toString(), day: parseInt(day).toString() };
   };
 
-  // Función para cargar datos según la fecha seleccionada
+  // Función para cargar datos según la fecha seleccionada y la pestaña activa
   const loadDataForDate = async (selectedDate: Date) => {
     // Usamos la fecha tal cual, sin ajustar
     const year = selectedDate.getFullYear();
@@ -90,16 +160,17 @@ export default function HistoricalChart({
         return;
       }
       
-      const dataType = showPumpStatus ? 'ESTADOBOMBA' : 'NIVELES';
+      // Usar activeTab en lugar de showPumpStatus
+      const dataType = activeTab === 'pumps' ? 'ESTADOBOMBA' : 'NIVELES';
       const url = `https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/${databaseKey}/HISTORICO/${historicoKey}/${dataType}/${year}/${month}/${day}.json`;
       
-      console.log(`Obteniendo datos para ${day}/${month}/${year} desde API`);
+      console.log(`Obteniendo datos de ${dataType} para ${day}/${month}/${year} desde API`);
       const response = await fetch(url);
     
       if (!response.ok) {
         if (response.status === 404) {
           setChartData(null);
-          setError(`No hay datos disponibles para ${day}/${month}/${year}`);
+          setError(`No hay datos de ${activeTab === 'pumps' ? 'estado de bombas' : 'niveles'} disponibles para ${day}/${month}/${year}`);
         } else {
           throw new Error(`Error de red: ${response.status}`);
         }
@@ -129,12 +200,12 @@ export default function HistoricalChart({
     // Verificar si data es null o undefined
     if (!data) {
       console.error('No hay datos para procesar');
-      setError('No hay datos disponibles para este dispositivo');
+      setError(`No hay datos de ${activeTab === 'pumps' ? 'estado de bombas' : 'niveles'} disponibles para esta fecha`);
       setChartData(null);
       return;
     }
     
-    const valueField = showPumpStatus ? 'ESTADO' : 'VALOR';
+    const valueField = activeTab === 'pumps' ? 'ESTADO' : 'VALOR';
     
     // Verificar si es un objeto o un array
     if (Array.isArray(data)) {
@@ -214,11 +285,12 @@ export default function HistoricalChart({
     const sortedLabels = combinedData.map(d => d.label);
     const sortedValues = combinedData.map(d => d.value);
     
-
-    const realStates = showPumpStatus ? [...sortedValues] : [];
-    const displayValues = showPumpStatus ? sortedValues.map(() => 1) : sortedValues; 
+    const isPumpData = activeTab === 'pumps';
+    const realStates = isPumpData ? [...sortedValues] : [];
+    const displayValues = isPumpData ? sortedValues.map(() => 1) : sortedValues; 
     let backgroundColors, borderColors;
-    if (showPumpStatus) {
+    
+    if (isPumpData) {
       const stateColors = {
         0: 'rgba(239, 68, 68, 0.8)',   
         1: 'rgba(34, 197, 94, 0.8)',   
@@ -240,51 +312,34 @@ export default function HistoricalChart({
       labels: sortedLabels,
       datasets: [
         {
-          label: showPumpStatus ? 'Estado de la bomba (0=Apagada, 1=Encendida, 2=Error, 3=Selector Fuera)' : 'Nivel del tanque (%)',
+          label: isPumpData ? 'Estado de la bomba (0=Apagada, 1=Encendida, 2=Error, 3=Selector Fuera)' : 'Nivel del tanque (%)',
           data: displayValues, 
           realStates: realStates,
-          borderColor: showPumpStatus ? borderColors : 'rgb(53, 162, 235)',
-          backgroundColor: showPumpStatus ? backgroundColors : 'rgba(53, 162, 235, 0.5)',
-          fill: !showPumpStatus, 
-          pointRadius: showPumpStatus ? 4 : 0, 
+          borderColor: isPumpData ? borderColors : 'rgb(53, 162, 235)',
+          backgroundColor: isPumpData ? backgroundColors : 'rgba(53, 162, 235, 0.5)',
+          fill: !isPumpData, 
+          pointRadius: isPumpData ? 4 : 0, 
           pointHoverRadius: isMobile ? 6 : 8,
-          pointHoverBackgroundColor: showPumpStatus ? 'rgb(34, 197, 94)' : 'rgb(53, 162, 235)',
+          pointHoverBackgroundColor: isPumpData ? 'rgb(34, 197, 94)' : 'rgb(53, 162, 235)',
           pointHoverBorderColor: 'white',
           pointHoverBorderWidth: isMobile ? 1 : 2,
-          tension: showPumpStatus ? 0 : 0.3,
-          borderWidth: showPumpStatus ? 2 : 3,
-          stepped: showPumpStatus ? false : false, 
-          borderRadius: showPumpStatus ? 4 : 0,
+          tension: isPumpData ? 0 : 0.3,
+          borderWidth: isPumpData ? 2 : 3,
+          stepped: isPumpData ? false : false, 
+          borderRadius: isPumpData ? 4 : 0,
           borderSkipped: false
         }
       ]
     });
   };
 
+  // Cargar datos cuando cambie la fecha o la pestaña activa
   useEffect(() => {
     const date = new Date(selectedDate);
     loadDataForDate(date);
-  }, [selectedDate, showPumpStatus]);
+  }, [selectedDate, activeTab]); // Cambiar dependencia de showPumpStatus a activeTab
 
   const { year, month, day } = getFormattedDateParts();
-  
-  // Detectar si estamos en un dispositivo móvil
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkIfMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    
-    // Verificar al cargar
-    checkIfMobile();
-    
-    // Verificar al cambiar el tamaño de la ventana
-    window.addEventListener('resize', checkIfMobile);
-    
-    // Limpiar el event listener
-    return () => window.removeEventListener('resize', checkIfMobile);
-  }, []);
 
   const options = {
     responsive: true,
@@ -296,14 +351,14 @@ export default function HistoricalChart({
           color: 'white',
           font: {
             weight: 'bold' as const,
-            size: isMobile ? 10 : 12 // Tamaño de fuente más pequeño en móvil
+            size: isMobile ? 10 : 12
           },
-          boxWidth: isMobile ? 10 : 40 // Ancho de caja más pequeño en móvil
+          boxWidth: isMobile ? 10 : 40
         }
       },
       title: {
         display: true,
-        text: `Histórico de ${showPumpStatus ? 'Estado de Bombas' : 'Niveles'} - ${day}/${month}/${year}`,
+        text: `Histórico de ${activeTab === 'pumps' ? 'Estado de Bombas' : 'Niveles'} - ${day}/${month}/${year}`,
         color: 'white',
         font: {
           size: isMobile ? 14 : 16,
@@ -319,17 +374,15 @@ export default function HistoricalChart({
         borderWidth: 1,
         callbacks: {
           title: (items) => {
-            // En móvil, acortar el título para que sea más legible
             if (isMobile) {
               const label = items[0].label;
-              // Si el formato es 'Toma X (HH:MM)', extraer solo la hora
               const match = label.match(/\(([^)]+)\)/); 
               return match ? match[1] : label;
             }
             return items[0].label;
           },
           label: (context) => {
-            if (showPumpStatus) {
+            if (activeTab === 'pumps') {
               const realState = context.dataset.realStates?.[context.dataIndex];
               const estados = ['Apagada', 'Encendida', 'Error', 'Selector Fuera'];
               return `Estado: ${estados[realState] || 'Desconocido'}`;
@@ -342,29 +395,29 @@ export default function HistoricalChart({
     scales: {
       y: {
         min: 0,
-        max: showPumpStatus ? 1.2 : 105, 
+        max: activeTab === 'pumps' ? 1.2 : 105, 
         grid: {
           color: 'rgba(148, 163, 184, 0.1)',
-          display: !isMobile && !showPumpStatus 
+          display: !isMobile && activeTab === 'levels' 
         },
         ticks: {
           color: 'white',
           font: {
             weight: 'bold' as const,
-            size: isMobile ? 9 : 11 // Tamaño de fuente más pequeño en móvil
+            size: isMobile ? 9 : 11
           },
           callback: function(value) {
-            if (showPumpStatus) {
+            if (activeTab === 'pumps') {
               return ''; 
             }
             return value + '%';
           },
-          maxTicksLimit: isMobile ? 6 : (showPumpStatus ? 0 : 11), 
-          stepSize: showPumpStatus ? 1 : undefined, 
-          display: !showPumpStatus 
+          maxTicksLimit: isMobile ? 6 : (activeTab === 'pumps' ? 0 : 11), 
+          stepSize: activeTab === 'pumps' ? 1 : undefined, 
+          display: activeTab === 'levels' 
         },
         title: {
-          display: !isMobile && !showPumpStatus, 
+          display: !isMobile && activeTab === 'levels', 
           text: 'Nivel del Tanque (%)',
           color: 'white',
           font: {
@@ -375,21 +428,21 @@ export default function HistoricalChart({
       x: {
         grid: {
           color: 'rgba(148, 163, 184, 0.1)',
-          display: !isMobile // Ocultar grid en móvil
+          display: !isMobile
         },
         ticks: {
           color: 'white',
-          maxRotation: isMobile ? 90 : 45, // Rotación vertical en móvil para ahorrar espacio horizontal
+          maxRotation: isMobile ? 90 : 45,
           minRotation: isMobile ? 90 : 45,
           font: {
             weight: 'bold' as const,
-            size: isMobile ? 8 : 10 // Tamaño de fuente más pequeño en móvil
+            size: isMobile ? 8 : 10
           },
           autoSkip: true,
-          maxTicksLimit: isMobile ? 8 : 15 // Limitar el número de ticks en móvil
+          maxTicksLimit: isMobile ? 8 : 15
         },
         title: {
-          display: !isMobile, // Ocultar título en móvil para ahorrar espacio
+          display: !isMobile,
           text: 'Hora del día',
           color: 'white',
           font: {
@@ -398,7 +451,7 @@ export default function HistoricalChart({
         }
       }
     },
-    ...(showPumpStatus && {
+    ...(activeTab === 'pumps' && {
       categoryPercentage: 0.8, 
       barPercentage: 0.9, 
       elements: {
@@ -416,29 +469,29 @@ export default function HistoricalChart({
           <div className="flex items-center">
             <Calendar className="text-blue-400 mr-2" size={isMobile ? 16 : 18} />
             <h2 className={`${isMobile ? 'text-base' : 'text-xl'} font-semibold text-gray-100 truncate`}>
-              Histórico {deviceName} - {day}/{month}/{year}
+              Histórico {deviceName}
             </h2>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowPumpStatus(!showPumpStatus)}
-              className={`px-2 sm:px-3 py-1 sm:py-2 rounded text-xs sm:text-sm font-medium transition-colors ${
-                showPumpStatus 
-                  ? 'bg-green-600 hover:bg-green-700 text-white' 
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
-              }`}
-            >
-              {showPumpStatus ? 'Estado Bombas' : 'Niveles'}
-            </button>
-            <button 
-              onClick={onClose}
-              className="p-1 rounded-full hover:bg-gray-700"
-            >
-              <X className="text-gray-400 hover:text-white" size={isMobile ? 18 : 20} />
-            </button>
-          </div>
+          <button 
+            onClick={onClose}
+            className="p-1 rounded-full hover:bg-gray-700"
+          >
+            <X className="text-gray-400 hover:text-white" size={isMobile ? 18 : 20} />
+          </button>
         </CardHeader>
+        
         <CardContent className="p-2 sm:p-4 overflow-auto">
+          {/* Selector de pestañas */}
+          <div className="mb-4">
+            <TabSelector
+              tabs={tabs}
+              activeTab={activeTab}
+              onTabChange={handleTabChange}
+              className="mb-4"
+            />
+          </div>
+
+          {/* Selector de fecha */}
           <div className="mb-3 sm:mb-4">
             <label className="block text-xs sm:text-sm text-gray-400 mb-1">Seleccionar Fecha</label>
             <input
@@ -454,15 +507,15 @@ export default function HistoricalChart({
             <Info className="text-blue-400 mr-2 flex-shrink-0 mt-0.5" size={isMobile ? 16 : 18} />
             <div>
               <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-blue-300`}>
-                {showPumpStatus 
+                {activeTab === 'pumps' 
                   ? `Histórico del estado de bombas del día ${day}/${month}/${year}.`
-                  : `Histórico del día ${day}/${month}/${year}.`
+                  : `Histórico de niveles del tanque del día ${day}/${month}/${year}.`
                 }
                 Las lecturas se realizan cada 30 minutos (puede haber lecturas faltantes).
               </p>
               <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-blue-300 mt-1`}>
-                {showPumpStatus
-                  ? 'Cada punto representa el estado de la bomba: Apagada (0), Encendida (1), Error (2), Selector Fuera (3).'
+                {activeTab === 'pumps'
+                  ? 'Cada barra representa el estado de la bomba: Apagada (0), Encendida (1), Error (2), Selector Fuera (3).'
                   : 'Cada punto representa una toma de datos con su respectivo nivel de tanque.'
                 }
                 La hora mostrada corresponde a la lectura del dispositivo.
@@ -470,6 +523,7 @@ export default function HistoricalChart({
             </div>
           </div>
 
+          {/* Estados de carga, error y gráfico */}
           {loading && (
             <div className="flex justify-center items-center h-48 sm:h-64">
               <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -485,7 +539,7 @@ export default function HistoricalChart({
 
           {chartData && !loading && chartData.labels && chartData.labels.length > 0 && (
             <div className="h-64 sm:h-80 md:h-96 w-full">
-              {showPumpStatus ? (
+              {activeTab === 'pumps' ? (
                 <Bar data={chartData} options={options} />
               ) : (
                 <Line data={chartData} options={options} />
@@ -496,7 +550,9 @@ export default function HistoricalChart({
           {chartData && chartData.labels && chartData.labels.length === 0 && !loading && (
             <div className="bg-yellow-950/30 p-3 sm:p-4 rounded-lg border border-yellow-900 text-yellow-400">
               <p className={`${isMobile ? 'text-sm' : 'text-base'} font-medium`}>No hay datos para mostrar</p>
-              <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-yellow-300`}>No se encontraron registros para la fecha seleccionada.</p>
+              <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-yellow-300`}>
+                No se encontraron registros de {activeTab === 'pumps' ? 'estado de bombas' : 'niveles'} para la fecha seleccionada.
+              </p>
             </div>
           )}
         </CardContent>
