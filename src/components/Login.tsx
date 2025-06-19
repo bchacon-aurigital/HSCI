@@ -30,6 +30,21 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     }, 700);
   };
 
+  // Componente del logo WATA usando la imagen
+  const WataLogo = () => (
+    <div className="w-full h-32 flex items-center justify-center">
+      <img 
+        src="/assets/wata-logo.png"
+        alt="WATA Logo"
+        className="w-full h-full object-contain filter drop-shadow-lg"
+        style={{
+          filter: 'drop-shadow(0 0 30px rgba(59, 130, 246, 0.5))',
+          minHeight: '120px'
+        }}
+      />
+    </div>
+  );
+
   return (
     <div className="flex flex-col items-center justify-center h-[90vh] px-4">
       <div 
@@ -37,16 +52,21 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           animateIn ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
         } transition-all duration-700 ease-out`}
       >
-        <div className="flex justify-center mb-6">
-          <div className="w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
+        {/* Logo WATA */}
+        <div className="flex justify-center mb-8">
+          <div className="relative w-full max-w-sm">
+            {/* Efecto de resplandor */}
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-cyan-600/20 rounded-2xl blur-xl"></div>
+            <div className="relative bg-gradient-to-br from-[#1a2a42] to-[#0f1829] p-8 rounded-2xl border border-blue-500/20">
+              <WataLogo />
+            </div>
           </div>
         </div>
         
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">Control de Sistemas Hídricos</h2>
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
+            Control de Sistemas Hídricos
+          </h2>
           <p className="text-blue-100 mt-2">Acceso seguro a su sistema de monitoreo</p>
         </div>
         
