@@ -9,6 +9,10 @@ import { useDeviceData } from '../../hooks/useDeviceData';
 import { formatDate } from '../../utils/utils';
 import { MultiDeviceCardProps } from '../../app/types/types';
 
+function getFecha(data: any): string {
+  return data?.fecha || data?.FECHA || 'Sin fecha disponible';
+}
+
 interface MultiDeviceCardWithAlertProps extends MultiDeviceCardProps {
   onAlertChange?: (hasAlert: boolean) => void;
 }
@@ -347,7 +351,7 @@ export default function MultiDeviceCard({
           <Clock className="text-blue-400" size={18} />
           <div>
             <p className="text-xs text-gray-400">Última sincronización</p>
-            <p className="font-medium text-gray-100">{formatDate(data.fecha)}</p>
+            <p className="font-medium text-gray-100">{formatDate(getFecha(data))}</p>
           </div>
         </div>
       </CardFooter>

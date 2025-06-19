@@ -292,16 +292,16 @@ export default function HistoricalChart({
     
     if (isPumpData) {
       const stateColors = {
-        0: 'rgba(239, 68, 68, 0.8)',   
-        1: 'rgba(34, 197, 94, 0.8)',   
-        2: 'rgba(251, 191, 36, 0.8)',  
-        3: 'rgba(156, 163, 175, 0.8)' 
+        0: 'rgba(59, 130, 246, 0.8)',   // Azul para bomba apagada
+        1: 'rgba(34, 197, 94, 0.8)',   // Verde para bomba encendida
+        2: 'rgba(239, 68, 68, 0.8)',   // Rojo para error
+        3: 'rgba(156, 163, 175, 0.8)'  // Gris para selector fuera
       };
       const stateBorderColors = {
-        0: 'rgb(239, 68, 68)',  
-        1: 'rgb(34, 197, 94)',   
-        2: 'rgb(251, 191, 36)',  
-        3: 'rgb(156, 163, 175)'
+        0: 'rgb(59, 130, 246)',  // Azul para bomba apagada
+        1: 'rgb(34, 197, 94)',   // Verde para bomba encendida
+        2: 'rgb(239, 68, 68)',   // Rojo para error
+        3: 'rgb(156, 163, 175)'  // Gris para selector fuera
       };
       
       backgroundColors = realStates.map(value => stateColors[value as keyof typeof stateColors] || 'rgba(156, 163, 175, 0.8)');
