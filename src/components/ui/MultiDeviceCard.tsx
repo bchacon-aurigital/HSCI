@@ -153,7 +153,27 @@ export default function MultiDeviceCard({
               <Zap className="text-blue-400 mr-3" size={20} />
               <div>
                 <p className="text-xs text-gray-400">CONSUMO BOMBA</p>
-                <p className="font-bold text-gray-100">{data.AMPS}</p>
+                <p className="font-bold text-gray-100">{data.AMPS} A</p>
+              </div>
+            </div>
+          )}
+
+          {hasData('HZ') && (
+            <div className="flex items-center bg-gray-700/50 p-3 rounded-lg">
+              <Activity className="text-green-400 mr-3" size={20} />
+              <div>
+                <p className="text-xs text-gray-400">FRECUENCIA</p>
+                <p className="font-bold text-gray-100">{data.HZ} Hz</p>
+              </div>
+            </div>
+          )}
+
+          {hasData('VAC') && (
+            <div className="flex items-center bg-gray-700/50 p-3 rounded-lg">
+              <Zap className="text-yellow-400 mr-3" size={20} />
+              <div>
+                <p className="text-xs text-gray-400">VOLTAJE AC</p>
+                <p className="font-bold text-gray-100">{data.VAC} V</p>
               </div>
             </div>
           )}
@@ -326,7 +346,7 @@ export default function MultiDeviceCard({
         
         {renderSensorDetails()}
         
-        {(hasData('PRESAYA') || hasData('AMPS') || hasData('PRESION') || hasData('PRESRED') || 
+        {(hasData('PRESAYA') || hasData('AMPS') || hasData('HZ') || hasData('VAC') || hasData('PRESION') || hasData('PRESRED') || 
           hasData('TEMP1') || hasData('TEMP2') || hasData('ppm')) && (
           <button 
             onClick={() => setShowDetails(!showDetails)} 

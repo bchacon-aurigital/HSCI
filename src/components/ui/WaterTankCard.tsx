@@ -323,9 +323,29 @@ export default function WaterTankCard({
               <Zap className="text-blue-400 mr-3" size={20} />
               <div>
                 <p className="text-xs text-gray-400">CONSUMO BOMBA</p>
-                <p className="font-bold text-gray-100">{hasData('AMPS') ? data.AMPS : "N/D"}</p>
+                <p className="font-bold text-gray-100">{hasData('AMPS') ? data.AMPS : "N/D"} A</p>
               </div>
             </div>
+
+            {hasData('HZ') && (
+              <div className="flex items-center bg-gray-700/50 p-3 rounded-lg">
+                <Activity className="text-green-400 mr-3" size={20} />
+                <div>
+                  <p className="text-xs text-gray-400">FRECUENCIA</p>
+                  <p className="font-bold text-gray-100">{data.HZ} Hz</p>
+                </div>
+              </div>
+            )}
+
+            {hasData('VAC') && (
+              <div className="flex items-center bg-gray-700/50 p-3 rounded-lg">
+                <Zap className="text-yellow-400 mr-3" size={20} />
+                <div>
+                  <p className="text-xs text-gray-400">VOLTAJE AC</p>
+                  <p className="font-bold text-gray-100">{data.VAC} V</p>
+                </div>
+              </div>
+            )}
 
             {hasData('PRESION') && (
               <div className="flex items-center bg-gray-700/50 p-3 rounded-lg">
