@@ -5,6 +5,7 @@ import { Clock, AlertTriangle, Activity, Settings, Thermometer, Droplet, Gauge, 
 import { PumpIndicator } from '../indicators/PumpIndicator';
 import { WellIndicator } from '../indicators/WellIndicator';
 import { ValveIndicator } from '../indicators/ValveIndicator';
+import ResetButton from '../ResetButton';
 import { useDeviceData } from '../../hooks/useDeviceData';
 import { formatDate } from '../../utils/utils';
 import { MultiDeviceCardProps } from '../../app/types/types';
@@ -27,8 +28,23 @@ export default function MultiDeviceCard({
   const { data, error, loading } = useDeviceData(identifier, undefined, codigoAsada);
   const [showDetails, setShowDetails] = useState(false);
   const [expandedDevices, setExpandedDevices] = useState<Record<string, boolean>>({});
+  const [resetFeedback, setResetFeedback] = useState<string | null>(null);
   
   const previousAlertRef = React.useRef(false);
+  
+  // Check if this is the BOMBA1 subgroup that should have the reset button
+  const isBOMBA1Group = groupName === 'BOMBA1';
+
+  // Handle reset completion feedback
+  const handleResetComplete = (success: boolean, error?: string) => {
+    if (success) {
+      setResetFeedback('Equipo reiniciado correctamente');
+      setTimeout(() => setResetFeedback(null), 3000);
+    } else {
+      setResetFeedback(`Error al reiniciar: ${error || 'Error desconocido'}`);
+      setTimeout(() => setResetFeedback(null), 5000);
+    }
+  };
 
   React.useEffect(() => {
     if (!data || !onAlertChange) return;
@@ -246,14 +262,33 @@ export default function MultiDeviceCard({
     <Card className="bg-gray-900 border-gray-800 shadow-lg overflow-hidden">
       <CardHeader className="bg-gray-800 pb-2">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-gray-100"> </h2>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-400">
-              <span className="font-medium">{onDeviceCount}</span>/{activeDeviceCount} en operación
-            </span>
-            <div className={`h-3 w-3 rounded-full ${onDeviceCount > 0 ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`}></div>
+          {!isBOMBA1Group && (
+            <h2 className="text-xl font-semibold text-gray-100">{groupName}</h2>
+          )}
+          <div className={`flex items-center gap-3 ${isBOMBA1Group ? 'w-full justify-between' : ''}`}>
+            {isBOMBA1Group && (
+              <ResetButton 
+                onResetComplete={handleResetComplete}
+                className="scale-90"
+              />
+            )}
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-400">
+                <span className="font-medium">{onDeviceCount}</span>/{activeDeviceCount} en operación
+              </span>
+              <div className={`h-3 w-3 rounded-full ${onDeviceCount > 0 ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`}></div>
+            </div>
           </div>
         </div>
+        {resetFeedback && (
+          <div className={`mt-2 p-2 rounded-md text-sm ${
+            resetFeedback.includes('Error') 
+              ? 'bg-red-900/30 text-red-400 border border-red-800' 
+              : 'bg-green-900/30 text-green-400 border border-green-800'
+          }`}>
+            {resetFeedback}
+          </div>
+        )}
       </CardHeader>
        
       <CardContent className="pt-4">
