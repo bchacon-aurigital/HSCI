@@ -9,17 +9,20 @@ This is a Next.js 14 application called "3bahias-monitor" that serves as a water
 ## Development Commands
 
 - `npm run dev` - Start development server (http://localhost:3000)
-- `npm run build` - Build for production (static export)
+- `npm run build` - Build for production (static export to `/out` directory)
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
+
+**Note**: No testing framework is currently configured. Manual testing is done through the WaterSystemDebugger component.
 
 ## Architecture
 
 ### Core Structure
-- **Next.js App Router**: Uses `src/app/` directory structure
-- **Static Export**: Configured for static site generation (`output: 'export'`)
-- **TypeScript**: Strict mode disabled for flexibility
-- **Tailwind CSS**: Utility-first styling with custom configuration
+- **Next.js App Router**: Uses `src/app/` directory structure with layout.tsx and page.tsx
+- **Static Export**: Configured for static site generation (`output: 'export'`) with unoptimized images
+- **TypeScript**: Strict mode disabled (`"strict": false`) for development flexibility
+- **Tailwind CSS**: Utility-first styling with custom animations and dark theme variables
+- **Dependencies**: Chart.js for visualizations, Radix UI components, Lucide React icons, shadcn/ui
 
 ### Key Components
 - **WaterSystemColumns**: Main dashboard component managing device groups and login
@@ -44,10 +47,10 @@ This is a Next.js 14 application called "3bahias-monitor" that serves as a water
 - **multi**: Grouped devices for complex systems
 
 ### Data Flow
-1. Login with ASADA code → loads specific device configuration
-2. Device data fetched from Firebase URLs or aggregated endpoints
-3. Real-time updates through polling or WebSocket connections
-4. Visual indicators update based on device states and thresholds
+1. Login with ASADA code → loads specific device configuration (`devicesConfig.ts`, `devicesConfig2.ts`, etc.)
+2. Device data fetched from Firebase URLs or aggregated endpoints using custom hooks
+3. Real-time updates through client-side polling (configurable real-time mode)
+4. Visual indicators update based on device states and thresholds with custom animations
 
 ## Key Features
 
@@ -60,16 +63,39 @@ This is a Next.js 14 application called "3bahias-monitor" that serves as a water
 ## Development Notes
 
 - **TypeScript**: Strict mode is disabled (`"strict": false`) for development flexibility
-- **Font Optimization**: Uses Next.js font optimization with Geist fonts
-- **Static Assets**: Images are unoptimized for static export compatibility
+- **Font Optimization**: Uses Next.js font optimization with Geist fonts (GeistVF.woff, GeistMonoVF.woff)
+- **Static Assets**: Images are unoptimized (`unoptimized: true`) for static export compatibility
 - **Path Aliases**: `@/*` maps to `./src/*` for clean imports
+- **Build Output**: Static export generates files in `/out` directory for CDN deployment
+- **Client-Side Only**: All Firebase operations are client-side for static deployment compatibility
+
+## Directory Structure
+
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── data/              # Device configurations (devicesConfig.ts, devicesConfig2.ts, etc.)
+│   ├── types/             # TypeScript type definitions
+│   ├── fonts/             # Local Geist fonts
+│   ├── layout.tsx         # Root layout component
+│   └── page.tsx           # Main page component
+├── components/            # React components
+│   ├── indicators/        # Device-specific indicators (PumpIndicator, WaterTankIndicator, etc.)
+│   ├── ui/               # UI components (MultiDeviceCard, WaterSystemColumns, etc.)
+│   └── [various components]
+├── hooks/                 # Custom React hooks for data fetching and state management
+├── lib/                  # Utility libraries
+└── utils/                # Utility functions (Firebase write, time utils, etc.)
+```
 
 ## Component Patterns
 
-- Use `'use client'` directive for client-side components
-- Implement proper loading states and error handling
-- Follow the existing device indicator pattern for new device types
-- Use the custom hooks for data fetching to maintain consistency
+- Use `'use client'` directive for client-side components (required for Firebase and state management)
+- Implement proper loading states and error handling in all components
+- Follow the existing device indicator pattern for new device types (see `src/components/indicators/`)
+- Use the custom hooks for data fetching to maintain consistency (`useDeviceData`, `useAggregatedData`, etc.)
+- Utilize Tailwind's custom animations and dark theme CSS variables
+- Structure components with clear separation: UI components in `src/components/ui/`, indicators in `src/components/indicators/`
 
 ## Reset Functionality
 
