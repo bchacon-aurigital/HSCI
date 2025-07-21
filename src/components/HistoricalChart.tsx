@@ -1,3 +1,4 @@
+// HistoricalChart.tsx - Versión corregida para zona horaria de Costa Rica
 'use client';
 import React, { useState, useEffect } from 'react';
 import {
@@ -42,6 +43,24 @@ interface HistoricalChartProps {
   databaseKey?: string;
 }
 
+// Función para obtener la fecha actual en Costa Rica
+const getCostaRicaDate = () => {
+  const now = new Date();
+  // Costa Rica está en UTC-6 (CST)
+  const costaRicaOffset = -6 * 60; // -6 horas en minutos
+  const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+  const costaRicaTime = new Date(utc + (costaRicaOffset * 60000));
+  return costaRicaTime;
+};
+
+// Función para formatear fecha para input date (YYYY-MM-DD) en zona horaria de Costa Rica
+const formatDateForInput = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export default function HistoricalChart({ 
   codigoAsada, 
   deviceKey, 
@@ -61,9 +80,9 @@ export default function HistoricalChart({
   const [hasPumpData, setHasPumpData] = useState(false);
   const [checkingPumpData, setCheckingPumpData] = useState(true);
   
-  // Usar un solo estado para la fecha seleccionada
+  // Usar fecha de Costa Rica como fecha por defecto
   const [selectedDate, setSelectedDate] = useState<string>(
-    new Date().toISOString().split('T')[0]
+    formatDateForInput(getCostaRicaDate())
   );
 
   // Detectar si estamos en un dispositivo móvil
@@ -130,18 +149,29 @@ export default function HistoricalChart({
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId as 'levels' | 'pumps');
   };
-  // Extraer año, mes y día de la fecha seleccionada
-  const getFormattedDateParts = () => {
-    const [year, month, day] = selectedDate.split('-');
-    return { year, month: parseInt(month).toString(), day: parseInt(day).toString() };
+
+  // Función para convertir fecha seleccionada a fecha en Costa Rica
+  const parseSelectedDateInCostaRica = (dateString: string) => {
+    // Crear fecha en Costa Rica (UTC-6)
+    const [year, month, day] = dateString.split('-').map(Number);
+    
+    // Crear fecha usando UTC y luego ajustar a Costa Rica
+    const utcDate = new Date(Date.UTC(year, month - 1, day, 12, 0, 0)); // Usar mediodía UTC para evitar problemas de zona horaria
+    
+    // Ajustar a Costa Rica (UTC-6)
+    const costaRicaOffset = -6 * 60; // -6 horas en minutos
+    const costaRicaDate = new Date(utcDate.getTime() + (costaRicaOffset * 60000));
+    
+    return {
+      year: costaRicaDate.getUTCFullYear(),
+      month: costaRicaDate.getUTCMonth() + 1,
+      day: costaRicaDate.getUTCDate()
+    };
   };
 
   // Función para cargar datos según la fecha seleccionada y la pestaña activa
-  const loadDataForDate = async (selectedDate: Date) => {
-    // Usamos la fecha tal cual, sin ajustar
-    const year = selectedDate.getFullYear();
-    const month = selectedDate.getMonth() + 1; // getMonth() devuelve 0-11
-    const day = selectedDate.getDate() + 1;
+  const loadDataForDate = async (selectedDateString: string) => {
+    const { year, month, day } = parseSelectedDateInCostaRica(selectedDateString);
     
     setLoading(true);
     setError(null);
@@ -164,7 +194,7 @@ export default function HistoricalChart({
       const dataType = activeTab === 'pumps' ? 'ESTADOBOMBA' : 'NIVELES';
       const url = `https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/${databaseKey}/HISTORICO/${historicoKey}/${dataType}/${year}/${month}/${day}.json`;
       
-      console.log(`Obteniendo datos de ${dataType} para ${day}/${month}/${year} desde API`);
+      console.log(`Obteniendo datos de ${dataType} para ${day}/${month}/${year} (Costa Rica) desde API`);
       const response = await fetch(url);
     
       if (!response.ok) {
@@ -335,11 +365,10 @@ export default function HistoricalChart({
 
   // Cargar datos cuando cambie la fecha o la pestaña activa
   useEffect(() => {
-    const date = new Date(selectedDate);
-    loadDataForDate(date);
-  }, [selectedDate, activeTab]); // Cambiar dependencia de showPumpStatus a activeTab
+    loadDataForDate(selectedDate);
+  }, [selectedDate, activeTab]);
 
-  const { year, month, day } = getFormattedDateParts();
+  const { year, month, day } = parseSelectedDateInCostaRica(selectedDate);
 
   const options = {
     responsive: true,
@@ -358,7 +387,7 @@ export default function HistoricalChart({
       },
       title: {
         display: true,
-        text: `Histórico de ${activeTab === 'pumps' ? 'Estado de Bombas' : 'Niveles'} - ${day}/${month}/${year}`,
+        text: `Histórico de ${activeTab === 'pumps' ? 'Estado de Bombas' : 'Niveles'} - ${day}/${month}/${year} (Costa Rica)`,
         color: 'white',
         font: {
           size: isMobile ? 14 : 16,
@@ -493,13 +522,17 @@ export default function HistoricalChart({
 
           {/* Selector de fecha */}
           <div className="mb-3 sm:mb-4">
-            <label className="block text-xs sm:text-sm text-gray-400 mb-1">Seleccionar Fecha</label>
+            <label className="block text-xs sm:text-sm text-gray-400 mb-1">Seleccionar Fecha (Costa Rica)</label>
             <input
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
+              max={formatDateForInput(getCostaRicaDate())} // No permitir fechas futuras
               className="bg-gray-800 border border-gray-700 rounded px-2 sm:px-3 py-1 sm:py-2 text-white w-full max-w-xs text-sm sm:text-base"
             />
+            <p className="text-xs text-gray-500 mt-1">
+              Fecha actual en Costa Rica: {formatDateForInput(getCostaRicaDate())}
+            </p>
           </div>
 
           {/* Información de ayuda */}
@@ -508,8 +541,8 @@ export default function HistoricalChart({
             <div>
               <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-blue-300`}>
                 {activeTab === 'pumps' 
-                  ? `Histórico del estado de bombas del día ${day}/${month}/${year}.`
-                  : `Histórico de niveles del tanque del día ${day}/${month}/${year}.`
+                  ? `Histórico del estado de bombas del día ${day}/${month}/${year} (Costa Rica).`
+                  : `Histórico de niveles del tanque del día ${day}/${month}/${year} (Costa Rica).`
                 }
                 Las lecturas se realizan cada 30 minutos (puede haber lecturas faltantes).
               </p>
@@ -518,7 +551,7 @@ export default function HistoricalChart({
                   ? 'Cada barra representa el estado de la bomba: Apagada (0), Encendida (1), Error (2), Selector Fuera (3).'
                   : 'Cada punto representa una toma de datos con su respectivo nivel de tanque.'
                 }
-                La hora mostrada corresponde a la lectura del dispositivo.
+                La hora mostrada corresponde a la lectura del dispositivo en Costa Rica.
               </p>
             </div>
           </div>

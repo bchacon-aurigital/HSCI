@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 
 interface LoginProps {
   onLogin: (codigo: string) => void;
@@ -9,6 +10,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     setAnimateIn(true);
@@ -28,6 +30,10 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       }
       setIsLoading(false);
     }, 700);
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   // Componente del logo WATA usando la imagen
@@ -73,14 +79,28 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="relative group">
             <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-lg blur opacity-30 group-hover:opacity-100 transition duration-500"></div>
-            <input
-              type="text"
-              placeholder="Código de acceso"
-              value={codigo}
-              onChange={(e) => setCodigo(e.target.value)}
-              className="relative w-full p-4 bg-[#1a2a42] border border-blue-500/30 rounded-lg text-white placeholder-blue-200/50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition"
-              disabled={isLoading}
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Código de acceso"
+                value={codigo}
+                onChange={(e) => setCodigo(e.target.value)}
+                className="relative w-full p-4 pr-12 bg-[#1a2a42] border border-blue-500/30 rounded-lg text-white placeholder-blue-200/50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition"
+                disabled={isLoading}
+              />
+              <button
+                type="button"
+                onClick={togglePasswordVisibility}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-300 hover:text-blue-100 transition-colors duration-200"
+                disabled={isLoading}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-5 w-5" />
+                ) : (
+                  <Eye className="h-5 w-5" />
+                )}
+              </button>
+            </div>
           </div>
           
           <div className="relative group">
