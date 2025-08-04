@@ -1,4 +1,4 @@
-export async function hasHistoricalData(codigoAsada: string, historicoKey?: string, databaseKey?: string): Promise<boolean> {
+export async function hasHistoricalData(codigoAsada: string, historicoKey?: string, databaseKey?: string, deviceType?: string): Promise<boolean> {
   try {
     if (!codigoAsada) {
       console.error('Código de ASADA no proporcionado');
@@ -12,18 +12,43 @@ export async function hasHistoricalData(codigoAsada: string, historicoKey?: stri
     
     const keyToUse = historicoKey;
     
-    const url = `https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/${databaseKey}/HISTORICO/${keyToUse}/NIVELES.json`;
+    // Determinar qué ubicaciones intentar según el tipo de dispositivo
+    let locationsToTry = [];
     
-    const response = await fetch(url);
-    
-    if (!response.ok) {
-      console.error(`Error de red al verificar históricos: ${response.status}`);
-      throw new Error(`Error de red: ${response.status}`);
+    if (deviceType === 'pump' || deviceType === 'well') {
+      // Para bombas y pozos, intentar primero ESTADOBOMBA, luego NIVELES
+      locationsToTry = ['ESTADOBOMBA', 'NIVELES'];
+    } else if (deviceType === 'valve') {
+      // Para válvulas, intentar ESTADOVALVULA, luego NIVELES
+      locationsToTry = ['ESTADOVALVULA', 'NIVELES'];
+    } else if (deviceType === 'multi') {
+      // Para dispositivos multi, intentar todas las ubicaciones posibles
+      locationsToTry = ['ESTADOBOMBA', 'NIVELES', 'ESTADOVALVULA'];
+    } else {
+      // Para tanques, intentar primero NIVELES, luego ESTADOBOMBA
+      locationsToTry = ['NIVELES', 'ESTADOBOMBA'];
     }
     
-    const data = await response.json();
+    // Intentar cada ubicación hasta encontrar datos
+    for (const subfolder of locationsToTry) {
+      const url = `https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/${databaseKey}/HISTORICO/${keyToUse}/${subfolder}.json`;
+      
+      try {
+        const response = await fetch(url);
+        
+        if (response.ok) {
+          const data = await response.json();
+          
+          if (data !== null && data !== undefined) {
+            return true;
+          }
+        }
+      } catch (error) {
+        // Continuar con la siguiente ubicación
+      }
+    }
     
-    return data !== null && data !== undefined;
+    return false;
   } catch (error) {
     console.error(`Error al verificar datos históricos para ${codigoAsada} con clave ${historicoKey}:`, error);
     return false;
@@ -32,7 +57,7 @@ export async function hasHistoricalData(codigoAsada: string, historicoKey?: stri
 
 const historicalDataCache: Record<string, boolean> = {};
 
-export async function checkHistoricalDataAvailability(codigoAsada: string, historicoKey?: string, databaseKey?: string): Promise<boolean> {
+export async function checkHistoricalDataAvailability(codigoAsada: string, historicoKey?: string, databaseKey?: string, deviceType?: string): Promise<boolean> {
   if (!codigoAsada) {
     return false;
   }
@@ -45,14 +70,14 @@ export async function checkHistoricalDataAvailability(codigoAsada: string, histo
     return false;
   }
   
-  const cacheKey = `${databaseKey}_${historicoKey ? `${codigoAsada}_${historicoKey}` : codigoAsada}`;
+  const cacheKey = `${databaseKey}_${historicoKey ? `${codigoAsada}_${historicoKey}_${deviceType || 'unknown'}` : codigoAsada}`;
   
   if (historicalDataCache[cacheKey] !== undefined) {
     return historicalDataCache[cacheKey];
   }
   
   try {
-    const hasData = await hasHistoricalData(codigoAsada, historicoKey, databaseKey);
+    const hasData = await hasHistoricalData(codigoAsada, historicoKey, databaseKey, deviceType);
     historicalDataCache[cacheKey] = hasData;
     return hasData;
   } catch (error) {

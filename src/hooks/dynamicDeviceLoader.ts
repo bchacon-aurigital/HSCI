@@ -13,6 +13,9 @@ export const loadDevicesForAsada = async (codigoAsada: string) => {
     case 'alajuela2025':
       const { devices: asada4Devices } = await import('../app/data/devicesConfig4');
       return { name: 'Acueducto Municipal Alajuela', devices: asada4Devices };
+    case 'coyol2025':
+      const { devices: asada5Devices } = await import('../app/data/devicesConfig5');
+      return { name: 'Hacienda el Coyol', devices: asada5Devices };
     default:
       throw new Error('ASADA Control');
   }

@@ -91,6 +91,13 @@ export const setGroupedURLsForAsada = (asadaCode: string) => {
         ]
       };
       break;
+    case 'coyol2025':
+      groupedURLs = {
+        'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/HACIENDA_COYOL/.json': [
+          'POZO_TANQUE', 'PRESION_CONSTANTE' 
+        ]
+      };
+      break;
     default:
       groupedURLs = {};
   }

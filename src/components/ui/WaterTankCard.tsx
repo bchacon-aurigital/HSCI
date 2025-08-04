@@ -50,6 +50,8 @@ export default function WaterTankCard({
   const [showHistorical, setShowHistorical] = useState(false);
   const [hasHistorical, setHasHistorical] = useState(false);
   
+
+  
   const previousAlertRef = React.useRef(false);
   const previousWarningRef = React.useRef(false);
 
@@ -104,13 +106,12 @@ export default function WaterTankCard({
   // Verificar si hay datos históricos disponibles cuando se monta el componente
   useEffect(() => {
     if (codigoAsada && historicoKey && databaseKey) {
-      // Solo verificamos disponibilidad si hay historicoKey y databaseKey proporcionados
-      checkHistoricalDataAvailability(codigoAsada, historicoKey, databaseKey)
+      checkHistoricalDataAvailability(codigoAsada, historicoKey, databaseKey, type)
         .then(hasHistoricalData => {
           setHasHistorical(hasHistoricalData);
         })
         .catch(error => {
-          console.error('Error al verificar datos históricos:', error);
+          console.error(`Error al verificar datos históricos para ${name}:`, error);
           setHasHistorical(false);
         });
     } else {
@@ -258,10 +259,10 @@ export default function WaterTankCard({
                   </div>
                 )}
 
-                {/* Mostrar botón solo en tanques con datos históricos disponibles */}
-                {type === 'tank' && hasHistorical && (
-                  <button
-                    onClick={() => setShowHistorical(true)}
+                {/* Mostrar botón en dispositivos con datos históricos disponibles */}
+                {hasHistorical && (
+                                      <button
+                      onClick={() => setShowHistorical(true)}
                     className="flex items-center py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
                   >
                     <History className="mr-2" size={18} />
@@ -288,7 +289,7 @@ export default function WaterTankCard({
           )}
         </Card>
 
-        {showHistorical && (
+        {showHistorical ? (
           <HistoricalChart
             codigoAsada={codigoAsada}
             deviceKey={identifier}
@@ -297,7 +298,7 @@ export default function WaterTankCard({
             databaseKey={databaseKey}
             onClose={() => setShowHistorical(false)}
           />
-        )}
+        ) : null}
       </>
     );
   }
@@ -382,108 +383,132 @@ export default function WaterTankCard({
     };
 
     return (
-      <Card
-        className={`bg-gray-900 border-gray-800 shadow-lg ${
-          isActive ? 'border-l-4 border-l-green-500' : 'border-l-4 border-l-gray-700'
-        }`}
-      >
-        <CardHeader className="bg-gray-800 pb-2">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-gray-100">{name}</h2>
-            {hasValue && (
-              <div
-                className={`h-3 w-3 rounded-full ${
-                  isActive ? 'bg-green-500 animate-pulse' : 'bg-gray-500'
-                }`}
-              />
-            )}
-          </div>
-        </CardHeader>
-
-        <CardContent className="pt-4">
-          {hasValue ? (
-            <div className="flex flex-col items-center space-y-6">
-              <div 
-                className="w-full flex items-center justify-between cursor-pointer py-2 px-3 rounded-lg bg-gray-800/80 border border-gray-700/50" 
-                onClick={() => setIsDeviceExpanded(!isDeviceExpanded)}
-              >
-                <div className="flex items-center">
-                  <Activity
-                    className={isActive ? 'text-green-400' : 'text-gray-500'}
-                    size={20}
-                  />
-                  <span className="ml-3 font-medium text-gray-100">
-                    {isActive ? 'En operación' : 'En reposo'}
-                  </span>
-                </div>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className={`h-5 w-5 text-gray-400 transition-transform duration-300 ${
-                    isDeviceExpanded ? 'rotate-180' : ''
+      <>
+        <Card
+          className={`bg-gray-900 border-gray-800 shadow-lg ${
+            isActive ? 'border-l-4 border-l-green-500' : 'border-l-4 border-l-gray-700'
+          }`}
+        >
+          <CardHeader className="bg-gray-800 pb-2">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-gray-100">{name}</h2>
+              {hasValue && (
+                <div
+                  className={`h-3 w-3 rounded-full ${
+                    isActive ? 'bg-green-500 animate-pulse' : 'bg-gray-500'
                   }`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </div>
-              
-              {isDeviceExpanded && (
-                <div className="w-full flex flex-col items-center space-y-4">
-                  {type === 'pump' && <PumpIndicator status={statusAsNumber} />}
-                  {type === 'well' && <WellIndicator status={statusAsNumber} />}
-                </div>
+                />
               )}
+            </div>
+          </CardHeader>
 
-              {renderSensorDetails()}
-
-              <button
-                onClick={() => setShowDetails(!showDetails)}
-                className="mt-2 w-full py-2 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg flex items-center justify-center gap-2 transition-colors duration-200"
-              >
-                <span>{showDetails ? 'Ocultar detalles' : 'Ver detalles de sensores'}</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className={`h-4 w-4 transition-transform duration-300 ${
-                    showDetails ? 'rotate-180' : ''
-                  }`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+          <CardContent className="pt-4">
+            {hasValue ? (
+              <div className="flex flex-col items-center space-y-6">
+                <div 
+                  className="w-full flex items-center justify-between cursor-pointer py-2 px-3 rounded-lg bg-gray-800/80 border border-gray-700/50" 
+                  onClick={() => setIsDeviceExpanded(!isDeviceExpanded)}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </button>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center py-8">
-              <AlertTriangle className="text-gray-500 mb-2" size={32} />
-              <p className="text-gray-300">No hay datos para este dispositivo</p>
-            </div>
-          )}
-        </CardContent>
+                  <div className="flex items-center">
+                    <Activity
+                      className={isActive ? 'text-green-400' : 'text-gray-500'}
+                      size={20}
+                    />
+                    <span className="ml-3 font-medium text-gray-100">
+                      {isActive ? 'En operación' : 'En reposo'}
+                    </span>
+                  </div>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={`h-5 w-5 text-gray-400 transition-transform duration-300 ${
+                      isDeviceExpanded ? 'rotate-180' : ''
+                    }`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </div>
+                
+                {isDeviceExpanded && (
+                  <div className="w-full flex flex-col items-center space-y-4">
+                    {type === 'pump' && <PumpIndicator status={statusAsNumber} />}
+                    {type === 'well' && <WellIndicator status={statusAsNumber} />}
+                  </div>
+                )}
 
-        {hasData('fecha') && (
-          <CardFooter className="bg-gray-800/50 pt-4 pb-3 flex items-center gap-3">
-            <Clock className="text-blue-400" size={18} />
-            <div>
-              <p className="text-xs text-gray-400">Última sincronización</p>
-              <p className="font-medium text-gray-100">{formatDate(data.fecha)}</p>
-            </div>
-          </CardFooter>
-        )}
-      </Card>
+                {renderSensorDetails()}
+
+                {/* Botón de históricos para bombas y pozos */}
+                {hasHistorical && (
+                                    <button
+                      onClick={() => setShowHistorical(true)}
+                    className="mt-2 w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors flex items-center justify-center gap-2"
+                  >
+                    <History className="mr-2" size={18} />
+                    Ver histórico
+                  </button>
+                )}
+
+                <button
+                  onClick={() => setShowDetails(!showDetails)}
+                  className="mt-2 w-full py-2 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg flex items-center justify-center gap-2 transition-colors duration-200"
+                >
+                  <span>{showDetails ? 'Ocultar detalles' : 'Ver detalles de sensores'}</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={`h-4 w-4 transition-transform duration-300 ${
+                      showDetails ? 'rotate-180' : ''
+                    }`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center py-8">
+                <AlertTriangle className="text-gray-500 mb-2" size={32} />
+                <p className="text-gray-300">No hay datos para este dispositivo</p>
+              </div>
+            )}
+          </CardContent>
+
+          {hasData('fecha') && (
+            <CardFooter className="bg-gray-800/50 pt-4 pb-3 flex items-center gap-3">
+              <Clock className="text-blue-400" size={18} />
+              <div>
+                <p className="text-xs text-gray-400">Última sincronización</p>
+                <p className="font-medium text-gray-100">{formatDate(data.fecha)}</p>
+              </div>
+            </CardFooter>
+          )}
+        </Card>
+        
+        {showHistorical ? (
+          <HistoricalChart
+            codigoAsada={codigoAsada}
+            deviceKey={identifier}
+            historicoKey={historicoKey}
+            deviceName={name}
+            databaseKey={databaseKey}
+            onClose={() => setShowHistorical(false)}
+          />
+        ) : null}
+      </>
     );
   }
 
