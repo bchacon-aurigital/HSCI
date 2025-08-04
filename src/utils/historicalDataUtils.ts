@@ -21,9 +21,12 @@ export async function hasHistoricalData(codigoAsada: string, historicoKey?: stri
     } else if (deviceType === 'valve') {
       // Para válvulas, intentar ESTADOVALVULA, luego NIVELES
       locationsToTry = ['ESTADOVALVULA', 'NIVELES'];
+    } else if (deviceType === 'pressure') {
+      // Para dispositivos de presión, intentar PRESION, luego NIVELES
+      locationsToTry = ['PRESION'];
     } else if (deviceType === 'multi') {
       // Para dispositivos multi, intentar todas las ubicaciones posibles
-      locationsToTry = ['ESTADOBOMBA', 'NIVELES', 'ESTADOVALVULA'];
+      locationsToTry = ['ESTADOBOMBA', 'NIVELES', 'ESTADOVALVULA', 'PRESION'];
     } else {
       // Para tanques, intentar primero NIVELES, luego ESTADOBOMBA
       locationsToTry = ['NIVELES', 'ESTADOBOMBA'];

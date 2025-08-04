@@ -52,10 +52,10 @@ export const devices: Device[] = [
   {
     name: 'PRESION RED',
     url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/HACIENDA_COYOL/PRESION_CONSTANTE/PRESION.json',
-    type: 'tank',
+    type: 'pressure',
     group: 'Red-distribucion',
     order: 5,
-    historicoKey: 'PRESION/PRESION',
+    historicoKey: 'PRESION',
     databaseKey: 'HACIENDA_COYOL'
   }
 ]; 

@@ -41,6 +41,7 @@ interface HistoricalChartProps {
   deviceName: string;
   onClose: () => void;
   databaseKey?: string;
+  deviceType?: string;
 }
 
 // Función para obtener la fecha actual en Costa Rica
@@ -67,7 +68,8 @@ export default function HistoricalChart({
   historicoKey,
   deviceName,
   onClose,
-  databaseKey
+  databaseKey,
+  deviceType
 }: HistoricalChartProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -190,8 +192,15 @@ export default function HistoricalChart({
         return;
       }
       
-      // Usar activeTab en lugar de showPumpStatus
-      const dataType = activeTab === 'pumps' ? 'ESTADOBOMBA' : 'NIVELES';
+      // Determinar el tipo de datos según el dispositivo y la pestaña activa
+      let dataType;
+      if (activeTab === 'pumps') {
+        dataType = 'ESTADOBOMBA';
+      } else if (deviceType === 'pressure') {
+        dataType = 'PRESION';
+      } else {
+        dataType = 'NIVELES';
+      }
       const url = `https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/${databaseKey}/HISTORICO/${historicoKey}/${dataType}/${year}/${month}/${day}.json`;
       
       console.log(`Obteniendo datos de ${dataType} para ${day}/${month}/${year} (Costa Rica) desde API`);

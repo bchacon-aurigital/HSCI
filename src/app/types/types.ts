@@ -1,4 +1,4 @@
-export type BaseDeviceType = 'tank' | 'pump' | 'well' | 'valve';
+export type BaseDeviceType = 'tank' | 'pump' | 'well' | 'valve' | 'pressure';
 export type DeviceType = BaseDeviceType | 'multi';
 
 export interface Device {

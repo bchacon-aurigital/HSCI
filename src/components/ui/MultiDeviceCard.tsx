@@ -465,6 +465,7 @@ export default function MultiDeviceCard({
           historicoKey={historicoKey}
           deviceName={groupName}
           databaseKey={databaseKey}
+          deviceType="multi"
           onClose={() => setShowHistorical(false)}
         />
       ) : null}

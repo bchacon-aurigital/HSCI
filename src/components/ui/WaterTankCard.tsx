@@ -14,6 +14,7 @@ import {
 import { WaterTankIndicator } from '../indicators/WaterTankIndicator';
 import { PumpIndicator } from '../indicators/PumpIndicator';
 import { WellIndicator } from '../indicators/WellIndicator';
+import { PressureIndicator } from '../indicators/PressureIndicator';
 import { useDeviceData } from '../../hooks/useDeviceData';
 import { formatDate } from '../../utils/utils';
 import { BaseDeviceType } from '../../app/types/types';
@@ -296,6 +297,7 @@ export default function WaterTankCard({
             historicoKey={historicoKey}
             deviceName={name}
             databaseKey={databaseKey}
+            deviceType={type}
             onClose={() => setShowHistorical(false)}
           />
         ) : null}
@@ -505,6 +507,80 @@ export default function WaterTankCard({
             historicoKey={historicoKey}
             deviceName={name}
             databaseKey={databaseKey}
+            deviceType={type}
+            onClose={() => setShowHistorical(false)}
+          />
+        ) : null}
+      </>
+    );
+  }
+
+  if (type === 'pressure') {
+    const pressureValue = Number(data?.PRESION || data?.valor || data || 0);
+    const hasPressureValue = !isNaN(pressureValue) && pressureValue !== null;
+
+    return (
+      <>
+        <Card className="bg-gray-900 border-gray-800 shadow-lg transition-all duration-300">
+          <CardHeader className="bg-gray-800 pb-2">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-gray-100">{name}</h2>
+              <Gauge className="text-blue-400" size={24} />
+            </div>
+          </CardHeader>
+          <CardContent className="pt-4">
+            {hasPressureValue ? (
+              <div className="flex flex-col items-center space-y-6">
+                <PressureIndicator 
+                  pressure={pressureValue} 
+                  maxPressure={100}
+                  unit="PSI"
+                />
+
+                <div className="flex items-center justify-center w-full py-3 px-4 rounded-lg bg-gray-800/80 border border-gray-700/50">
+                  <Gauge className="text-blue-400 mr-3" size={24} />
+                  <span className="text-xl font-bold text-gray-100">{pressureValue.toFixed(1)}</span>
+                  <span className="ml-2 text-gray-400">PSI</span>
+                </div>
+
+                {/* Botón de históricos para dispositivos de presión */}
+                {hasHistorical && (
+                  <button
+                    onClick={() => setShowHistorical(true)}
+                    className="flex items-center py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+                  >
+                    <History className="mr-2" size={18} />
+                    Ver histórico
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center py-8">
+                <AlertTriangle className="text-gray-500 mb-2" size={32} />
+                <p className="text-gray-300">No hay datos de presión disponibles</p>
+              </div>
+            )}
+          </CardContent>
+
+          {hasData('fecha') && (
+            <CardFooter className="bg-gray-800/50 pt-4 pb-3 flex items-center gap-3">
+              <Clock className="text-blue-400" size={18} />
+              <div>
+                <p className="text-xs text-gray-400">Registro actualizado</p>
+                <p className="font-medium text-gray-100">{formatDate(data.fecha)}</p>
+              </div>
+            </CardFooter>
+          )}
+        </Card>
+
+        {showHistorical ? (
+          <HistoricalChart
+            codigoAsada={codigoAsada}
+            deviceKey={identifier}
+            historicoKey={historicoKey}
+            deviceName={name}
+            databaseKey={databaseKey}
+            deviceType={type}
             onClose={() => setShowHistorical(false)}
           />
         ) : null}
