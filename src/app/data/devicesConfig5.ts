@@ -19,7 +19,7 @@ export const devices: Device[] = [
     name: 'POZO PRINCIPAL',
     url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/HACIENDA_COYOL/POZO_TANQUE/POZO.json',
     pumpKey: 'DATABOMB',
-    type: 'well',
+    type: 'centrifugal',
     group: 'hacienda-coyol',
     order: 2
   },

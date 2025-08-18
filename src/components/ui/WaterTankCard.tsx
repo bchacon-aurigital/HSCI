@@ -14,6 +14,7 @@ import {
 import { WaterTankIndicator } from '../indicators/WaterTankIndicator';
 import { PumpIndicator } from '../indicators/PumpIndicator';
 import { WellIndicator } from '../indicators/WellIndicator';
+import { CentrifugalPumpIndicator } from '../indicators/CentrifugalPumpIndicator';
 import { PressureIndicator } from '../indicators/PressureIndicator';
 import { useDeviceData } from '../../hooks/useDeviceData';
 import { formatDate } from '../../utils/utils';
@@ -305,7 +306,7 @@ export default function WaterTankCard({
     );
   }
 
-  if (type === 'pump' || type === 'well') {
+  if (type === 'pump' || type === 'well' || type === 'centrifugal') {
     const statusAsNumber = Number(
       pumpKey ? (data as any)?.[pumpKey] : (data as any)?.[identifier],
     );
@@ -440,8 +441,9 @@ export default function WaterTankCard({
                 
                 {isDeviceExpanded && (
                   <div className="w-full flex flex-col items-center space-y-4">
-                    {type === 'pump' && <PumpIndicator status={statusAsNumber} />}
-                    {type === 'well' && <WellIndicator status={statusAsNumber} />}
+                                      {type === 'pump' && <PumpIndicator status={statusAsNumber} />}
+                  {type === 'well' && <WellIndicator status={statusAsNumber} />}
+                  {type === 'centrifugal' && <CentrifugalPumpIndicator status={statusAsNumber} />}
                   </div>
                 )}
 
@@ -516,8 +518,16 @@ export default function WaterTankCard({
   }
 
   if (type === 'pressure') {
-    const pressureValue = Number(data?.PRESION || data?.valor || data || 0);
-    const hasPressureValue = !isNaN(pressureValue) && pressureValue !== null;
+    console.log('Pressure data:', data);
+    console.log('data?.PRESION:', data?.PRESION);
+    console.log('data?.valor:', data?.valor);
+    console.log('data:', data);
+    
+    const pressureValue = Number(data?.PRESION ?? data?.valor ?? 0);
+    const hasPressureValue = !isNaN(pressureValue) && pressureValue !== null && pressureValue !== undefined && pressureValue >= 0;
+    
+    console.log('pressureValue:', pressureValue);
+    console.log('hasPressureValue:', hasPressureValue);
 
     return (
       <>

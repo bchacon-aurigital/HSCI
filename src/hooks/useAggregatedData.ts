@@ -98,6 +98,13 @@ export const setGroupedURLsForAsada = (asadaCode: string) => {
         ]
       };
       break;
+    case 'catsa2025':
+      groupedURLs = {
+        'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/CATSA_WATA/.json': [
+          'CATSA_R'
+        ]
+      };
+      break;
     default:
       groupedURLs = {};
   }

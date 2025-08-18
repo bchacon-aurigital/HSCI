@@ -289,124 +289,124 @@ export default function MultiDeviceCard({
 
   return (
     <>
-      <Card className="bg-gray-900 border-gray-800 shadow-lg overflow-hidden">
-        <CardHeader className="bg-gray-800 pb-2">
-          <div className="flex items-center justify-between">
-            {!isBOMBA1Group && (
-              <h2 className="text-xl font-semibold text-gray-100">{groupName}</h2>
+    <Card className="bg-gray-900 border-gray-800 shadow-lg overflow-hidden">
+      <CardHeader className="bg-gray-800 pb-2">
+        <div className="flex items-center justify-between">
+          {!isBOMBA1Group && (
+            <h2 className="text-xl font-semibold text-gray-100">{groupName}</h2>
+          )}
+          <div className={`flex items-center gap-3 ${isBOMBA1Group ? 'w-full justify-between' : ''}`}>
+            {isBOMBA1Group && (
+              <ResetButton 
+                onResetComplete={handleResetComplete}
+                className="scale-90"
+              />
             )}
-            <div className={`flex items-center gap-3 ${isBOMBA1Group ? 'w-full justify-between' : ''}`}>
-              {isBOMBA1Group && (
-                <ResetButton 
-                  onResetComplete={handleResetComplete}
-                  className="scale-90"
-                />
-              )}
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-400">
-                  <span className="font-medium">{onDeviceCount}</span>/{activeDeviceCount} en operación
-                </span>
-                <div className={`h-3 w-3 rounded-full ${onDeviceCount > 0 ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`}></div>
-              </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-400">
+                <span className="font-medium">{onDeviceCount}</span>/{activeDeviceCount} en operación
+              </span>
+              <div className={`h-3 w-3 rounded-full ${onDeviceCount > 0 ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`}></div>
             </div>
           </div>
-          {resetFeedback && (
-            <div className={`mt-2 p-2 rounded-md text-sm ${
-              resetFeedback.includes('Error') 
-                ? 'bg-red-900/30 text-red-400 border border-red-800' 
-                : 'bg-green-900/30 text-green-400 border border-green-800'
-            }`}>
-              {resetFeedback}
-            </div>
-          )}
-        </CardHeader>
-         
-        <CardContent className="pt-4">
-          <div className="space-y-6">
-            {valveDevices.length > 0 && (
-              <div className="grid grid-cols-1 gap-4">
-                <div className={`flex flex-col items-center bg-gray-800 rounded-lg p-4 transition-all duration-300 border-l-4 ${onDeviceCount > 0 ? 'border-l-green-500' : 'border-l-gray-700'}`}>
-                  <h3 className="text-lg font-medium text-gray-200 mb-4">Sistema de Válvulas</h3>
-                  
-                  <div className="grid grid-cols-1 2xl:grid-cols-3 gap-6 w-full">
-                    {valveDevices.map((device) => {
-                      const statusAsNumber = Number(device.pumpKey ? data[device.pumpKey] : data[device.key || '']);
-                      const isActive = statusAsNumber === 1;
-                      
-                      return (
-                        <div key={device.key || device.pumpKey} className="flex flex-col items-center">
-                          <h4 className="text-sm font-medium text-gray-300 mb-2">{device.name}</h4>
-                          <div className="transform scale-75 md:scale-90 lg:scale-100">
-                            <ValveIndicator status={statusAsNumber} />
-                          </div>
+        </div>
+        {resetFeedback && (
+          <div className={`mt-2 p-2 rounded-md text-sm ${
+            resetFeedback.includes('Error') 
+              ? 'bg-red-900/30 text-red-400 border border-red-800' 
+              : 'bg-green-900/30 text-green-400 border border-green-800'
+          }`}>
+            {resetFeedback}
+          </div>
+        )}
+      </CardHeader>
+       
+      <CardContent className="pt-4">
+        <div className="space-y-6">
+          {valveDevices.length > 0 && (
+            <div className="grid grid-cols-1 gap-4">
+              <div className={`flex flex-col items-center bg-gray-800 rounded-lg p-4 transition-all duration-300 border-l-4 ${onDeviceCount > 0 ? 'border-l-green-500' : 'border-l-gray-700'}`}>
+                <h3 className="text-lg font-medium text-gray-200 mb-4">Sistema de Válvulas</h3>
+                
+                <div className="grid grid-cols-1 2xl:grid-cols-3 gap-6 w-full">
+                  {valveDevices.map((device) => {
+                    const statusAsNumber = Number(device.pumpKey ? data[device.pumpKey] : data[device.key || '']);
+                    const isActive = statusAsNumber === 1;
+                    
+                    return (
+                      <div key={device.key || device.pumpKey} className="flex flex-col items-center">
+                        <h4 className="text-sm font-medium text-gray-300 mb-2">{device.name}</h4>
+                        <div className="transform scale-75 md:scale-90 lg:scale-100">
+                          <ValveIndicator status={statusAsNumber} />
                         </div>
-                      );
-                    })}
-                  </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
-            )}
-            
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
-              {otherDevices.map((device) => {
-                const deviceKey = device.pumpKey || device.key || '';
-                const statusAsNumber = Number(device.pumpKey ? data[device.pumpKey] : data[device.key || '']);
-                const isActive = statusAsNumber === 1;
-                const isDeviceExpanded = expandedDevices[deviceKey] || false;
-                
-                const toggleDeviceExpanded = () => {
-                  setExpandedDevices(prev => ({
-                    ...prev,
-                    [deviceKey]: !prev[deviceKey]
-                  }));
-                };
-                
-                return (
-                  <div 
-                    key={deviceKey} 
-                    className={`flex flex-col items-center bg-gray-800 rounded-lg p-4 transition-all duration-300 ${
-                      isActive 
-                        ? 'border-l-4 border-l-green-500 shadow-lg shadow-green-900/20' 
-                        : 'border-l-4 border-l-gray-700'
-                    }`}
-                  >
-                     <div 
-                       className="w-full flex items-center justify-between cursor-pointer" 
-                       onClick={toggleDeviceExpanded}
-                     >
-                       <h3 className="text-lg font-medium text-gray-200">{device.name}</h3>
-                       <svg 
-                         xmlns="http://www.w3.org/2000/svg" 
-                         className={`h-5 w-5 text-gray-400 transition-transform duration-300 ${isDeviceExpanded ? 'rotate-180' : ''}`} 
-                         fill="none" 
-                         viewBox="0 0 24 24" 
-                         stroke="currentColor"
-                       >
-                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                       </svg>
-                      </div>
-                     
-                     {isDeviceExpanded && (
-                       <div className="w-full mt-4 flex flex-col items-center">
-                         {device.type === 'pump' && (
-                           <PumpIndicator status={statusAsNumber} />
-                         )}
-                         {device.type === 'well' && (
-                           <WellIndicator status={statusAsNumber} />
-                         )}
-                         
-                         <div className="flex items-center justify-center w-full mt-4 py-2 px-3 rounded-md bg-gray-900/50 border border-gray-700/30">
-                           <Activity className={isActive ? 'text-green-400' : 'text-gray-500'} size={18} />
-                           <span className="ml-2 text-sm font-medium text-gray-200">
-                             {isActive ? 'En operación' : 'En reposo'}
-                           </span>
-                         </div>
-                       </div>
-                     )}
-                    </div>
-                  );
-              })}
             </div>
+          )}
+          
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+            {otherDevices.map((device) => {
+              const deviceKey = device.pumpKey || device.key || '';
+              const statusAsNumber = Number(device.pumpKey ? data[device.pumpKey] : data[device.key || '']);
+              const isActive = statusAsNumber === 1;
+              const isDeviceExpanded = expandedDevices[deviceKey] || false;
+              
+              const toggleDeviceExpanded = () => {
+                setExpandedDevices(prev => ({
+                  ...prev,
+                  [deviceKey]: !prev[deviceKey]
+                }));
+              };
+              
+              return (
+                <div 
+                  key={deviceKey} 
+                  className={`flex flex-col items-center bg-gray-800 rounded-lg p-4 transition-all duration-300 ${
+                    isActive 
+                      ? 'border-l-4 border-l-green-500 shadow-lg shadow-green-900/20' 
+                      : 'border-l-4 border-l-gray-700'
+                  }`}
+                >
+                   <div 
+                     className="w-full flex items-center justify-between cursor-pointer" 
+                     onClick={toggleDeviceExpanded}
+                   >
+                     <h3 className="text-lg font-medium text-gray-200">{device.name}</h3>
+                     <svg 
+                       xmlns="http://www.w3.org/2000/svg" 
+                       className={`h-5 w-5 text-gray-400 transition-transform duration-300 ${isDeviceExpanded ? 'rotate-180' : ''}`} 
+                       fill="none" 
+                       viewBox="0 0 24 24" 
+                       stroke="currentColor"
+                     >
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                     </svg>
+                    </div>
+                   
+                   {isDeviceExpanded && (
+                     <div className="w-full mt-4 flex flex-col items-center">
+                       {device.type === 'pump' && (
+                         <PumpIndicator status={statusAsNumber} />
+                       )}
+                       {device.type === 'well' && (
+                         <WellIndicator status={statusAsNumber} />
+                       )}
+                       
+                       <div className="flex items-center justify-center w-full mt-4 py-2 px-3 rounded-md bg-gray-900/50 border border-gray-700/30">
+                         <Activity className={isActive ? 'text-green-400' : 'text-gray-500'} size={18} />
+                         <span className="ml-2 text-sm font-medium text-gray-200">
+                           {isActive ? 'En operación' : 'En reposo'}
+                         </span>
+                       </div>
+                     </div>
+                   )}
+                  </div>
+                );
+            })}
+          </div>
             
             {/* Botón de históricos */}
             {hasHistorical && (
@@ -423,40 +423,40 @@ export default function MultiDeviceCard({
                 </button>
               </div>
             )}
-          </div>
-          
-          {renderSensorDetails()}
-          
-          {(hasData('PRESAYA') || hasData('AMPS') || hasData('HZ') || hasData('VAC') || hasData('PRESION') || hasData('PRESRED') || 
-            hasData('TEMP1') || hasData('TEMP2') || hasData('ppm')) && (
-            <button 
-              onClick={() => setShowDetails(!showDetails)} 
-              className="mt-4 w-full py-2 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg flex items-center justify-center gap-2 transition-colors duration-200"
+        </div>
+        
+        {renderSensorDetails()}
+        
+        {(hasData('PRESAYA') || hasData('AMPS') || hasData('HZ') || hasData('VAC') || hasData('PRESION') || hasData('PRESRED') || 
+          hasData('TEMP1') || hasData('TEMP2') || hasData('ppm')) && (
+          <button 
+            onClick={() => setShowDetails(!showDetails)} 
+            className="mt-4 w-full py-2 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg flex items-center justify-center gap-2 transition-colors duration-200"
+          >
+            <span>{showDetails ? 'Ocultar detalles' : 'Ver detalles de sensores'}</span>
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              className={`h-4 w-4 transition-transform duration-300 ${showDetails ? 'rotate-180' : ''}`} 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
             >
-              <span>{showDetails ? 'Ocultar detalles' : 'Ver detalles de sensores'}</span>
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                className={`h-4 w-4 transition-transform duration-300 ${showDetails ? 'rotate-180' : ''}`} 
-                fill="none" 
-                viewBox="0 0 24 24" 
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-          )}
-        </CardContent>
-         
-        <CardFooter className="bg-gray-800/50 pt-4 pb-3">
-          <div className="flex items-center gap-3">
-            <Clock className="text-blue-400" size={18} />
-            <div>
-              <p className="text-xs text-gray-400">Última sincronización</p>
-              <p className="font-medium text-gray-100">{formatDate(getFecha(data))}</p>
-            </div>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+        )}
+      </CardContent>
+       
+      <CardFooter className="bg-gray-800/50 pt-4 pb-3">
+        <div className="flex items-center gap-3">
+          <Clock className="text-blue-400" size={18} />
+          <div>
+            <p className="text-xs text-gray-400">Última sincronización</p>
+            <p className="font-medium text-gray-100">{formatDate(getFecha(data))}</p>
           </div>
-        </CardFooter>
-      </Card>
+        </div>
+      </CardFooter>
+    </Card>
 
       {showHistorical ? (
         <HistoricalChart

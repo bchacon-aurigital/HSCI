@@ -15,7 +15,7 @@ export async function hasHistoricalData(codigoAsada: string, historicoKey?: stri
     // Determinar qué ubicaciones intentar según el tipo de dispositivo
     let locationsToTry = [];
     
-    if (deviceType === 'pump' || deviceType === 'well') {
+    if (deviceType === 'pump' || deviceType === 'well' || deviceType === 'centrifugal') {
       // Para bombas y pozos, intentar primero ESTADOBOMBA, luego NIVELES
       locationsToTry = ['ESTADOBOMBA', 'NIVELES'];
     } else if (deviceType === 'valve') {
