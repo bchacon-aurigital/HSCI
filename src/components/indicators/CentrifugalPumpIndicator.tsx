@@ -4,8 +4,7 @@ interface CentrifugalPumpIndicatorProps {
 	status: number; // 0 reposo, 1 operando, 2 fallo, 3 fuera de servicio
 }
 
-// Indicador de Bomba Centrífuga
-// Mantiene paleta/estados como PumpIndicator para consistencia visual
+// Indicador de Bomba Centrífuga Vertical In-Line
 export const CentrifugalPumpIndicator = ({ status }: CentrifugalPumpIndicatorProps) => {
 	const clampStatus = (s: number) => (s >= 3 ? 3 : s);
 	const [animatedStatus, setAnimatedStatus] = useState(clampStatus(status));
@@ -61,78 +60,59 @@ export const CentrifugalPumpIndicator = ({ status }: CentrifugalPumpIndicatorPro
 		};
 	}, [animatedStatus]);
 
-	// Impulsor (impeller) de 6 palas
-	const renderImpeller = () => {
-		const blades = [] as React.ReactNode[];
-		for (let i = 0; i < 6; i++) {
-			const angle = (i / 6) * 360;
-			blades.push(
-				<path
-					key={i}
-					d="M50 50 C 55 48, 60 45, 60 40 C 58 45, 55 48, 50 50 Z"
-					transform={`rotate(${angle} 50 50)`}
-					fill={animatedStatus === 1 ? '#ffffff' : '#e5e7eb'}
-					opacity={0.95}
-				/>
-			);
-		}
-		return blades;
-	};
-
 	return (
 		<div className="relative">
-			<svg viewBox="0 0 100 120" className="w-40 h-56 mx-auto">
+			<svg viewBox="0 0 100 140" className="w-40 h-64 mx-auto">
 				<defs>
 					<linearGradient id={`centrifugalBody-${animatedStatus}`} x1="0%" y1="0%" x2="0%" y2="100%">
 						<stop offset="0%" stopColor={statusGradients[animatedStatus][0]} />
 						<stop offset="100%" stopColor={statusGradients[animatedStatus][1]} />
 					</linearGradient>
+					<pattern id="mesh" width="4" height="4" patternUnits="userSpaceOnUse">
+						<path d="M0 0 L4 4 M4 0 L0 4" stroke="#94a3b8" strokeWidth="0.3" />
+					</pattern>
 					<filter id="cf-shadow">
 						<feDropShadow dx="0" dy="1" stdDeviation="1" floodOpacity="0.35" />
-					</filter>
-					<filter id="cf-glow">
-						<feGaussianBlur stdDeviation="2" result="b" />
-						<feComposite in="SourceGraphic" in2="b" operator="over" />
 					</filter>
 				</defs>
 
 				{/* Base / skid */}
-				<rect x="22" y="95" width="56" height="6" rx="2" fill="#334155" filter="url(#cf-shadow)" />
+				<rect x="20" y="125" width="60" height="8" rx="2" fill="#334155" />
 
-				{/* Motor vertical */}
-				<g style={{ transform: `scale(${animatedStatus === 2 ? pulseScale : 1})`, transformOrigin: '50px 38px', transition: 'transform 0.3s ease' }}>
-					<rect x="40" y="18" width="20" height="20" rx="2" fill={statusColors[animatedStatus]} stroke="#1e293b" strokeWidth="1" />
-					<rect x="42" y="12" width="16" height="6" rx="2" fill={statusColors[animatedStatus]} stroke="#1e293b" strokeWidth="1" />
-					<rect x="44" y="8" width="12" height="4" rx="1" fill={statusColors[animatedStatus]} opacity="0.9" />
+				{/* Motor vertical con aletas */}
+				<g style={{ transform: `scale(${animatedStatus === 2 ? pulseScale : 1})`, transformOrigin: '50px 25px', transition: 'transform 0.3s ease' }}>
+					<rect x="40" y="5" width="20" height="60" rx="2" fill={statusColors[animatedStatus]} stroke="#1e293b" strokeWidth="1" />
+					{Array.from({ length: 6 }).map((_, i) => (
+						<line key={i} x1={42 + i * 3} y1={7} x2={42 + i * 3} y2={66} stroke="#1e293b" strokeWidth="0.6" />
+					))}
+					{/* Tapa del motor */}
+					<rect x="38" y="20" width="24" height="6" rx="2" fill={statusColors[animatedStatus]} stroke="#1e293b" strokeWidth="1" />
 				</g>
 
-				{/* Cuerpo voluta centrífuga */}
-				<g filter="url(#cf-shadow)">
-					<circle cx="50" cy="56" r="20" fill={`url(#centrifugalBody-${animatedStatus})`} stroke="#1e293b" strokeWidth="2" />
-					{/* Cámara interna */}
-					<circle cx="50" cy="56" r="13" fill="#f8fafc" stroke="#94a3b8" strokeWidth="1" />
-					{/* Impulsor */}
-					<g style={{ transform: `rotate(${rotation}deg)`, transformOrigin: '50px 56px', transition: 'transform 0.05s linear' }}>
-						{renderImpeller()}
-						<circle cx="50" cy="56" r="3" fill={statusColors[animatedStatus]} />
-					</g>
+				{/* Cuerpo cilíndrico con rejilla */}
+				<rect x="35" y="58" width="30" height="45" rx="6" fill={`url(#centrifugalBody-${animatedStatus})`} stroke="#1e293b" strokeWidth="1.5" filter="url(#cf-shadow)" />
+				<rect x="37" y="60" width="26" height="41" rx="4" fill="url(#mesh)" opacity="0.5" />
+
+				{/* Impulsor animado dentro */}
+				<g style={{ transform: `rotate(${rotation}deg)`, transformOrigin: '50px 80px', transition: 'transform 0.05s linear' }}>
+					<circle cx="50" cy="80" r="10" fill="#f8fafc" stroke="#94a3b8" strokeWidth="1" />
+					{Array.from({ length: 6 }).map((_, i) => {
+						const angle = (i / 6) * 360;
+						return (
+							<path
+								key={i}
+								d="M50 70 C 53 72, 56 76, 55 80 C 54 76, 52 73, 50 70 Z"
+								transform={`rotate(${angle} 50 80)`}
+								fill={animatedStatus === 1 ? '#ffffff' : '#e5e7eb'}
+								opacity={0.95}
+							/>
+						);
+					})}
+					<circle cx="50" cy="80" r="2.5" fill={statusColors[animatedStatus]} />
 				</g>
 
-				{/* Tuberías de succión y descarga */}
-				<path d="M30 56 H15 V30" fill="none" stroke="#64748b" strokeWidth="5" strokeLinecap="round" />
-				<path d="M70 56 H85 V30" fill="none" stroke="#64748b" strokeWidth="5" strokeLinecap="round" />
-
-				{/* Flechas de flujo cuando está operando */}
-				{animatedStatus === 1 && (
-					<g>
-						<polygon points="22,45 26,45 24,41" fill="#93c5fd">
-							<animate attributeName="y" dur="1.2s" values="0;-8" repeatCount="indefinite" />
-						</polygon>
-						<polygon points="78,45 82,45 80,41" fill="#86efac">
-							<animate attributeName="y" dur="1.2s" values="0;-8" begin="0.3s" repeatCount="indefinite" />
-						</polygon>
-					</g>
-				)}
+				{/* Bridas de succión y descarga */}
+				<circle cx="30" cy="100" r="6" fill="#64748b" stroke="#1e293b" strokeWidth="1.2" />
 			</svg>
 
 			{/* Etiqueta de estado */}
@@ -141,22 +121,22 @@ export const CentrifugalPumpIndicator = ({ status }: CentrifugalPumpIndicatorPro
 					className={`px-3 py-1 rounded-full text-xs font-medium flex items-center ${
 						animatedStatus === 0
 							? 'bg-blue-100 text-blue-800'
-						: animatedStatus === 1
-						? 'bg-green-100 text-green-800'
-						: animatedStatus === 2
-						? 'bg-red-100 text-red-800'
-						: 'bg-orange-100 text-orange-800'
+							: animatedStatus === 1
+							? 'bg-green-100 text-green-800'
+							: animatedStatus === 2
+							? 'bg-red-100 text-red-800'
+							: 'bg-orange-100 text-orange-800'
 					}`}
 				>
 					<span
 						className={`mr-1.5 h-2 w-2 inline-block rounded-full ${
 							animatedStatus === 0
 								? 'bg-blue-500'
-							: animatedStatus === 1
-							? 'bg-green-500'
-							: animatedStatus === 2
-							? 'bg-red-500'
-							: 'bg-orange-500'
+								: animatedStatus === 1
+								? 'bg-green-500'
+								: animatedStatus === 2
+								? 'bg-red-500'
+								: 'bg-orange-500'
 						}`}
 						style={{ animation: animatedStatus === 2 ? 'pulse 0.8s infinite' : 'pulse 2s infinite' }}
 					/>
@@ -173,4 +153,4 @@ export const CentrifugalPumpIndicator = ({ status }: CentrifugalPumpIndicatorPro
 			`}</style>
 		</div>
 	);
-}; 
+};
