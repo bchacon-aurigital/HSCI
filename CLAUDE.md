@@ -59,6 +59,7 @@ This is a Next.js 14 application called "3bahias-monitor" that serves as a water
 - **Responsive Design**: Mobile-friendly interface with Tailwind CSS
 - **Debug Tools**: Built-in debugging interface for system diagnostics
 - **Alert System**: Visual indicators for device warnings and errors
+- **Custom Branding**: ASADA-specific logo display (FluidSmart logo for 'catsa2025')
 
 ## Development Notes
 
@@ -129,3 +130,28 @@ To add reset functionality to other groups:
 **Examples for future implementation:**
 - San Rafael: "Ojo de Agua" group with 3-pump subgroup
 - Alajuela Municipal: "Rio Segundo" → "Bomba rio Segundo" subgroup
+
+## Custom Branding System
+
+### FluidSmart Logo Implementation
+- **Location**: Header section of WaterSystemColumns component
+- **Condition**: Displays only when `codigoAsada === 'catsa2025'`
+- **File**: `/public/assets/fluidsmart-logo.png`
+- **Behavior**: 
+  - When displayed: Replaces the default blue circular water drop icon
+  - When not displayed: Shows standard blue circular background with water drop SVG
+  - Maintains same height (h-14) and spacing as default icon
+  - Uses white background with rounded corners for logo contrast
+
+### Implementation Details
+- **Component**: `src/components/ui/WaterSystemColumns.tsx:308-324`
+- **Logic**: Conditional rendering using ternary operator
+- **Classes**: `h-14 w-auto mr-4 object-contain bg-white rounded-md`
+- **Accessibility**: Includes proper alt text "FluidSmart Logo"
+
+### Adding New ASADA Logos
+To add logos for other ASADAs:
+1. Add logo file to `/public/assets/`
+2. Update the conditional logic in WaterSystemColumns header
+3. Follow the same pattern: replace blue icon when specific ASADA code is detected
+4. Maintain consistent sizing and spacing (h-14, mr-4)

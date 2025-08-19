@@ -305,15 +305,23 @@ export default function WaterSystemColumns() {
                   <div className="relative z-10 px-8">
                     <div className="flex justify-between items-center mb-4">
                       <div className="flex items-center">
-                        <div className="h-14 w-14 rounded-full bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/50 mr-4">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-white" viewBox="0 0 24 24">
-                            <path
-                              d="M12 2.69c-.23 0-.42.09-.59.21C9.97 4.22 4 9.08 4 15.5 4 19.58 7.42 23 12 23s8-3.42 8-7.5c0-6.42-5.97-11.28-7.41-12.6-.17-.12-.36-.21-.59-.21z"
-                              fill="white"
-                              stroke="white"
-                            />
-                          </svg>
-                        </div>
+                        {codigoAsada === 'catsa2025' ? (
+                          <img 
+                            src="/assets/fluidsmart-logo.png" 
+                            alt="FluidSmart Logo" 
+                            className="h-14 w-auto mr-4 object-contain bg-white rounded-md"
+                          />
+                        ) : (
+                          <div className="h-14 w-14 rounded-full bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/50 mr-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-white" viewBox="0 0 24 24">
+                              <path
+                                d="M12 2.69c-.23 0-.42.09-.59.21C9.97 4.22 4 9.08 4 15.5 4 19.58 7.42 23 12 23s8-3.42 8-7.5c0-6.42-5.97-11.28-7.41-12.6-.17-.12-.36-.21-.59-.21z"
+                                fill="white"
+                                stroke="white"
+                              />
+                            </svg>
+                          </div>
+                        )}
                         <h1 className="text-xl font-semibold text-blue-300">Centro de Control ASADA</h1>
                       </div>
                       <div className="flex gap-2">
