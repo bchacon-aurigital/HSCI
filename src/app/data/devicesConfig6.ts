@@ -18,7 +18,7 @@ export const devices: Device[] = [
 		type: 'pressure',
 		group: 'PLAYITAS',
 		order: 2,
-		historicoKey: 'PRESION',
+		historicoKey: 'PLAYITAS_B1DEMO',
 		databaseKey: 'CATSA_WATA',
 	},
 ]; 
