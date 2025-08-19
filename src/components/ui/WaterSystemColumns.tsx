@@ -303,7 +303,7 @@ export default function WaterSystemColumns() {
                   <div className="absolute inset-0 bg-blue-500/10 mix-blend-multiply"></div>
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-900/30 to-transparent"></div>
                   <div className="relative z-10 px-8">
-                    <div className="flex justify-between items-center mb-4">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
                       <div className="flex items-center">
                         {codigoAsada === 'catsa2025' ? (
                           <img 
@@ -324,7 +324,7 @@ export default function WaterSystemColumns() {
                         )}
                         <h1 className="text-xl font-semibold text-blue-300">Centro de Control ASADA</h1>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex flex-col sm:flex-row gap-2">
                         {/* Solo mostrar el botón de tiempo real si es la ASADA de control */}
                         {isControlAsada && (
                           <button
@@ -341,7 +341,7 @@ export default function WaterSystemColumns() {
                         )}
                         <button
                           onClick={handleReloadDevices}
-                          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200"
+                          className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200"
                           disabled={devicesLoading}
                         >
                           <RefreshCw className={`w-5 h-5 ${devicesLoading ? 'animate-spin' : ''}`} />
