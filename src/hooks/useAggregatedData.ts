@@ -105,6 +105,13 @@ export const setGroupedURLsForAsada = (asadaCode: string) => {
         ]
       };
       break;
+    case 'AQG2025':
+      groupedURLs = {
+        'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/AQG/.json': [
+          'NIZA'
+        ]
+      };
+      break;
     default:
       groupedURLs = {};
   }
