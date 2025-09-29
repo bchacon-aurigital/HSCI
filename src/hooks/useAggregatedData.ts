@@ -112,6 +112,13 @@ export const setGroupedURLsForAsada = (asadaCode: string) => {
         ]
       };
       break;
+    case 'zapotal2025':
+      groupedURLs = {
+        'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/ZAPOTAL/.json': [
+          'TANQUE_ACERO', 'PRESION_CONSTANTE'
+        ]
+      };
+      break;
     default:
       groupedURLs = {};
   }
