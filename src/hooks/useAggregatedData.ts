@@ -119,6 +119,13 @@ export const setGroupedURLsForAsada = (asadaCode: string) => {
         ]
       };
       break;
+    case 'sanmarcanda2025':
+      groupedURLs = {
+        'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/SANMARCANDA/.json': [
+          'POZO_TANQUE'
+        ]
+      };
+      break;
     default:
       groupedURLs = {};
   }
