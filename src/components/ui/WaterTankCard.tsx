@@ -18,20 +18,21 @@ import { CentrifugalPumpIndicator } from '../indicators/CentrifugalPumpIndicator
 import { PressureIndicator } from '../indicators/PressureIndicator';
 import { useDeviceData } from '../../hooks/useDeviceData';
 import { formatDate } from '../../utils/utils';
-import { BaseDeviceType } from '../../app/types/types';
+import { BaseDeviceType, PressureRanges } from '../../app/types/types';
 import { checkHistoricalDataAvailability } from '../../utils/historicalDataUtils';
 import HistoricalChart from '../HistoricalChart';
 
 interface WaterTankCardProps {
   identifier: string;
   name: string;
-  type: BaseDeviceType; 
+  type: BaseDeviceType;
   pumpKey?: string;
   codigoAsada: string;
   historicoKey?: string;
   databaseKey?: string;
   onAlertChange?: (hasAlert: boolean) => void;
   onWarningChange?: (hasWarning: boolean) => void;
+  pressureRanges?: PressureRanges;
 }
 
 export default function WaterTankCard({
@@ -44,6 +45,7 @@ export default function WaterTankCard({
   databaseKey,
   onAlertChange,
   onWarningChange,
+  pressureRanges,
 }: WaterTankCardProps) {
   const pumpKeyParam = type === 'pump' || type === 'well' ? undefined : pumpKey;
   const { data, error, loading } = useDeviceData(identifier, pumpKeyParam, codigoAsada);
@@ -541,10 +543,11 @@ export default function WaterTankCard({
           <CardContent className="pt-4">
             {hasPressureValue ? (
               <div className="flex flex-col items-center space-y-6">
-                <PressureIndicator 
-                  pressure={pressureValue} 
+                <PressureIndicator
+                  pressure={pressureValue}
                   maxPressure={100}
                   unit="PSI"
+                  pressureRanges={pressureRanges}
                 />
 
                 <div className="flex items-center justify-center w-full py-3 px-4 rounded-lg bg-gray-800/80 border border-gray-700/50">

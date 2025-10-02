@@ -1,9 +1,16 @@
 export type BaseDeviceType = 'tank' | 'pump' | 'well' | 'valve' | 'pressure' | 'centrifugal';
 export type DeviceType = BaseDeviceType | 'multi';
 
+export interface PressureRanges {
+  veryLow: number;
+  low: number;
+  normalMax: number;
+  high: number;
+}
+
 export interface Device {
   name: string;
-  url?: string; 
+  url?: string;
   key?: string;
   type: DeviceType;
   pumpKey?: string;
@@ -11,6 +18,7 @@ export interface Device {
   order: number;
   historicoKey?: string;
   databaseKey?: string;
+  pressureRanges?: PressureRanges;
 }
 
 export interface MultiDeviceInfo {

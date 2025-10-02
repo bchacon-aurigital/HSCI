@@ -1,49 +1,79 @@
 import React, { useState, useEffect, useId, useRef } from 'react';
 
-interface PressureIndicatorProps {
-  pressure: number; // Presión en PSI
-  maxPressure?: number; // Presión máxima del gauge (default: 100 PSI)
-  unit?: 'PSI' | 'kg/cm²' | 'Bar'; // Unidad de medida
-  id?: string;
+interface PressureRanges {
+  veryLow: number;
+  low: number;
+  normalMax: number;
+  high: number;
 }
 
-export const PressureIndicator = ({ 
-  pressure, 
-  maxPressure = 100, 
+interface PressureIndicatorProps {
+  pressure: number;
+  maxPressure?: number;
+  unit?: 'PSI' | 'kg/cm²' | 'Bar';
+  id?: string;
+  pressureRanges?: PressureRanges;
+}
+
+export const PressureIndicator = ({
+  pressure,
+  maxPressure = 100,
   unit = 'PSI',
-  id 
+  id,
+  pressureRanges
 }: PressureIndicatorProps) => {
   const [animatedPressure, setAnimatedPressure] = useState(0);
   const [pulseScale, setPulseScale] = useState(1);
-  
+
   const uniqueId = useId();
   const gaugeId = id || uniqueId;
-  
-  // Refs para controlar los intervalos
+
   const pressureAnimationInterval = useRef<ReturnType<typeof setInterval> | null>(null);
   const pulseAnimationInterval = useRef<ReturnType<typeof setInterval> | null>(null);
   
   const gradientId = `pressureGradient-${gaugeId}`;
   const needleGradientId = `needleGradient-${gaugeId}`;
   const glowId = `pressureGlow-${gaugeId}`;
-  
-  // Determinar colores según el nivel de presión
+
   const getPressureColor = (currentPressure: number) => {
-    const percentage = (currentPressure / maxPressure) * 100;
-    if (percentage < 30) return '#22c55e'; // Verde - presión baja/normal
-    if (percentage < 70) return '#3b82f6'; // Azul - presión normal
-    if (percentage < 85) return '#f59e0b'; // Amarillo - presión alta
-    return '#ef4444'; // Rojo - presión crítica
+    if (pressureRanges) {
+      if (currentPressure < pressureRanges.veryLow) return '#ef4444';
+      if (currentPressure < pressureRanges.low) return '#f59e0b';
+      if (currentPressure <= pressureRanges.normalMax) return '#22c55e';
+      if (currentPressure <= pressureRanges.high) return '#f59e0b';
+      return '#ef4444';
+    } else {
+      const percentage = (currentPressure / maxPressure) * 100;
+      if (percentage < 30) return '#22c55e';
+      if (percentage < 70) return '#3b82f6';
+      if (percentage < 85) return '#f59e0b';
+      return '#ef4444';
+    }
   };
-  
-  // Calcular ángulo de la aguja (de -135° a +135°, total 270°)
+
+  const getPressureStatus = (currentPressure: number) => {
+    if (pressureRanges) {
+      if (currentPressure < pressureRanges.veryLow) return 'Presión Muy Baja';
+      if (currentPressure < pressureRanges.low) return 'Presión Baja';
+      if (currentPressure <= pressureRanges.normalMax) return 'Presión Normal';
+      if (currentPressure <= pressureRanges.high) return 'Presión Alta';
+      return 'Presión Muy Alta';
+    } else {
+      const percentage = (currentPressure / maxPressure) * 100;
+      if (percentage < 30) return 'Presión Baja';
+      if (percentage < 70) return 'Presión Normal';
+      if (percentage < 85) return 'Presión Alta';
+      return 'Presión Crítica';
+    }
+  };
+
+
   const getNeedleAngle = (currentPressure: number) => {
     const clampedPressure = Math.max(0, Math.min(currentPressure, maxPressure));
     const percentage = clampedPressure / maxPressure;
-    return -135 + (percentage * 270); // De -135° a +135°
+    return -135 + (percentage * 270);
   };
-  
-  // Animación de presión
+
   useEffect(() => {
     if (pressureAnimationInterval.current) {
       clearInterval(pressureAnimationInterval.current);
@@ -76,32 +106,37 @@ export const PressureIndicator = ({
       }
     };
   }, [pressure]);
-  
-  // Animación de pulso para presiones altas
+
   useEffect(() => {
     if (pulseAnimationInterval.current) {
       clearInterval(pulseAnimationInterval.current);
       pulseAnimationInterval.current = null;
     }
-    
-    const percentage = (animatedPressure / maxPressure) * 100;
-    
-    if (percentage > 85) {
-      // Pulso para presión crítica
+
+    let shouldPulse = false;
+
+    if (pressureRanges) {
+      shouldPulse = animatedPressure < pressureRanges.veryLow || animatedPressure > pressureRanges.high;
+    } else {
+      const percentage = (animatedPressure / maxPressure) * 100;
+      shouldPulse = percentage > 85;
+    }
+
+    if (shouldPulse) {
       pulseAnimationInterval.current = setInterval(() => {
         setPulseScale(prev => prev === 1 ? 1.05 : 1);
       }, 800);
     } else {
       setPulseScale(1);
     }
-    
+
     return () => {
       if (pulseAnimationInterval.current) {
         clearInterval(pulseAnimationInterval.current);
         pulseAnimationInterval.current = null;
       }
     };
-  }, [animatedPressure, maxPressure]);
+  }, [animatedPressure, maxPressure, pressureRanges]);
   
   const currentColor = getPressureColor(animatedPressure);
   const needleAngle = getNeedleAngle(animatedPressure);
@@ -279,18 +314,15 @@ export const PressureIndicator = ({
       
       {/* Indicador de estado */}
       <div className="mt-2 text-center">
-        <div 
+        <div
           className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
-          style={{ 
-            backgroundColor: `${currentColor}20`, 
+          style={{
+            backgroundColor: `${currentColor}20`,
             color: currentColor,
             border: `1px solid ${currentColor}40`
           }}
         >
-          {((animatedPressure / maxPressure) * 100) < 30 && 'Presión Baja'}
-          {((animatedPressure / maxPressure) * 100) >= 30 && ((animatedPressure / maxPressure) * 100) < 70 && 'Presión Normal'}
-          {((animatedPressure / maxPressure) * 100) >= 70 && ((animatedPressure / maxPressure) * 100) < 85 && 'Presión Alta'}
-          {((animatedPressure / maxPressure) * 100) >= 85 && 'Presión Crítica'}
+          {getPressureStatus(animatedPressure)}
         </div>
       </div>
     </div>

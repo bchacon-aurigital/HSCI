@@ -16,10 +16,8 @@ import {
 } from 'chart.js';
 import { Line, Bar } from 'react-chartjs-2';
 import { Card, CardContent, CardHeader } from './ui/card';
-import { Calendar, X, Info, Activity, Droplets } from 'lucide-react';
+import { Calendar, X, Info } from 'lucide-react';
 import { formatLabviewTimeToHourMinute, formatLabviewTimeToFullDateTime } from '../utils/timeUtils';
-import { TabSelector } from './ui/TabSelector';
-import { checkPumpDataAvailability } from '../utils/checkPumpDataAvailability';
 
 ChartJS.register(
   CategoryScale,
@@ -74,15 +72,10 @@ export default function HistoricalChart({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [chartData, setChartData] = useState<any>(null);
-  
-  // Estado para controlar qué pestaña está activa
-  const [activeTab, setActiveTab] = useState<'levels' | 'pumps'>('levels');
-  
-  // Estado para saber si hay datos de bombas disponibles
-  const [hasPumpData, setHasPumpData] = useState(false);
-  const [checkingPumpData, setCheckingPumpData] = useState(true);
-  
-  // Usar fecha de Costa Rica como fecha por defecto
+
+  const dataMode: 'levels' | 'pumps' =
+    (deviceType === 'pump' || deviceType === 'well') ? 'pumps' : 'levels';
+
   const [selectedDate, setSelectedDate] = useState<string>(
     formatDateForInput(getCostaRicaDate())
   );
@@ -105,63 +98,10 @@ export default function HistoricalChart({
     return () => window.removeEventListener('resize', checkIfMobile);
   }, []);
 
-  // Verificar disponibilidad de datos de bombas al montar el componente
-  useEffect(() => {
-    if (databaseKey && historicoKey) {
-      setCheckingPumpData(true);
-      checkPumpDataAvailability(databaseKey, historicoKey)
-        .then(hasData => {
-          setHasPumpData(hasData);
-          setCheckingPumpData(false);
-          console.log(`Datos de bombas disponibles para ${deviceName}: ${hasData}`);
-        })
-        .catch(error => {
-          console.error('Error al verificar datos de bombas:', error);
-          setHasPumpData(false);
-          setCheckingPumpData(false);
-        });
-    } else {
-      setHasPumpData(false);
-      setCheckingPumpData(false);
-    }
-  }, [databaseKey, historicoKey, deviceName]);
-
-  // Configurar las pestañas
-  const tabs = [
-    {
-      id: 'levels',
-      label: 'Niveles',
-      icon: <Droplets className="w-4 h-4" />,
-      disabled: false
-    },
-    {
-      id: 'pumps',
-      label: 'Estado de Bombas',
-      icon: <Activity className="w-4 h-4" />,
-      disabled: !hasPumpData || checkingPumpData,
-      tooltip: checkingPumpData 
-        ? 'Verificando disponibilidad...' 
-        : !hasPumpData 
-        ? 'No hay datos de bombas disponibles para este tanque' 
-        : undefined
-    }
-  ];
-
-  // Manejar cambio de pestaña
-  const handleTabChange = (tabId: string) => {
-    setActiveTab(tabId as 'levels' | 'pumps');
-  };
-
-  // Función para convertir fecha seleccionada a fecha en Costa Rica
   const parseSelectedDateInCostaRica = (dateString: string) => {
-    // Crear fecha en Costa Rica (UTC-6)
     const [year, month, day] = dateString.split('-').map(Number);
-    
-    // Crear fecha usando UTC y luego ajustar a Costa Rica
-    const utcDate = new Date(Date.UTC(year, month - 1, day, 12, 0, 0)); // Usar mediodía UTC para evitar problemas de zona horaria
-    
-    // Ajustar a Costa Rica (UTC-6)
-    const costaRicaOffset = -6 * 60; // -6 horas en minutos
+    const utcDate = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+    const costaRicaOffset = -6 * 60;
     const costaRicaDate = new Date(utcDate.getTime() + (costaRicaOffset * 60000));
     
     return {
@@ -191,10 +131,9 @@ export default function HistoricalChart({
         setLoading(false);
         return;
       }
-      
-      // Determinar el tipo de datos según el dispositivo y la pestaña activa
+
       let dataType;
-      if (activeTab === 'pumps') {
+      if (dataMode === 'pumps') {
         dataType = 'ESTADOBOMBA';
       } else if (deviceType === 'pressure') {
         dataType = 'PRESION';
@@ -209,7 +148,7 @@ export default function HistoricalChart({
       if (!response.ok) {
         if (response.status === 404) {
           setChartData(null);
-          setError(`No hay datos de ${activeTab === 'pumps' ? 'estado de bombas' : 'niveles'} disponibles para ${day}/${month}/${year}`);
+          setError(`No hay datos de ${dataMode === 'pumps' ? 'estado de bombas' : deviceType === 'pressure' ? 'presión' : 'niveles'} disponibles para ${day}/${month}/${year}`);
         } else {
           throw new Error(`Error de red: ${response.status}`);
         }
@@ -231,37 +170,31 @@ export default function HistoricalChart({
   };
 
   const processHistoricalData = (data: any, deviceKey: string) => {
-    // Procesar los datos para la gráfica
     const chartLabels: string[] = [];
     const chartValues: number[] = [];
-    const chartTimeLabels: string[] = []; // Para almacenar solo las horas para móviles
-    
-    // Verificar si data es null o undefined
+    const chartTimeLabels: string[] = [];
+
     if (!data) {
       console.error('No hay datos para procesar');
-      setError(`No hay datos de ${activeTab === 'pumps' ? 'estado de bombas' : 'niveles'} disponibles para esta fecha`);
+      setError(`No hay datos de ${dataMode === 'pumps' ? 'estado de bombas' : deviceType === 'pressure' ? 'presión' : 'niveles'} disponibles para esta fecha`);
       setChartData(null);
       return;
     }
     
-    const valueField = activeTab === 'pumps' ? 'ESTADO' : 'VALOR';
-    
-    // Verificar si es un objeto o un array
+    const valueField = dataMode === 'pumps' ? 'ESTADO' : 'VALOR';
+
     if (Array.isArray(data)) {
-      // Es un array
       data.forEach((item, index) => {
-        // Verificar que el item no sea nulo y tenga datos
         if (item && item.DATA && item.DATA[valueField] !== undefined) {
           const timeLabel = item.DATA.TIME 
             ? formatLabviewTimeToHourMinute(Number(item.DATA.TIME)) 
             : `Registro ${index + 1}`;
           chartLabels.push(`Toma ${index + 1} (${timeLabel})`);
-          chartTimeLabels.push(timeLabel); // Solo la hora para móviles
+          chartTimeLabels.push(timeLabel);
           chartValues.push(Number(item.DATA[valueField]));
         }
       });
     } else if (typeof data === 'object') {
-      // Es un objeto
       try {
         Object.entries(data).forEach(([key, value]: [string, any]) => {
           if (value && value.DATA && value.DATA[valueField] !== undefined) {
@@ -271,19 +204,16 @@ export default function HistoricalChart({
             } else {
               timeLabel = 'N/D';
             }
-            
-            // Determinar el identificador de la toma
+
             let tomaLabel;
             if (key.startsWith('T')) {
-              // Si comienza con 'T', usar la clave como está
-              tomaLabel = key; 
+              tomaLabel = key;
             } else {
-              // Si es otro tipo de clave (numérica), considerarla como el número de toma
               tomaLabel = `Toma ${key}`;
             }
-            
+
             chartLabels.push(`${tomaLabel} (${timeLabel})`);
-            chartTimeLabels.push(timeLabel); // Solo la hora para móviles
+            chartTimeLabels.push(timeLabel);
             chartValues.push(Number(value.DATA[valueField]));
           }
         });
@@ -294,77 +224,78 @@ export default function HistoricalChart({
         return;
       }
     }
-    
-    // Ordenar los datos por tiempo si es posible
+
     const combinedData = chartLabels.map((label, i) => ({ label, value: chartValues[i] }));
-    
-    // Ordenar por número de toma
+
     combinedData.sort((a, b) => {
-      // Extraer el número de toma
       const tomaRegexA = a.label.match(/Toma (\d+)/);
       const tomaRegexB = b.label.match(/Toma (\d+)/);
       
       if (tomaRegexA && tomaRegexB) {
         return parseInt(tomaRegexA[1], 10) - parseInt(tomaRegexB[1], 10);
       }
-      
-      // Si no podemos extraer el número de toma, intentar con etiquetas T
+
+
       const tRegexA = a.label.match(/^T(\d+)/);
       const tRegexB = b.label.match(/^T(\d+)/);
-      
+
       if (tRegexA && tRegexB) {
         return parseInt(tRegexA[1], 10) - parseInt(tRegexB[1], 10);
       }
-      
-      // Si todo falla, ordenar alfabéticamente
+
       return a.label.localeCompare(b.label);
     });
-    
-    // Actualizar los datos ordenados
+
     const sortedLabels = combinedData.map(d => d.label);
     const sortedValues = combinedData.map(d => d.value);
     
-    const isPumpData = activeTab === 'pumps';
+    const isPumpData = dataMode === 'pumps';
     const realStates = isPumpData ? [...sortedValues] : [];
     const displayValues = isPumpData ? sortedValues.map(() => 1) : sortedValues; 
     let backgroundColors, borderColors;
     
     if (isPumpData) {
       const stateColors = {
-        0: 'rgba(59, 130, 246, 0.8)',   // Azul para bomba apagada
-        1: 'rgba(34, 197, 94, 0.8)',   // Verde para bomba encendida
-        2: 'rgba(239, 68, 68, 0.8)',   // Rojo para error
-        3: 'rgba(156, 163, 175, 0.8)'  // Gris para selector fuera
+        0: 'rgba(59, 130, 246, 0.8)',
+        1: 'rgba(34, 197, 94, 0.8)',
+        2: 'rgba(239, 68, 68, 0.8)',
+        3: 'rgba(156, 163, 175, 0.8)'
       };
       const stateBorderColors = {
-        0: 'rgb(59, 130, 246)',  // Azul para bomba apagada
-        1: 'rgb(34, 197, 94)',   // Verde para bomba encendida
-        2: 'rgb(239, 68, 68)',   // Rojo para error
-        3: 'rgb(156, 163, 175)'  // Gris para selector fuera
+        0: 'rgb(59, 130, 246)',
+        1: 'rgb(34, 197, 94)',
+        2: 'rgb(239, 68, 68)',
+        3: 'rgb(156, 163, 175)'
       };
       
       backgroundColors = realStates.map(value => stateColors[value as keyof typeof stateColors] || 'rgba(156, 163, 175, 0.8)');
       borderColors = realStates.map(value => stateBorderColors[value as keyof typeof stateBorderColors] || 'rgb(156, 163, 175)');
     }
     
+    const dataLabel = isPumpData
+      ? 'Estado de la bomba (0=Apagada, 1=Encendida, 2=Error, 3=Selector Fuera)'
+      : deviceType === 'pressure'
+      ? 'Presión (PSI)'
+      : 'Nivel del tanque (%)';
+
     setChartData({
       labels: sortedLabels,
       datasets: [
         {
-          label: isPumpData ? 'Estado de la bomba (0=Apagada, 1=Encendida, 2=Error, 3=Selector Fuera)' : 'Nivel del tanque (%)',
-          data: displayValues, 
+          label: dataLabel,
+          data: displayValues,
           realStates: realStates,
           borderColor: isPumpData ? borderColors : 'rgb(53, 162, 235)',
           backgroundColor: isPumpData ? backgroundColors : 'rgba(53, 162, 235, 0.5)',
-          fill: !isPumpData, 
-          pointRadius: isPumpData ? 4 : 0, 
+          fill: !isPumpData,
+          pointRadius: isPumpData ? 4 : 0,
           pointHoverRadius: isMobile ? 6 : 8,
           pointHoverBackgroundColor: isPumpData ? 'rgb(34, 197, 94)' : 'rgb(53, 162, 235)',
           pointHoverBorderColor: 'white',
           pointHoverBorderWidth: isMobile ? 1 : 2,
           tension: isPumpData ? 0 : 0.3,
           borderWidth: isPumpData ? 2 : 3,
-          stepped: isPumpData ? false : false, 
+          stepped: isPumpData ? false : false,
           borderRadius: isPumpData ? 4 : 0,
           borderSkipped: false
         }
@@ -372,10 +303,10 @@ export default function HistoricalChart({
     });
   };
 
-  // Cargar datos cuando cambie la fecha o la pestaña activa
+  // Cargar datos cuando cambie la fecha
   useEffect(() => {
     loadDataForDate(selectedDate);
-  }, [selectedDate, activeTab]);
+  }, [selectedDate]);
 
   const { year, month, day } = parseSelectedDateInCostaRica(selectedDate);
 
@@ -396,7 +327,7 @@ export default function HistoricalChart({
       },
       title: {
         display: true,
-        text: `Histórico de ${activeTab === 'pumps' ? 'Estado de Bombas' : 'Niveles'} - ${day}/${month}/${year} (Costa Rica)`,
+        text: `Histórico de ${dataMode === 'pumps' ? 'Estado de Bombas' : deviceType === 'pressure' ? 'Presión' : 'Niveles'} - ${day}/${month}/${year} (Costa Rica)`,
         color: 'white',
         font: {
           size: isMobile ? 14 : 16,
@@ -420,12 +351,15 @@ export default function HistoricalChart({
             return items[0].label;
           },
           label: (context) => {
-            if (activeTab === 'pumps') {
+            if (dataMode === 'pumps') {
               const realState = context.dataset.realStates?.[context.dataIndex];
               const estados = ['Apagada', 'Encendida', 'Error', 'Selector Fuera'];
               return `Estado: ${estados[realState] || 'Desconocido'}`;
             }
-            return `Nivel: ${context.raw}%`;
+            // Para niveles o presión
+            return deviceType === 'pressure'
+              ? `Presión: ${context.raw} PSI`
+              : `Nivel: ${context.raw}%`;
           }
         }
       }
@@ -433,10 +367,10 @@ export default function HistoricalChart({
     scales: {
       y: {
         min: 0,
-        max: activeTab === 'pumps' ? 1.2 : 105, 
+        max: dataMode === 'pumps' ? 1.2 : 105, 
         grid: {
           color: 'rgba(148, 163, 184, 0.1)',
-          display: !isMobile && activeTab === 'levels' 
+          display: !isMobile && dataMode === 'levels' 
         },
         ticks: {
           color: 'white',
@@ -445,18 +379,18 @@ export default function HistoricalChart({
             size: isMobile ? 9 : 11
           },
           callback: function(value) {
-            if (activeTab === 'pumps') {
-              return ''; 
+            if (dataMode === 'pumps') {
+              return '';
             }
-            return value + '%';
+            return deviceType === 'pressure' ? value + ' PSI' : value + '%';
           },
-          maxTicksLimit: isMobile ? 6 : (activeTab === 'pumps' ? 0 : 11), 
-          stepSize: activeTab === 'pumps' ? 1 : undefined, 
-          display: activeTab === 'levels' 
+          maxTicksLimit: isMobile ? 6 : (dataMode === 'pumps' ? 0 : 11),
+          stepSize: dataMode === 'pumps' ? 1 : undefined,
+          display: dataMode === 'levels'
         },
         title: {
-          display: !isMobile && activeTab === 'levels', 
-          text: 'Nivel del Tanque (%)',
+          display: !isMobile && dataMode === 'levels',
+          text: deviceType === 'pressure' ? 'Presión (PSI)' : 'Nivel del Tanque (%)',
           color: 'white',
           font: {
             weight: 'bold' as const
@@ -489,7 +423,7 @@ export default function HistoricalChart({
         }
       }
     },
-    ...(activeTab === 'pumps' && {
+    ...(dataMode === 'pumps' && {
       categoryPercentage: 0.8, 
       barPercentage: 0.9, 
       elements: {
@@ -519,17 +453,6 @@ export default function HistoricalChart({
         </CardHeader>
         
         <CardContent className="p-2 sm:p-4 overflow-auto">
-          {/* Selector de pestañas */}
-          <div className="mb-4">
-            <TabSelector
-              tabs={tabs}
-              activeTab={activeTab}
-              onTabChange={handleTabChange}
-              className="mb-4"
-            />
-          </div>
-
-          {/* Selector de fecha */}
           <div className="mb-3 sm:mb-4">
             <label className="block text-xs sm:text-sm text-gray-400 mb-1">Seleccionar Fecha (Costa Rica)</label>
             <input
@@ -544,20 +467,23 @@ export default function HistoricalChart({
             </p>
           </div>
 
-          {/* Información de ayuda */}
           <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-blue-900/20 border border-blue-800/30 rounded-lg flex items-start">
             <Info className="text-blue-400 mr-2 flex-shrink-0 mt-0.5" size={isMobile ? 16 : 18} />
             <div>
               <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-blue-300`}>
-                {activeTab === 'pumps' 
+                {dataMode === 'pumps'
                   ? `Histórico del estado de bombas del día ${day}/${month}/${year} (Costa Rica).`
+                  : deviceType === 'pressure'
+                  ? `Histórico de presión del día ${day}/${month}/${year} (Costa Rica).`
                   : `Histórico de niveles del tanque del día ${day}/${month}/${year} (Costa Rica).`
                 }
                 Las lecturas se realizan cada 30 minutos (puede haber lecturas faltantes).
               </p>
               <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-blue-300 mt-1`}>
-                {activeTab === 'pumps'
+                {dataMode === 'pumps'
                   ? 'Cada barra representa el estado de la bomba: Apagada (0), Encendida (1), Error (2), Selector Fuera (3).'
+                  : deviceType === 'pressure'
+                  ? 'Cada punto representa una toma de datos con su respectiva presión en PSI.'
                   : 'Cada punto representa una toma de datos con su respectivo nivel de tanque.'
                 }
                 La hora mostrada corresponde a la lectura del dispositivo en Costa Rica.
@@ -565,7 +491,6 @@ export default function HistoricalChart({
             </div>
           </div>
 
-          {/* Estados de carga, error y gráfico */}
           {loading && (
             <div className="flex justify-center items-center h-48 sm:h-64">
               <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -581,7 +506,7 @@ export default function HistoricalChart({
 
           {chartData && !loading && chartData.labels && chartData.labels.length > 0 && (
             <div className="h-64 sm:h-80 md:h-96 w-full">
-              {activeTab === 'pumps' ? (
+              {dataMode === 'pumps' ? (
                 <Bar data={chartData} options={options} />
               ) : (
                 <Line data={chartData} options={options} />
@@ -593,7 +518,7 @@ export default function HistoricalChart({
             <div className="bg-yellow-950/30 p-3 sm:p-4 rounded-lg border border-yellow-900 text-yellow-400">
               <p className={`${isMobile ? 'text-sm' : 'text-base'} font-medium`}>No hay datos para mostrar</p>
               <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-yellow-300`}>
-                No se encontraron registros de {activeTab === 'pumps' ? 'estado de bombas' : 'niveles'} para la fecha seleccionada.
+                No se encontraron registros de {dataMode === 'pumps' ? 'estado de bombas' : deviceType === 'pressure' ? 'presión' : 'niveles'} para la fecha seleccionada.
               </p>
             </div>
           )}

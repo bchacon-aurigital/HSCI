@@ -39,5 +39,11 @@ export const devices: Device[] = [
     order: 4,
     historicoKey: 'PRESION',
     databaseKey: 'ZAPOTAL',
+    pressureRanges: {
+      veryLow: 50,
+      low: 60,
+      normalMax: 80,
+      high: 90,
+    },
   },
 ];
