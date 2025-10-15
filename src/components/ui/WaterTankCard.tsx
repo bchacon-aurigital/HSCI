@@ -33,6 +33,7 @@ interface WaterTankCardProps {
   onAlertChange?: (hasAlert: boolean) => void;
   onWarningChange?: (hasWarning: boolean) => void;
   pressureRanges?: PressureRanges;
+  groupName?: string;
 }
 
 export default function WaterTankCard({
@@ -46,6 +47,7 @@ export default function WaterTankCard({
   onAlertChange,
   onWarningChange,
   pressureRanges,
+  groupName,
 }: WaterTankCardProps) {
   const pumpKeyParam = type === 'pump' || type === 'well' ? undefined : pumpKey;
   const { data, error, loading } = useDeviceData(identifier, pumpKeyParam, codigoAsada);
@@ -301,6 +303,7 @@ export default function WaterTankCard({
             deviceName={name}
             databaseKey={databaseKey}
             deviceType={type}
+            groupName={groupName}
             onClose={() => setShowHistorical(false)}
           />
         ) : null}
@@ -512,6 +515,7 @@ export default function WaterTankCard({
             deviceName={name}
             databaseKey={databaseKey}
             deviceType={type}
+            groupName={groupName}
             onClose={() => setShowHistorical(false)}
           />
         ) : null}
@@ -594,6 +598,7 @@ export default function WaterTankCard({
             deviceName={name}
             databaseKey={databaseKey}
             deviceType={type}
+            groupName={groupName}
             onClose={() => setShowHistorical(false)}
           />
         ) : null}
