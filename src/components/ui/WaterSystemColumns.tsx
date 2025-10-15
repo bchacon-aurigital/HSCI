@@ -251,6 +251,7 @@ export default function WaterSystemColumns() {
             historicoKey={device.historicoKey}
             databaseKey={device.databaseKey}
             pressureRanges={device.pressureRanges}
+            groupName={device.group}
             onAlertChange={(hasAlert) => registerAlert(groupName, identifier, hasAlert)}
             onWarningChange={(hasWarning) => registerWarning(groupName, identifier, hasWarning)}
           />

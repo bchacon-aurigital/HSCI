@@ -22,6 +22,17 @@ interface MultiDeviceCardWithAlertProps extends MultiDeviceCardProps {
   databaseKey?: string;
 }
 
+// Helper para obtener la key de dispositivo de forma consistente
+function getDeviceKey(device: any): string {
+  return (
+    device?.pumpKey ??
+    device?.key ??
+    device?.deviceKey ??
+    device?.id ??
+    (device?.type && device?.name ? `${device.type}:${device.name}` : '')
+  );
+}
+
 export default function MultiDeviceCard({
   groupName,
   identifier,
@@ -98,6 +109,27 @@ export default function MultiDeviceCard({
       setHasHistorical(false);
     }
   }, [codigoAsada, historicoKey, databaseKey, groupName]);
+
+  // Inicializar bombas y pozos expandidos por defecto (solo en primera carga)
+  React.useEffect(() => {
+    // Guard: solo inicializar si devices existe y expandedDevices está vacío
+    if (!Array.isArray(devices)) return;
+    if (Object.keys(expandedDevices).length > 0) return;
+
+    const init: Record<string, boolean> = {};
+    devices.forEach((d: any) => {
+      // Expandir solo pumps y wells por defecto
+      if (d?.type === 'pump' || d?.type === 'well') {
+        init[getDeviceKey(d)] = true;
+      }
+    });
+
+    // Solo actualizar si hay dispositivos para expandir
+    if (Object.keys(init).length > 0) {
+      setExpandedDevices(init);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [devices]);
 
   if (loading) {
     return (
@@ -349,7 +381,7 @@ export default function MultiDeviceCard({
           
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
             {otherDevices.map((device) => {
-              const deviceKey = device.pumpKey || device.key || '';
+              const deviceKey = getDeviceKey(device);
               const statusAsNumber = Number(device.pumpKey ? data[device.pumpKey] : data[device.key || '']);
               const isActive = statusAsNumber === 1;
               const isDeviceExpanded = expandedDevices[deviceKey] || false;

@@ -3,8 +3,8 @@ import { Device, MultiDevice } from '../types/types';
 
 export const devices: (Device | MultiDevice)[] = [
   { name: 'TANQUE', key:'CATSA_R', type: 'tank', group: 'control1', order: 1 },
-  { name: 'BOMBA1', key:'CATSA_R', pumpKey: 'BOMBA1', type: 'pump', group: 'control1', order: 1 },
-  { name: 'BOMBA2', key:'CATSA_R', pumpKey: 'BOMBA2', type: 'pump', group: 'control1', order: 2 },
+  { name: 'BOMBA1', key:'CATSA_R', pumpKey: 'BOMBA1', type: 'pump', group: 'control1', order: 1, historicoKey: 'CATSA_B1', databaseKey: 'CATSA' },
+  { name: 'BOMBA2', key:'CATSA_R', pumpKey: 'BOMBA2', type: 'pump', group: 'control1', order: 2, historicoKey: 'CATSA_B2', databaseKey: 'CATSA' },
   {
     name: 'Sistema de Válvulas Control',
     key:'CATSA_R',

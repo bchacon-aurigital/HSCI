@@ -40,6 +40,7 @@ interface HistoricalChartProps {
   onClose: () => void;
   databaseKey?: string;
   deviceType?: string;
+  groupName?: string;
 }
 
 // Función para obtener la fecha actual en Costa Rica
@@ -60,14 +61,15 @@ const formatDateForInput = (date: Date) => {
   return `${year}-${month}-${day}`;
 };
 
-export default function HistoricalChart({ 
-  codigoAsada, 
-  deviceKey, 
+export default function HistoricalChart({
+  codigoAsada,
+  deviceKey,
   historicoKey,
   deviceName,
   onClose,
   databaseKey,
-  deviceType
+  deviceType,
+  groupName
 }: HistoricalChartProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -441,10 +443,10 @@ export default function HistoricalChart({
           <div className="flex items-center">
             <Calendar className="text-blue-400 mr-2" size={isMobile ? 16 : 18} />
             <h2 className={`${isMobile ? 'text-base' : 'text-xl'} font-semibold text-gray-100 truncate`}>
-              Histórico {deviceName}
+              Histórico {deviceName}{groupName ? ` ${groupName.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}` : ''}
             </h2>
           </div>
-          <button 
+          <button
             onClick={onClose}
             className="p-1 rounded-full hover:bg-gray-700"
           >
