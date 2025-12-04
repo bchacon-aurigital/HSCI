@@ -126,6 +126,13 @@ export const setGroupedURLsForAsada = (asadaCode: string) => {
         ]
       };
       break;
+    case 'belen2025':
+      groupedURLs = {
+        'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_ZAMORA/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ': [
+          'NACIENTE', 'REBOMBEO', 'TANQUE_PRINCIPAL', 'CAUDAL_SALIENTE'
+        ]
+      };
+      break;
     default:
       groupedURLs = {};
   }

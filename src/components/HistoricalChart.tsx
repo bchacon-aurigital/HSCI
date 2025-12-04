@@ -140,8 +140,16 @@ export default function HistoricalChart({
       } else {
         dataType = 'NIVELES';
       }
-      const url = `https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/${databaseKey}/HISTORICO/${historicoKey}/${dataType}/${year}/${month}/${day}.json`;
-      
+
+      // Construir URL basada en el ASADA
+      let url: string;
+      if (codigoAsada === 'belen2025') {
+        // Para BELEN, el historicoKey ya incluye la ruta completa (ej: NACIENTE/NIVEL)
+        url = `https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/HISTORICO/${databaseKey}/${historicoKey}/${year}/${month}/${day}.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ`;
+      } else {
+        url = `https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/${databaseKey}/HISTORICO/${historicoKey}/${dataType}/${year}/${month}/${day}.json`;
+      }
+
       console.log(`Obteniendo datos de ${dataType} para ${day}/${month}/${year} (Costa Rica) desde API`);
       const response = await fetch(url);
     

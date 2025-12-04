@@ -14,8 +14,11 @@ export async function hasHistoricalData(codigoAsada: string, historicoKey?: stri
     
     // Determinar qué ubicaciones intentar según el tipo de dispositivo
     let locationsToTry = [];
-    
-    if (deviceType === 'pump' || deviceType === 'well' || deviceType === 'centrifugal') {
+
+    // Para BELEN, el historicoKey ya incluye la ruta completa, no necesita subfolders
+    if (codigoAsada === 'belen2025') {
+      locationsToTry = [''];  // Sin subfolder adicional
+    } else if (deviceType === 'pump' || deviceType === 'well' || deviceType === 'centrifugal') {
       // Para bombas y pozos, intentar primero ESTADOBOMBA, luego NIVELES
       locationsToTry = ['ESTADOBOMBA', 'NIVELES'];
     } else if (deviceType === 'valve') {
@@ -31,11 +34,18 @@ export async function hasHistoricalData(codigoAsada: string, historicoKey?: stri
       // Para tanques, intentar primero NIVELES, luego ESTADOBOMBA
       locationsToTry = ['NIVELES', 'ESTADOBOMBA'];
     }
-    
+
     // Intentar cada ubicación hasta encontrar datos
     for (const subfolder of locationsToTry) {
-      const url = `https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/${databaseKey}/HISTORICO/${keyToUse}/${subfolder}.json`;
-      
+      // Construir URL basada en el ASADA
+      let url: string;
+      if (codigoAsada === 'belen2025') {
+        // Para BELEN, keyToUse ya incluye la ruta completa (ej: NACIENTE/NIVEL)
+        url = `https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/HISTORICO/${databaseKey}/${keyToUse}.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ`;
+      } else {
+        url = `https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/${databaseKey}/HISTORICO/${keyToUse}/${subfolder}.json`;
+      }
+
       try {
         const response = await fetch(url);
         

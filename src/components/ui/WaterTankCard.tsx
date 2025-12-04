@@ -235,6 +235,30 @@ export default function WaterTankCard({
                   <span className="ml-2 text-gray-400">de capacidad disponible</span>
                 </div>
 
+                {/* Indicadores de estado del tanque: ALTA, BAJA, DERAME */}
+                {(hasData('ALTA') || hasData('BAJA') || hasData('DERAME')) && (
+                  <div className="flex items-center justify-center gap-2 w-full">
+                    {hasData('ALTA') && Number(data.ALTA) === 1 && (
+                      <div className="flex items-center px-3 py-1 rounded-full bg-blue-500/20 border border-blue-500/50">
+                        <div className="h-2 w-2 rounded-full bg-blue-500 mr-2 animate-pulse"></div>
+                        <span className="text-xs font-medium text-blue-300">NIVEL ALTO</span>
+                      </div>
+                    )}
+                    {hasData('BAJA') && Number(data.BAJA) === 1 && (
+                      <div className="flex items-center px-3 py-1 rounded-full bg-orange-500/20 border border-orange-500/50">
+                        <div className="h-2 w-2 rounded-full bg-orange-500 mr-2 animate-pulse"></div>
+                        <span className="text-xs font-medium text-orange-300">NIVEL BAJO</span>
+                      </div>
+                    )}
+                    {hasData('DERAME') && Number(data.DERAME) === 1 && (
+                      <div className="flex items-center px-3 py-1 rounded-full bg-red-500/20 border border-red-500/50">
+                        <AlertTriangle className="h-3 w-3 text-red-500 mr-2" />
+                        <span className="text-xs font-medium text-red-300">DERAME</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {isLowLevel && (
                   <div className="flex items-center w-full py-3 px-4 rounded-lg bg-red-950/30 border border-red-900">
                     <AlertTriangle className="text-red-500 mr-3 animate-pulse" size={20} />
@@ -325,6 +349,16 @@ export default function WaterTankCard({
           <h3 className="text-lg font-medium text-white mb-4">Datos de sensores</h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {hasData('MODO') && (
+              <div className="flex items-center bg-gray-700/50 p-3 rounded-lg">
+                <Activity className="text-purple-400 mr-3" size={20} />
+                <div>
+                  <p className="text-xs text-gray-400">MODO DE OPERACIÓN</p>
+                  <p className="font-bold text-gray-100">{data.MODO === 1 ? 'Automático' : data.MODO === 0 ? 'Manual' : data.MODO}</p>
+                </div>
+              </div>
+            )}
+
             <div className="flex items-center bg-gray-700/50 p-3 rounded-lg">
               <Zap className="text-blue-400 mr-3" size={20} />
               <div>
