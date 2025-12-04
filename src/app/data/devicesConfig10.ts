@@ -1,5 +1,12 @@
 import { Device, MultiDevice } from '../types/types';
 
+const belenHistoricalConfig = {
+  baseUrl: 'https://municipalidad-belen-default-rtdb.firebaseio.com',
+  authToken: 'CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
+  historicalDataPath: '/AGUA_POTABLE/HISTORICO/',
+  useSubfolders: false,
+};
+
 export const devices: (Device | MultiDevice)[] = [
   // NACIENTE - Nivel (tank)
   {
@@ -10,7 +17,8 @@ export const devices: (Device | MultiDevice)[] = [
     group: 'zamora-naciente',
     order: 1,
     historicoKey: 'NACIENTE/NIVEL',
-    databaseKey: 'ZAMORA/NACIENTE/NIVEL/',
+    databaseKey: 'ZAMORA',
+    historicalConfig: belenHistoricalConfig,
   },
 
   // NACIENTE - Caudal LPS (valve/flow)
@@ -23,6 +31,7 @@ export const devices: (Device | MultiDevice)[] = [
     order: 2,
     historicoKey: 'NACIENTE/CAUDAL_LPS',
     databaseKey: 'ZAMORA',
+    historicalConfig: belenHistoricalConfig,
   },
 
   // NACIENTE - Calidad OK
@@ -35,6 +44,7 @@ export const devices: (Device | MultiDevice)[] = [
     order: 3,
     historicoKey: 'NACIENTE/CALIDAD_OK',
     databaseKey: 'ZAMORA',
+    historicalConfig: belenHistoricalConfig,
   },
 
   // REBOMBEO - Bomba 1
@@ -47,6 +57,7 @@ export const devices: (Device | MultiDevice)[] = [
     order: 1,
     historicoKey: 'REBOMBEO_B1/ESTADO',
     databaseKey: 'ZAMORA',
+    historicalConfig: belenHistoricalConfig,
   },
 
   // REBOMBEO - Bomba 2
@@ -59,6 +70,7 @@ export const devices: (Device | MultiDevice)[] = [
     order: 2,
     historicoKey: 'REBOMBEO_B2/ESTADO',
     databaseKey: 'ZAMORA',
+    historicalConfig: belenHistoricalConfig,
   },
 
   // TANQUE PRINCIPAL - Nivel Porcentual
@@ -71,6 +83,7 @@ export const devices: (Device | MultiDevice)[] = [
     order: 1,
     historicoKey: 'TANQUE_PRINCIPAL/NIVELES',
     databaseKey: 'ZAMORA',
+    historicalConfig: belenHistoricalConfig,
   },
 
   // TANQUE PRINCIPAL - Nivel en Metros
@@ -83,6 +96,7 @@ export const devices: (Device | MultiDevice)[] = [
     order: 2,
     historicoKey: 'TANQUE_PRINCIPAL/NIVELES',
     databaseKey: 'ZAMORA',
+    historicalConfig: belenHistoricalConfig,
   },
 
   // CAUDAL SALIENTE - Caudal LPS
@@ -95,6 +109,7 @@ export const devices: (Device | MultiDevice)[] = [
     order: 1,
     historicoKey: 'CAUDAL_SALIENTE/CAUDAL',
     databaseKey: 'ZAMORA',
+    historicalConfig: belenHistoricalConfig,
   },
 
   // CAUDAL SALIENTE - Volumen M3
@@ -107,6 +122,7 @@ export const devices: (Device | MultiDevice)[] = [
     order: 2,
     historicoKey: 'CAUDAL_SALIENTE/VOLUMEN',
     databaseKey: 'ZAMORA',
+    historicalConfig: belenHistoricalConfig,
   },
 
   // CAUDAL SALIENTE - Presión BAR
@@ -119,6 +135,7 @@ export const devices: (Device | MultiDevice)[] = [
     order: 3,
     historicoKey: 'CAUDAL_SALIENTE/PRESION',
     databaseKey: 'ZAMORA',
+    historicalConfig: belenHistoricalConfig,
     pressureRanges: {
       veryLow: 1.0,
       low: 1.5,

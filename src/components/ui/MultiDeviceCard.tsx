@@ -30,6 +30,7 @@ export default function MultiDeviceCard({
   onAlertChange,
   historicoKey,
   databaseKey,
+  historicalConfig,
 }: MultiDeviceCardWithAlertProps) {
   const { data, error, loading } = useDeviceData(identifier, undefined, codigoAsada);
   const [showDetails, setShowDetails] = useState(false);
@@ -86,7 +87,7 @@ export default function MultiDeviceCard({
   // Verificar si hay datos históricos disponibles cuando se monta el componente
   React.useEffect(() => {
     if (codigoAsada && historicoKey && databaseKey) {
-      checkHistoricalDataAvailability(codigoAsada, historicoKey, databaseKey, 'multi')
+      checkHistoricalDataAvailability(codigoAsada, historicoKey, databaseKey, 'multi', historicalConfig)
         .then(hasHistoricalData => {
           setHasHistorical(hasHistoricalData);
         })
@@ -97,7 +98,7 @@ export default function MultiDeviceCard({
     } else {
       setHasHistorical(false);
     }
-  }, [codigoAsada, historicoKey, databaseKey, groupName]);
+  }, [codigoAsada, historicoKey, databaseKey, groupName, historicalConfig]);
 
   if (loading) {
     return (
@@ -466,6 +467,7 @@ export default function MultiDeviceCard({
           deviceName={groupName}
           databaseKey={databaseKey}
           deviceType="multi"
+          historicalConfig={historicalConfig}
           onClose={() => setShowHistorical(false)}
         />
       ) : null}

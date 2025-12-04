@@ -1,4 +1,6 @@
-export async function hasHistoricalData(codigoAsada: string, historicoKey?: string, databaseKey?: string, deviceType?: string): Promise<boolean> {
+import { HistoricalConfig } from '../app/types/types';
+
+export async function hasHistoricalData(codigoAsada: string, historicoKey?: string, databaseKey?: string, deviceType?: string, historicalConfig?: HistoricalConfig): Promise<boolean> {
   try {
     if (!codigoAsada) {
       console.error('Código de ASADA no proporcionado');
@@ -11,12 +13,12 @@ export async function hasHistoricalData(codigoAsada: string, historicoKey?: stri
     }
     
     const keyToUse = historicoKey;
-    
+
     // Determinar qué ubicaciones intentar según el tipo de dispositivo
     let locationsToTry = [];
 
-    // Para BELEN, el historicoKey ya incluye la ruta completa, no necesita subfolders
-    if (codigoAsada === 'belen2025') {
+    // Si el device tiene configuración custom y no usa subfolders
+    if (historicalConfig && !historicalConfig.useSubfolders) {
       locationsToTry = [''];  // Sin subfolder adicional
     } else if (deviceType === 'pump' || deviceType === 'well' || deviceType === 'centrifugal') {
       // Para bombas y pozos, intentar primero ESTADOBOMBA, luego NIVELES
@@ -37,12 +39,14 @@ export async function hasHistoricalData(codigoAsada: string, historicoKey?: stri
 
     // Intentar cada ubicación hasta encontrar datos
     for (const subfolder of locationsToTry) {
-      // Construir URL basada en el ASADA
+      // Construir URL basada en configuración del device o defaults
       let url: string;
-      if (codigoAsada === 'belen2025') {
-        // Para BELEN, keyToUse ya incluye la ruta completa (ej: NACIENTE/NIVEL)
-        url = `https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/HISTORICO/${databaseKey}/${keyToUse}.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ`;
+      if (historicalConfig) {
+        // Usar configuración custom del device
+        const authParam = historicalConfig.authToken ? `?auth=${historicalConfig.authToken}` : '';
+        url = `${historicalConfig.baseUrl}${historicalConfig.historicalDataPath}${databaseKey}/${keyToUse}.json${authParam}`;
       } else {
+        // Usar configuración por defecto (prueba-labview)
         url = `https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/${databaseKey}/HISTORICO/${keyToUse}/${subfolder}.json`;
       }
 
@@ -70,27 +74,27 @@ export async function hasHistoricalData(codigoAsada: string, historicoKey?: stri
 
 const historicalDataCache: Record<string, boolean> = {};
 
-export async function checkHistoricalDataAvailability(codigoAsada: string, historicoKey?: string, databaseKey?: string, deviceType?: string): Promise<boolean> {
+export async function checkHistoricalDataAvailability(codigoAsada: string, historicoKey?: string, databaseKey?: string, deviceType?: string, historicalConfig?: HistoricalConfig): Promise<boolean> {
   if (!codigoAsada) {
     return false;
   }
-  
+
   if (!databaseKey) {
     return false;
   }
-  
+
   if (!historicoKey) {
     return false;
   }
-  
+
   const cacheKey = `${databaseKey}_${historicoKey ? `${codigoAsada}_${historicoKey}_${deviceType || 'unknown'}` : codigoAsada}`;
-  
+
   if (historicalDataCache[cacheKey] !== undefined) {
     return historicalDataCache[cacheKey];
   }
-  
+
   try {
-    const hasData = await hasHistoricalData(codigoAsada, historicoKey, databaseKey, deviceType);
+    const hasData = await hasHistoricalData(codigoAsada, historicoKey, databaseKey, deviceType, historicalConfig);
     historicalDataCache[cacheKey] = hasData;
     return hasData;
   } catch (error) {

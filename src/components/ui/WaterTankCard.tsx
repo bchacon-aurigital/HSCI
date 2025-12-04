@@ -18,7 +18,7 @@ import { CentrifugalPumpIndicator } from '../indicators/CentrifugalPumpIndicator
 import { PressureIndicator } from '../indicators/PressureIndicator';
 import { useDeviceData } from '../../hooks/useDeviceData';
 import { formatDate } from '../../utils/utils';
-import { BaseDeviceType, PressureRanges } from '../../app/types/types';
+import { BaseDeviceType, PressureRanges, HistoricalConfig } from '../../app/types/types';
 import { checkHistoricalDataAvailability } from '../../utils/historicalDataUtils';
 import HistoricalChart from '../HistoricalChart';
 
@@ -33,6 +33,7 @@ interface WaterTankCardProps {
   onAlertChange?: (hasAlert: boolean) => void;
   onWarningChange?: (hasWarning: boolean) => void;
   pressureRanges?: PressureRanges;
+  historicalConfig?: HistoricalConfig;
 }
 
 export default function WaterTankCard({
@@ -46,6 +47,7 @@ export default function WaterTankCard({
   onAlertChange,
   onWarningChange,
   pressureRanges,
+  historicalConfig,
 }: WaterTankCardProps) {
   const pumpKeyParam = type === 'pump' || type === 'well' ? undefined : pumpKey;
   const { data, error, loading } = useDeviceData(identifier, pumpKeyParam, codigoAsada);
@@ -110,7 +112,7 @@ export default function WaterTankCard({
   // Verificar si hay datos históricos disponibles cuando se monta el componente
   useEffect(() => {
     if (codigoAsada && historicoKey && databaseKey) {
-      checkHistoricalDataAvailability(codigoAsada, historicoKey, databaseKey, type)
+      checkHistoricalDataAvailability(codigoAsada, historicoKey, databaseKey, type, historicalConfig)
         .then(hasHistoricalData => {
           setHasHistorical(hasHistoricalData);
         })
@@ -121,7 +123,7 @@ export default function WaterTankCard({
     } else {
       setHasHistorical(false);
     }
-  }, [codigoAsada, historicoKey, databaseKey, name]);
+  }, [codigoAsada, historicoKey, databaseKey, name, type, historicalConfig]);
 
   // Notificar cambios en el estado de alerta al componente padre
   React.useEffect(() => {
@@ -325,6 +327,7 @@ export default function WaterTankCard({
             deviceName={name}
             databaseKey={databaseKey}
             deviceType={type}
+            historicalConfig={historicalConfig}
             onClose={() => setShowHistorical(false)}
           />
         ) : null}
@@ -546,6 +549,7 @@ export default function WaterTankCard({
             deviceName={name}
             databaseKey={databaseKey}
             deviceType={type}
+            historicalConfig={historicalConfig}
             onClose={() => setShowHistorical(false)}
           />
         ) : null}
@@ -628,6 +632,7 @@ export default function WaterTankCard({
             deviceName={name}
             databaseKey={databaseKey}
             deviceType={type}
+            historicalConfig={historicalConfig}
             onClose={() => setShowHistorical(false)}
           />
         ) : null}

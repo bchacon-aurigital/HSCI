@@ -18,6 +18,7 @@ import { Line, Bar } from 'react-chartjs-2';
 import { Card, CardContent, CardHeader } from './ui/card';
 import { Calendar, X, Info } from 'lucide-react';
 import { formatLabviewTimeToHourMinute, formatLabviewTimeToFullDateTime } from '../utils/timeUtils';
+import { HistoricalConfig } from '../app/types/types';
 
 ChartJS.register(
   CategoryScale,
@@ -40,6 +41,7 @@ interface HistoricalChartProps {
   onClose: () => void;
   databaseKey?: string;
   deviceType?: string;
+  historicalConfig?: HistoricalConfig;
 }
 
 // Función para obtener la fecha actual en Costa Rica
@@ -60,14 +62,15 @@ const formatDateForInput = (date: Date) => {
   return `${year}-${month}-${day}`;
 };
 
-export default function HistoricalChart({ 
-  codigoAsada, 
-  deviceKey, 
+export default function HistoricalChart({
+  codigoAsada,
+  deviceKey,
   historicoKey,
   deviceName,
   onClose,
   databaseKey,
-  deviceType
+  deviceType,
+  historicalConfig
 }: HistoricalChartProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -141,12 +144,14 @@ export default function HistoricalChart({
         dataType = 'NIVELES';
       }
 
-      // Construir URL basada en el ASADA
+      // Construir URL basada en configuración del device o defaults
       let url: string;
-      if (codigoAsada === 'belen2025') {
-        // Para BELEN, el historicoKey ya incluye la ruta completa (ej: NACIENTE/NIVEL)
-        url = `https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/HISTORICO/${databaseKey}/${historicoKey}/${year}/${month}/${day}.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ`;
+      if (historicalConfig) {
+        // Usar configuración custom del device
+        const authParam = historicalConfig.authToken ? `?auth=${historicalConfig.authToken}` : '';
+        url = `${historicalConfig.baseUrl}${historicalConfig.historicalDataPath}${databaseKey}/${historicoKey}/${year}/${month}/${day}.json${authParam}`;
       } else {
+        // Usar configuración por defecto (prueba-labview)
         url = `https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/${databaseKey}/HISTORICO/${historicoKey}/${dataType}/${year}/${month}/${day}.json`;
       }
 
