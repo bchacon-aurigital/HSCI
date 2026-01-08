@@ -91,9 +91,11 @@ export const useDeviceData = (
     if (newDataString !== prevDataString || error !== optimizedError) {
       dataRef.current = deviceData;
       setOptimizedData(deviceData);
-      setOptimizedLoading(false);
       setOptimizedError(error);
     }
+
+    // Siempre actualizar loading a false cuando hay datos válidos
+    setOptimizedLoading(false);
   }, [
     isIndividual,
     codigoAsada,

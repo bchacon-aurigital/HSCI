@@ -34,6 +34,8 @@ export interface MultiDeviceInfo {
   type: BaseDeviceType;
   key: string;
   pumpKey?: string;
+  historicoKey?: string;
+  databaseKey?: string;
 }
 
 export interface MultiDevice extends Device {

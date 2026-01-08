@@ -275,17 +275,21 @@ const fetchAggregatedData = async () => {
       // Solo actualizar si hay cambios
       if (hasChanged) {
         dataCache.data = combinedData;
-        // Notificar a los suscriptores sobre la actualización
-        notifyUpdateListeners();
       } else {
         console.log('Sin cambios en los datos');
       }
 
       dataCache.lastFetched = now;
       dataCache.error = null;
+
+      // Siempre notificar a los suscriptores, incluso si no hay cambios
+      // Esto permite que los componentes actualicen su estado de carga
+      notifyUpdateListeners();
     } catch (err) {
       console.error('Error al obtener datos:', err);
       dataCache.error = 'Error al obtener datos';
+      // Notificar a los suscriptores sobre el error
+      notifyUpdateListeners();
     } finally {
       dataCache.loading = false;
       dataCache.fetchPromise = null;
