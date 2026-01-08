@@ -50,24 +50,25 @@ export const devices: (Device | MultiDevice)[] = [
   // REBOMBEO - Bomba 1
   {
     name: 'Rebombeo Bomba 1',
-    key: 'REBOMBEO',
-    pumpKey: 'BOMBA1',
+    url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_ZAMORA/REBOMBEO/BOMBA1/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
     type: 'pump',
     group: 'zamora-rebombeo',
     order: 1,
+    pumpKey: 'ESTADO',
     historicoKey: 'REBOMBEO_B1/ESTADO',
     databaseKey: 'ZAMORA',
     historicalConfig: belenHistoricalConfig,
   },
 
+
   // REBOMBEO - Bomba 2
   {
     name: 'Rebombeo Bomba 2',
-    key: 'REBOMBEO',
-    pumpKey: 'BOMBA2',
+    url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_ZAMORA/REBOMBEO/BOMBA2/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
     type: 'pump',
     group: 'zamora-rebombeo',
     order: 2,
+    pumpKey: 'ESTADO',
     historicoKey: 'REBOMBEO_B2/ESTADO',
     databaseKey: 'ZAMORA',
     historicalConfig: belenHistoricalConfig,
@@ -133,7 +134,7 @@ export const devices: (Device | MultiDevice)[] = [
     type: 'pressure',
     group: 'zamora-saliente',
     order: 3,
-    historicoKey: 'CAUDAL_SALIENTE/PRESION',
+    historicoKey: 'CAUDAL_SALIENTE/CAUDAL',
     databaseKey: 'ZAMORA',
     historicalConfig: belenHistoricalConfig,
     pressureRanges: {

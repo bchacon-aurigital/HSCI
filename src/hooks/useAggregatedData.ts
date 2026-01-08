@@ -210,6 +210,7 @@ const fetchAggregatedData = async () => {
         Object.entries(groupedURLs).map(async ([url, keys]) => {
           // Añadir parámetro de tiempo para evitar caché en navegador
           const cacheBustUrl = `${url}${url.includes('?') ? '&' : '?'}_t=${now}`;
+
           const res = await fetch(cacheBustUrl, {
             cache: 'no-store',
             headers: {
@@ -218,12 +219,15 @@ const fetchAggregatedData = async () => {
             }
           });
 
-          if (!res.ok) throw new Error(`Error de conexión: ${url}`);
+          if (!res.ok) {
+            throw new Error(`Error de conexión: ${url}`);
+          }
+
           const result = await res.json();
 
           // Extract only the needed data
           return keys.reduce((acc, key) => {
-            if (result && result[key]) {
+            if (result && result[key] !== undefined && result[key] !== null) {
               acc[key] = result[key];
             }
             return acc;

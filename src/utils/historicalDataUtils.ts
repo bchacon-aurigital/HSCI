@@ -44,7 +44,7 @@ export async function hasHistoricalData(codigoAsada: string, historicoKey?: stri
       if (historicalConfig) {
         // Usar configuración custom del device
         const authParam = historicalConfig.authToken ? `?auth=${historicalConfig.authToken}` : '';
-        url = `${historicalConfig.baseUrl}${historicalConfig.historicalDataPath}${databaseKey}/${keyToUse}.json${authParam}`;
+        url = `${historicalConfig.baseUrl}${historicalConfig.historicalDataPath}${databaseKey}/${keyToUse}/.json${authParam}`;
       } else {
         // Usar configuración por defecto (prueba-labview)
         url = `https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/${databaseKey}/HISTORICO/${keyToUse}/${subfolder}.json`;

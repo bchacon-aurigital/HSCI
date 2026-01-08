@@ -73,7 +73,9 @@ export const useDeviceData = (
       return;
     }
 
-    const deviceData = pumpKey ? data[identifier]?.[pumpKey] : data[identifier];
+    // Para tanques y dispositivos que necesitan acceso a todos los campos,
+    // devolver el objeto completo del identifier, no solo el pumpKey
+    const deviceData = data[identifier];
 
     if (window.isRealTimeActive) {
       dataRef.current = deviceData;
