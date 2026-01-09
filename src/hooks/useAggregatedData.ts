@@ -133,6 +133,9 @@ export const setGroupedURLsForAsada = (asadaCode: string) => {
         ]
       };
       break;
+    case 'costapajaros2025':
+      groupedURLs = {};
+      break;
     default:
       groupedURLs = {};
   }

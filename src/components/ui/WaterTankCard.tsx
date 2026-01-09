@@ -58,16 +58,16 @@ export default function WaterTankCard({
   const [isDeviceExpanded, setIsDeviceExpanded] = useState(false);
   const [showHistorical, setShowHistorical] = useState(false);
   const [hasHistorical, setHasHistorical] = useState(false);
-  
 
-  
+
+
   const previousAlertRef = React.useRef(false);
   const previousWarningRef = React.useRef(false);
 
   let tankValue;
   let hasAlert = false;
   let hasWarning = false;
-  
+
   if (type === 'tank') {
     if (typeof data === 'number') {
       tankValue = data;
@@ -90,12 +90,12 @@ export default function WaterTankCard({
         }
       }
     }
-    
+
     // Detectar diferentes niveles de alerta
     if (tankValue !== undefined && !isNaN(tankValue)) {
       // Alerta crítica (roja) - nivel muy bajo (<25%)
       hasAlert = tankValue < 25;
-      
+
       // Advertencia (amarilla) - nivel bajo (entre 25% y 50%)
       hasWarning = !hasAlert && tankValue >= 25 && tankValue <= 50;
     }
@@ -137,17 +137,17 @@ export default function WaterTankCard({
   // Notificar cambios en el estado de alerta al componente padre
   React.useEffect(() => {
     if (!onAlertChange) return;
-    
+
     if (previousAlertRef.current !== hasAlert) {
       previousAlertRef.current = hasAlert;
       onAlertChange(hasAlert);
     }
   }, [hasAlert, onAlertChange]);
-  
+
   // Notificar cambios en el estado de advertencia al componente padre
   React.useEffect(() => {
     if (!onWarningChange) return;
-    
+
     if (previousWarningRef.current !== hasWarning) {
       previousWarningRef.current = hasWarning;
       onWarningChange(hasWarning);
@@ -279,6 +279,16 @@ export default function WaterTankCard({
             </div>
           )}
 
+          {hasData('mtscolum') && (
+            <div className="flex items-center bg-gray-700/50 p-3 rounded-lg">
+              <Ruler className="text-blue-400 mr-3" size={20} />
+              <div>
+                <p className="text-xs text-gray-400">Nivel en Metros</p>
+                <p className="font-bold text-gray-100">{data.mtscolum} m</p>
+              </div>
+            </div>
+          )}
+
           {hasData('ALTA') && (
             <div className={`flex items-center p-3 rounded-lg ${data.ALTA === '1' || data.ALTA === 1 ? 'bg-red-900/50 border border-red-700' : 'bg-gray-700/50'}`}>
               <ShieldAlert className={data.ALTA === '1' || data.ALTA === 1 ? 'text-red-400' : 'text-gray-400'} size={20} />
@@ -396,7 +406,7 @@ export default function WaterTankCard({
       </Card>
     );
   }
-  
+
   if (type === 'tank') {
     const tankData = data;
 
@@ -406,10 +416,9 @@ export default function WaterTankCard({
     return (
       <>
         <Card
-          className={`bg-gray-900 border-gray-800 shadow-lg transition-all duration-300 ${
-            isLowLevel ? 'border-l-4 border-l-red-500' : 
-            hasWarning ? 'border-l-4 border-l-yellow-500' : ''
-          }`}
+          className={`bg-gray-900 border-gray-800 shadow-lg transition-all duration-300 ${isLowLevel ? 'border-l-4 border-l-red-500' :
+              hasWarning ? 'border-l-4 border-l-yellow-500' : ''
+            }`}
         >
           <CardHeader className="bg-gray-800 pb-2">
             <div className="flex items-center justify-between">
@@ -425,13 +434,12 @@ export default function WaterTankCard({
 
                 <div className="flex items-center justify-center w-full py-3 px-4 rounded-lg bg-gray-800/80 border border-gray-700/50">
                   <Droplet
-                    className={`mr-3 ${
-                      tankValue < 25
+                    className={`mr-3 ${tankValue < 25
                         ? 'text-red-500'
                         : tankValue <= 50
-                        ? 'text-yellow-400'
-                        : 'text-green-400'
-                    }`}
+                          ? 'text-yellow-400'
+                          : 'text-green-400'
+                      }`}
                     size={24}
                   />
                   <span className="text-xl font-bold text-gray-100">{tankValue}%</span>
@@ -475,7 +483,7 @@ export default function WaterTankCard({
                     </div>
                   </div>
                 )}
-                
+
                 {hasWarning && (
                   <div className="flex items-center w-full py-3 px-4 rounded-lg bg-yellow-950/30 border border-yellow-900">
                     <AlertTriangle className="text-yellow-500 mr-3" size={20} />
@@ -494,8 +502,8 @@ export default function WaterTankCard({
 
                 {/* Mostrar botón en dispositivos con datos históricos disponibles */}
                 {hasHistorical && (
-                                      <button
-                      onClick={() => setShowHistorical(true)}
+                  <button
+                    onClick={() => setShowHistorical(true)}
                     className="mt-2 w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors flex items-center justify-center gap-2"
                   >
                     <History className="mr-2" size={18} />
@@ -510,9 +518,8 @@ export default function WaterTankCard({
                   <span>{showDetails ? 'Ocultar detalles' : 'Ver detalles de sensores'}</span>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className={`h-4 w-4 transition-transform duration-300 ${
-                      showDetails ? 'rotate-180' : ''
-                    }`}
+                    className={`h-4 w-4 transition-transform duration-300 ${showDetails ? 'rotate-180' : ''
+                      }`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -585,18 +592,16 @@ export default function WaterTankCard({
     return (
       <>
         <Card
-          className={`bg-gray-900 border-gray-800 shadow-lg ${
-            isActive ? 'border-l-4 border-l-green-500' : 'border-l-4 border-l-gray-700'
-          }`}
+          className={`bg-gray-900 border-gray-800 shadow-lg ${isActive ? 'border-l-4 border-l-green-500' : 'border-l-4 border-l-gray-700'
+            }`}
         >
           <CardHeader className="bg-gray-800 pb-2">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold text-gray-100">{name}</h2>
               {hasValue && (
                 <div
-                  className={`h-3 w-3 rounded-full ${
-                    isActive ? 'bg-green-500 animate-pulse' : 'bg-gray-500'
-                  }`}
+                  className={`h-3 w-3 rounded-full ${isActive ? 'bg-green-500 animate-pulse' : 'bg-gray-500'
+                    }`}
                 />
               )}
             </div>
@@ -605,8 +610,8 @@ export default function WaterTankCard({
           <CardContent className="pt-4">
             {hasValue ? (
               <div className="flex flex-col items-center space-y-6">
-                <div 
-                  className="w-full flex items-center justify-between cursor-pointer py-2 px-3 rounded-lg bg-gray-800/80 border border-gray-700/50" 
+                <div
+                  className="w-full flex items-center justify-between cursor-pointer py-2 px-3 rounded-lg bg-gray-800/80 border border-gray-700/50"
                   onClick={() => setIsDeviceExpanded(!isDeviceExpanded)}
                 >
                   <div className="flex items-center">
@@ -620,9 +625,8 @@ export default function WaterTankCard({
                   </div>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className={`h-5 w-5 text-gray-400 transition-transform duration-300 ${
-                      isDeviceExpanded ? 'rotate-180' : ''
-                    }`}
+                    className={`h-5 w-5 text-gray-400 transition-transform duration-300 ${isDeviceExpanded ? 'rotate-180' : ''
+                      }`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -635,12 +639,12 @@ export default function WaterTankCard({
                     />
                   </svg>
                 </div>
-                
+
                 {isDeviceExpanded && (
                   <div className="w-full flex flex-col items-center space-y-4">
-                                      {type === 'pump' && <PumpIndicator status={statusAsNumber} />}
-                  {type === 'well' && <WellIndicator status={statusAsNumber} />}
-                  {type === 'centrifugal' && <CentrifugalPumpIndicator status={statusAsNumber} />}
+                    {type === 'pump' && <PumpIndicator status={statusAsNumber} />}
+                    {type === 'well' && <WellIndicator status={statusAsNumber} />}
+                    {type === 'centrifugal' && <CentrifugalPumpIndicator status={statusAsNumber} />}
                   </div>
                 )}
 
@@ -648,8 +652,8 @@ export default function WaterTankCard({
 
                 {/* Botón de históricos para bombas y pozos */}
                 {hasHistorical && (
-                                    <button
-                      onClick={() => setShowHistorical(true)}
+                  <button
+                    onClick={() => setShowHistorical(true)}
                     className="mt-2 w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors flex items-center justify-center gap-2"
                   >
                     <History className="mr-2" size={18} />
@@ -664,9 +668,8 @@ export default function WaterTankCard({
                   <span>{showDetails ? 'Ocultar detalles' : 'Ver detalles de sensores'}</span>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className={`h-4 w-4 transition-transform duration-300 ${
-                      showDetails ? 'rotate-180' : ''
-                    }`}
+                    className={`h-4 w-4 transition-transform duration-300 ${showDetails ? 'rotate-180' : ''
+                      }`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -698,7 +701,7 @@ export default function WaterTankCard({
             </CardFooter>
           )}
         </Card>
-        
+
         {showHistorical ? (
           <HistoricalChart
             codigoAsada={codigoAsada}
@@ -781,9 +784,8 @@ export default function WaterTankCard({
                   <span>{showDetails ? 'Ocultar detalles' : 'Ver detalles de sensores'}</span>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className={`h-4 w-4 transition-transform duration-300 ${
-                      showDetails ? 'rotate-180' : ''
-                    }`}
+                    className={`h-4 w-4 transition-transform duration-300 ${showDetails ? 'rotate-180' : ''
+                      }`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"

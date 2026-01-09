@@ -314,6 +314,16 @@ export default function MultiDeviceCard({
             </div>
           )}
 
+          {hasSensorData('mtscolum') && (
+            <div className="flex items-center bg-gray-700/50 p-3 rounded-lg">
+              <Ruler className="text-blue-400 mr-3" size={20} />
+              <div>
+                <p className="text-xs text-gray-400">Nivel en Metros</p>
+                <p className="font-bold text-gray-100">{sensorData.mtscolum} m</p>
+              </div>
+            </div>
+          )}
+
           {hasSensorData('ALTA') && (
             <div className={`flex items-center p-3 rounded-lg ${sensorData.ALTA === '1' || data.ALTA === 1 ? 'bg-red-900/50 border border-red-700' : 'bg-gray-700/50'}`}>
               <ShieldAlert className={sensorData.ALTA === '1' || data.ALTA === 1 ? 'text-red-400' : 'text-gray-400'} size={20} />
@@ -553,7 +563,7 @@ export default function MultiDeviceCard({
         {renderSensorDetails()}
         
         {(hasData('PRESAYA') || hasData('AMPS') || hasData('HZ') || hasData('VAC') || hasData('PRESION') || hasData('PRESRED') ||
-          hasData('TEMP1') || hasData('TEMP2') || hasData('ppm') || hasData('NIVEL_MTS') || hasData('ALTA') || hasData('BAJA') ||
+          hasData('TEMP1') || hasData('TEMP2') || hasData('ppm') || hasData('NIVEL_MTS') || hasData('mtscolum') || hasData('ALTA') || hasData('BAJA') ||
           hasData('DERAME') || hasData('MODO') || hasData('CALIDAD_OK') || hasData('CAUDAL_LPS') || hasData('VOLUMEN_M3') ||
           hasData('PRESION_BAR')) && (
           <button
