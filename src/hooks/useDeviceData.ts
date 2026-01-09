@@ -73,7 +73,9 @@ export const useDeviceData = (
       return;
     }
 
-    const deviceData = pumpKey ? data[identifier]?.[pumpKey] : data[identifier];
+    // Para tanques y dispositivos que necesitan acceso a todos los campos,
+    // devolver el objeto completo del identifier, no solo el pumpKey
+    const deviceData = data[identifier];
 
     if (window.isRealTimeActive) {
       dataRef.current = deviceData;
@@ -89,9 +91,11 @@ export const useDeviceData = (
     if (newDataString !== prevDataString || error !== optimizedError) {
       dataRef.current = deviceData;
       setOptimizedData(deviceData);
-      setOptimizedLoading(false);
       setOptimizedError(error);
     }
+
+    // Siempre actualizar loading a false cuando hay datos válidos
+    setOptimizedLoading(false);
   }, [
     isIndividual,
     codigoAsada,

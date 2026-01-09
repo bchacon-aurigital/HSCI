@@ -18,6 +18,7 @@ import { Line, Bar } from 'react-chartjs-2';
 import { Card, CardContent, CardHeader } from './ui/card';
 import { Calendar, X, Info } from 'lucide-react';
 import { formatLabviewTimeToHourMinute, formatLabviewTimeToFullDateTime } from '../utils/timeUtils';
+import { HistoricalConfig } from '../app/types/types';
 
 ChartJS.register(
   CategoryScale,
@@ -41,6 +42,7 @@ interface HistoricalChartProps {
   databaseKey?: string;
   deviceType?: string;
   groupName?: string;
+  historicalConfig?: HistoricalConfig;
 }
 
 // Función para obtener la fecha actual en Costa Rica
@@ -69,7 +71,8 @@ export default function HistoricalChart({
   onClose,
   databaseKey,
   deviceType,
-  groupName
+  groupName,
+  historicalConfig
 }: HistoricalChartProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -142,8 +145,18 @@ export default function HistoricalChart({
       } else {
         dataType = 'NIVELES';
       }
-      const url = `https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/${databaseKey}/HISTORICO/${historicoKey}/${dataType}/${year}/${month}/${day}.json`;
-      
+
+      // Construir URL basada en configuración del device o defaults
+      let url: string;
+      if (historicalConfig) {
+        // Usar configuración custom del device
+        const authParam = historicalConfig.authToken ? `?auth=${historicalConfig.authToken}` : '';
+        url = `${historicalConfig.baseUrl}${historicalConfig.historicalDataPath}${databaseKey}/${historicoKey}/${year}/${month}/${day}.json${authParam}`;
+      } else {
+        // Usar configuración por defecto (prueba-labview)
+        url = `https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/${databaseKey}/HISTORICO/${historicoKey}/${dataType}/${year}/${month}/${day}.json`;
+      }
+
       console.log(`Obteniendo datos de ${dataType} para ${day}/${month}/${year} (Costa Rica) desde API`);
       const response = await fetch(url);
     
@@ -183,40 +196,69 @@ export default function HistoricalChart({
       return;
     }
     
-    const valueField = dataMode === 'pumps' ? 'ESTADO' : 'VALOR';
+    // Determinar qué campo buscar en los datos
+    let valueField = 'VALOR';
+    if (dataMode === 'pumps') {
+      valueField = 'ESTADO';
+    } else if (deviceType === 'pressure') {
+      // Para dispositivos de presión, intentar múltiples campos posibles
+      valueField = 'PRESION_BAR';
+    }
 
     if (Array.isArray(data)) {
       data.forEach((item, index) => {
-        if (item && item.DATA && item.DATA[valueField] !== undefined) {
-          const timeLabel = item.DATA.TIME 
-            ? formatLabviewTimeToHourMinute(Number(item.DATA.TIME)) 
-            : `Registro ${index + 1}`;
-          chartLabels.push(`Toma ${index + 1} (${timeLabel})`);
-          chartTimeLabels.push(timeLabel);
-          chartValues.push(Number(item.DATA[valueField]));
+        if (item && item.DATA) {
+          let fieldValue;
+
+          // Para presión, intentar múltiples campos
+          if (deviceType === 'pressure') {
+            fieldValue = item.DATA.PRESION_BAR ?? item.DATA.PRESION ?? item.DATA.VALOR;
+          } else {
+            fieldValue = item.DATA[valueField];
+          }
+
+          if (fieldValue !== undefined) {
+            const timeLabel = item.DATA.TIME
+              ? formatLabviewTimeToHourMinute(Number(item.DATA.TIME))
+              : `Registro ${index + 1}`;
+            chartLabels.push(`Toma ${index + 1} (${timeLabel})`);
+            chartTimeLabels.push(timeLabel);
+            chartValues.push(Number(fieldValue));
+          }
         }
       });
     } else if (typeof data === 'object') {
       try {
         Object.entries(data).forEach(([key, value]: [string, any]) => {
-          if (value && value.DATA && value.DATA[valueField] !== undefined) {
-            let timeLabel;
-            if (value.DATA.TIME) {
-              timeLabel = formatLabviewTimeToHourMinute(Number(value.DATA.TIME));
+          if (value && value.DATA) {
+            let fieldValue;
+
+            // Para presión, intentar múltiples campos
+            if (deviceType === 'pressure') {
+              fieldValue = value.DATA.PRESION_BAR ?? value.DATA.PRESION ?? value.DATA.VALOR;
             } else {
-              timeLabel = 'N/D';
+              fieldValue = value.DATA[valueField];
             }
 
-            let tomaLabel;
-            if (key.startsWith('T')) {
-              tomaLabel = key;
-            } else {
-              tomaLabel = `Toma ${key}`;
-            }
+            if (fieldValue !== undefined) {
+              let timeLabel;
+              if (value.DATA.TIME) {
+                timeLabel = formatLabviewTimeToHourMinute(Number(value.DATA.TIME));
+              } else {
+                timeLabel = 'N/D';
+              }
 
-            chartLabels.push(`${tomaLabel} (${timeLabel})`);
-            chartTimeLabels.push(timeLabel);
-            chartValues.push(Number(value.DATA[valueField]));
+              let tomaLabel;
+              if (key.startsWith('T')) {
+                tomaLabel = key;
+              } else {
+                tomaLabel = `Toma ${key}`;
+              }
+
+              chartLabels.push(`${tomaLabel} (${timeLabel})`);
+              chartTimeLabels.push(timeLabel);
+              chartValues.push(Number(fieldValue));
+            }
           }
         });
       } catch (error) {

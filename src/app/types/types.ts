@@ -8,6 +8,13 @@ export interface PressureRanges {
   high: number;
 }
 
+export interface HistoricalConfig {
+  baseUrl: string;
+  authToken?: string;
+  historicalDataPath: string;
+  useSubfolders: boolean;
+}
+
 export interface Device {
   name: string;
   url?: string;
@@ -19,6 +26,7 @@ export interface Device {
   historicoKey?: string;
   databaseKey?: string;
   pressureRanges?: PressureRanges;
+  historicalConfig?: HistoricalConfig;
 }
 
 export interface MultiDeviceInfo {
@@ -50,5 +58,6 @@ export interface MultiDeviceCardProps {
   groupName: string;
   identifier: string;
   devices: MultiDeviceInfo[];
-  codigoAsada?: string; 
+  codigoAsada?: string;
+  historicalConfig?: HistoricalConfig;
 }

@@ -236,6 +236,7 @@ export default function WaterSystemColumns() {
             codigoAsada={codigoAsada}
             historicoKey={device.historicoKey}
             databaseKey={device.databaseKey}
+            historicalConfig={device.historicalConfig}
             onAlertChange={(hasAlert) => registerAlert(groupName, identifier, hasAlert)}
           />
         );
@@ -252,6 +253,7 @@ export default function WaterSystemColumns() {
             databaseKey={device.databaseKey}
             pressureRanges={device.pressureRanges}
             groupName={device.group}
+            historicalConfig={device.historicalConfig}
             onAlertChange={(hasAlert) => registerAlert(groupName, identifier, hasAlert)}
             onWarningChange={(hasWarning) => registerWarning(groupName, identifier, hasWarning)}
           />

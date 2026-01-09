@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
-import { Clock, AlertTriangle, Activity, Settings, Thermometer, Droplet, Gauge, Zap, History } from 'lucide-react';
+import { Clock, AlertTriangle, Activity, Settings, Thermometer, Droplet, Gauge, Zap, History, Ruler, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { PumpIndicator } from '../indicators/PumpIndicator';
 import { WellIndicator } from '../indicators/WellIndicator';
 import { ValveIndicator } from '../indicators/ValveIndicator';
@@ -41,6 +41,7 @@ export default function MultiDeviceCard({
   onAlertChange,
   historicoKey,
   databaseKey,
+  historicalConfig,
 }: MultiDeviceCardWithAlertProps) {
   const { data, error, loading } = useDeviceData(identifier, undefined, codigoAsada);
   const [showDetails, setShowDetails] = useState(false);
@@ -48,11 +49,7 @@ export default function MultiDeviceCard({
   const [resetFeedback, setResetFeedback] = useState<string | null>(null);
   const [showHistorical, setShowHistorical] = useState(false);
   const [hasHistorical, setHasHistorical] = useState(false);
-  
-  // Debug: monitorear cambios en showHistorical
-  React.useEffect(() => {
-    console.log(`[${groupName}] 🟡 showHistorical cambió a:`, showHistorical);
-  }, [showHistorical, groupName]);
+
   
   const previousAlertRef = React.useRef(false);
   
@@ -97,7 +94,7 @@ export default function MultiDeviceCard({
   // Verificar si hay datos históricos disponibles cuando se monta el componente
   React.useEffect(() => {
     if (codigoAsada && historicoKey && databaseKey) {
-      checkHistoricalDataAvailability(codigoAsada, historicoKey, databaseKey, 'multi')
+      checkHistoricalDataAvailability(codigoAsada, historicoKey, databaseKey, 'multi', historicalConfig)
         .then(hasHistoricalData => {
           setHasHistorical(hasHistoricalData);
         })
@@ -108,7 +105,7 @@ export default function MultiDeviceCard({
     } else {
       setHasHistorical(false);
     }
-  }, [codigoAsada, historicoKey, databaseKey, groupName]);
+  }, [codigoAsada, historicoKey, databaseKey, groupName, historicalConfig]);
 
   // Inicializar bombas y pozos expandidos por defecto (solo en primera carga)
   React.useEffect(() => {
@@ -184,15 +181,28 @@ export default function MultiDeviceCard({
 
   const hasData = (key: string) => data && key in data && data[key] !== undefined && data[key] !== null;
 
+  // Helper para extraer el estado de un dispositivo, manejando tanto valores primitivos como objetos
+  const getDeviceStatus = (device: any) => {
+    const deviceData = device.pumpKey ? data[device.pumpKey] : data[device.key || ''];
+
+    // Si es un objeto, buscar el campo ESTADO
+    if (typeof deviceData === 'object' && deviceData !== null) {
+      return deviceData.ESTADO !== undefined ? deviceData.ESTADO : deviceData.valor;
+    }
+
+    // Si es un valor primitivo, devolverlo directamente
+    return deviceData;
+  };
+
   const activeDevices = devices.filter(
     (device) => hasData(device.pumpKey || device.key || '')
   );
-  
+
   const activeDeviceCount = activeDevices.length;
-  
+
   const onDeviceCount = activeDevices.filter(
     (device) => {
-      const value = device.pumpKey ? data[device.pumpKey] : data[device.key || ''];
+      const value = getDeviceStatus(device);
       return Number(value) === 1;
     }
   ).length;
@@ -217,100 +227,211 @@ export default function MultiDeviceCard({
     );
   }
 
-  const renderSensorDetails = () => {
+  const renderSensorDetails = (deviceData?: any) => {
     if (!showDetails) return null;
+
+    // Usar deviceData si se proporciona, de lo contrario usar data global
+    const sensorData = deviceData || data;
+
+    // Helper local para verificar si un campo existe en los datos del sensor
+    const hasSensorData = (key: string) =>
+      sensorData &&
+      typeof sensorData === 'object' &&
+      key in sensorData &&
+      sensorData[key] !== undefined &&
+      sensorData[key] !== null;
 
     return (
       <div className="mt-6 p-4 bg-gray-800/80 rounded-lg border border-gray-700">
         <h3 className="text-lg font-medium text-white mb-4">Datos de sensores</h3>
-        
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {hasData('AMPS') && (
+        {hasSensorData('AMPS') && (
             <div className="flex items-center bg-gray-700/50 p-3 rounded-lg">
               <Zap className="text-blue-400 mr-3" size={20} />
               <div>
                 <p className="text-xs text-gray-400">CONSUMO BOMBA</p>
-                <p className="font-bold text-gray-100">{data.AMPS} A</p>
+                <p className="font-bold text-gray-100">{sensorData.AMPS} A</p>
               </div>
             </div>
           )}
 
-          {hasData('HZ') && (
+          {hasSensorData('HZ') && (
             <div className="flex items-center bg-gray-700/50 p-3 rounded-lg">
               <Activity className="text-green-400 mr-3" size={20} />
               <div>
                 <p className="text-xs text-gray-400">FRECUENCIA</p>
-                <p className="font-bold text-gray-100">{data.HZ} Hz</p>
+                <p className="font-bold text-gray-100">{sensorData.HZ} Hz</p>
               </div>
             </div>
           )}
 
-          {hasData('VAC') && (
+          {hasSensorData('VAC') && (
             <div className="flex items-center bg-gray-700/50 p-3 rounded-lg">
               <Zap className="text-yellow-400 mr-3" size={20} />
               <div>
                 <p className="text-xs text-gray-400">VOLTAJE AC</p>
-                <p className="font-bold text-gray-100">{data.VAC} V</p>
+                <p className="font-bold text-gray-100">{sensorData.VAC} V</p>
               </div>
             </div>
           )}
 
-          {hasData('PRESAYA') && (
+          {hasSensorData('PRESAYA') && (
             <div className="flex items-center bg-gray-700/50 p-3 rounded-lg">
               <Gauge className="text-blue-400 mr-3" size={20} />
               <div>
                 <p className="text-xs text-gray-400">Presión Entrada</p>
-                <p className="font-bold text-gray-100">{data.PRESAYA} psi</p>
+                <p className="font-bold text-gray-100">{sensorData.PRESAYA} psi</p>
               </div>
             </div>
           )}
           
-          {hasData('PRESION') && (
+          {hasSensorData('PRESION') && (
             <div className="flex items-center bg-gray-700/50 p-3 rounded-lg">
               <Gauge className="text-blue-400 mr-3" size={20} />
               <div>
                 <p className="text-xs text-gray-400">Presión Bombeo</p>
-                <p className="font-bold text-gray-100">{data.PRESION} psi</p>
+                <p className="font-bold text-gray-100">{sensorData.PRESION} psi</p>
               </div>
             </div>
           )}
           
-          {hasData('PRESRED') && (
+          {hasSensorData('PRESRED') && (
             <div className="flex items-center bg-gray-700/50 p-3 rounded-lg">
               <Gauge className="text-blue-400 mr-3" size={20} />
               <div>
                 <p className="text-xs text-gray-400">Presión Red</p>
-                <p className="font-bold text-gray-100">{data.PRESRED} psi</p>
+                <p className="font-bold text-gray-100">{sensorData.PRESRED} psi</p>
               </div>
             </div>
           )}
           
-          {hasData('TEMP1') && (
+          {hasSensorData('TEMP1') && (
             <div className="flex items-center bg-gray-700/50 p-3 rounded-lg">
               <Thermometer className="text-red-400 mr-3" size={20} />
               <div>
                 <p className="text-xs text-gray-400">Temperatura 1</p>
-                <p className="font-bold text-gray-100">{data.TEMP1}°C</p>
+                <p className="font-bold text-gray-100">{sensorData.TEMP1}°C</p>
               </div>
             </div>
           )}
           
-          {hasData('TEMP2') && (
+          {hasSensorData('TEMP2') && (
             <div className="flex items-center bg-gray-700/50 p-3 rounded-lg">
               <Thermometer className="text-red-400 mr-3" size={20} />
               <div>
                 <p className="text-xs text-gray-400">Temperatura 2</p>
-                <p className="font-bold text-gray-100">{data.TEMP2}°C</p>
+                <p className="font-bold text-gray-100">{sensorData.TEMP2}°C</p>
               </div>
             </div>
           )}
           
-          {hasData('ppm') && (
+          {hasSensorData('ppm') && (
             <div className="flex items-center bg-gray-700/50 p-3 rounded-lg">
               <Droplet className="text-cyan-400 mr-3" size={20} />
               <div>
                 <p className="text-xs text-gray-400">Cloro residual</p>
-                <p className="font-bold text-gray-100">{data.ppm}</p>
+                <p className="font-bold text-gray-100">{sensorData.ppm}</p>
+              </div>
+            </div>
+          )}
+
+          {hasSensorData('NIVEL_MTS') && (
+            <div className="flex items-center bg-gray-700/50 p-3 rounded-lg">
+              <Ruler className="text-blue-400 mr-3" size={20} />
+              <div>
+                <p className="text-xs text-gray-400">Nivel en Metros</p>
+                <p className="font-bold text-gray-100">{sensorData.NIVEL_MTS} m</p>
+              </div>
+            </div>
+          )}
+
+          {hasSensorData('mtscolum') && (
+            <div className="flex items-center bg-gray-700/50 p-3 rounded-lg">
+              <Ruler className="text-blue-400 mr-3" size={20} />
+              <div>
+                <p className="text-xs text-gray-400">Nivel en Metros</p>
+                <p className="font-bold text-gray-100">{sensorData.mtscolum} m</p>
+              </div>
+            </div>
+          )}
+
+          {hasSensorData('ALTA') && (
+            <div className={`flex items-center p-3 rounded-lg ${sensorData.ALTA === '1' || data.ALTA === 1 ? 'bg-red-900/50 border border-red-700' : 'bg-gray-700/50'}`}>
+              <ShieldAlert className={sensorData.ALTA === '1' || data.ALTA === 1 ? 'text-red-400' : 'text-gray-400'} size={20} />
+              <div className="ml-3">
+                <p className="text-xs text-gray-400">Alarma Nivel Alto</p>
+                <p className="font-bold text-gray-100">{sensorData.ALTA === '1' || data.ALTA === 1 ? 'ACTIVA' : 'Normal'}</p>
+              </div>
+            </div>
+          )}
+
+          {hasSensorData('BAJA') && (
+            <div className={`flex items-center p-3 rounded-lg ${sensorData.BAJA === '1' || data.BAJA === 1 ? 'bg-orange-900/50 border border-orange-700' : 'bg-gray-700/50'}`}>
+              <ShieldAlert className={sensorData.BAJA === '1' || data.BAJA === 1 ? 'text-orange-400' : 'text-gray-400'} size={20} />
+              <div className="ml-3">
+                <p className="text-xs text-gray-400">Alarma Nivel Bajo</p>
+                <p className="font-bold text-gray-100">{sensorData.BAJA === '1' || data.BAJA === 1 ? 'ACTIVA' : 'Normal'}</p>
+              </div>
+            </div>
+          )}
+
+          {hasSensorData('DERAME') && (
+            <div className={`flex items-center p-3 rounded-lg ${sensorData.DERAME === '1' || data.DERAME === 1 ? 'bg-red-900/50 border border-red-700' : 'bg-gray-700/50'}`}>
+              <AlertTriangle className={sensorData.DERAME === '1' || data.DERAME === 1 ? 'text-red-400' : 'text-gray-400'} size={20} />
+              <div className="ml-3">
+                <p className="text-xs text-gray-400">Alarma Derrame</p>
+                <p className="font-bold text-gray-100">{sensorData.DERAME === '1' || data.DERAME === 1 ? 'ACTIVA' : 'Normal'}</p>
+              </div>
+            </div>
+          )}
+
+          {hasSensorData('MODO') && (
+            <div className="flex items-center bg-gray-700/50 p-3 rounded-lg">
+              <Settings className={sensorData.MODO === '1' || data.MODO === 1 ? 'text-green-400' : 'text-blue-400'} size={20} />
+              <div className="ml-3">
+                <p className="text-xs text-gray-400">Modo Operación</p>
+                <p className="font-bold text-gray-100">{sensorData.MODO === '1' || data.MODO === 1 ? 'Automático' : 'Manual'}</p>
+              </div>
+            </div>
+          )}
+
+          {hasSensorData('CALIDAD_OK') && (
+            <div className={`flex items-center p-3 rounded-lg ${sensorData.CALIDAD_OK === '1' || data.CALIDAD_OK === 1 ? 'bg-green-900/50 border border-green-700' : 'bg-red-900/50 border border-red-700'}`}>
+              <ShieldCheck className={sensorData.CALIDAD_OK === '1' || data.CALIDAD_OK === 1 ? 'text-green-400' : 'text-red-400'} size={20} />
+              <div className="ml-3">
+                <p className="text-xs text-gray-400">Calidad Agua</p>
+                <p className="font-bold text-gray-100">{sensorData.CALIDAD_OK === '1' || data.CALIDAD_OK === 1 ? 'OK' : 'Revisar'}</p>
+              </div>
+            </div>
+          )}
+
+          {hasSensorData('CAUDAL_LPS') && (
+            <div className="flex items-center bg-gray-700/50 p-3 rounded-lg">
+              <Droplet className="text-blue-400 mr-3" size={20} />
+              <div>
+                <p className="text-xs text-gray-400">Caudal</p>
+                <p className="font-bold text-gray-100">{sensorData.CAUDAL_LPS} L/s</p>
+              </div>
+            </div>
+          )}
+
+          {hasSensorData('VOLUMEN_M3') && (
+            <div className="flex items-center bg-gray-700/50 p-3 rounded-lg">
+              <Droplet className="text-cyan-400 mr-3" size={20} />
+              <div>
+                <p className="text-xs text-gray-400">Volumen</p>
+                <p className="font-bold text-gray-100">{sensorData.VOLUMEN_M3} m³</p>
+              </div>
+            </div>
+          )}
+
+          {hasSensorData('PRESION_BAR') && (
+            <div className="flex items-center bg-gray-700/50 p-3 rounded-lg">
+              <Gauge className="text-purple-400 mr-3" size={20} />
+              <div>
+                <p className="text-xs text-gray-400">Presión</p>
+                <p className="font-bold text-gray-100">{sensorData.PRESION_BAR} BAR</p>
               </div>
             </div>
           )}
@@ -362,9 +483,9 @@ export default function MultiDeviceCard({
                 
                 <div className="grid grid-cols-1 2xl:grid-cols-3 gap-6 w-full">
                   {valveDevices.map((device) => {
-                    const statusAsNumber = Number(device.pumpKey ? data[device.pumpKey] : data[device.key || '']);
+                    const statusAsNumber = Number(getDeviceStatus(device));
                     const isActive = statusAsNumber === 1;
-                    
+
                     return (
                       <div key={device.key || device.pumpKey} className="flex flex-col items-center">
                         <h4 className="text-sm font-medium text-gray-300 mb-2">{device.name}</h4>
@@ -382,14 +503,17 @@ export default function MultiDeviceCard({
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
             {otherDevices.map((device) => {
               const deviceKey = getDeviceKey(device);
-              const statusAsNumber = Number(device.pumpKey ? data[device.pumpKey] : data[device.key || '']);
+              const statusAsNumber = Number(getDeviceStatus(device));
               const isActive = statusAsNumber === 1;
               const isDeviceExpanded = expandedDevices[deviceKey] || false;
+              // Obtener el objeto completo del dispositivo para renderSensorDetails
+              const deviceData = device.pumpKey ? data[device.pumpKey] : data[device.key || ''];
               
               const toggleDeviceExpanded = () => {
+                const newState = !expandedDevices[deviceKey];
                 setExpandedDevices(prev => ({
                   ...prev,
-                  [deviceKey]: !prev[deviceKey]
+                  [deviceKey]: newState
                 }));
               };
               
@@ -426,13 +550,27 @@ export default function MultiDeviceCard({
                        {device.type === 'well' && (
                          <WellIndicator status={statusAsNumber} />
                        )}
-                       
+
                        <div className="flex items-center justify-center w-full mt-4 py-2 px-3 rounded-md bg-gray-900/50 border border-gray-700/30">
                          <Activity className={isActive ? 'text-green-400' : 'text-gray-500'} size={18} />
                          <span className="ml-2 text-sm font-medium text-gray-200">
                            {isActive ? 'En operación' : 'En reposo'}
                          </span>
                        </div>
+
+                       {/* Mostrar detalles de sensores para este dispositivo específico */}
+                       {renderSensorDetails(deviceData)}
+
+                       {/* Botón de histórico individual para este dispositivo */}
+                       {device.historicoKey && device.databaseKey && (
+                         <button
+                           onClick={() => setShowHistorical(true)}
+                           className="mt-4 w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors flex items-center justify-center gap-2"
+                         >
+                           <History size={18} />
+                           Ver histórico
+                         </button>
+                       )}
                      </div>
                    )}
                   </div>
@@ -444,10 +582,7 @@ export default function MultiDeviceCard({
             {hasHistorical && (
               <div className="flex justify-center">
                 <button
-                  onClick={() => {
-                    console.log(`[${groupName}] 🔴 Botón histórico clickeado - MultiDevice`);
-                    setShowHistorical(true);
-                  }}
+                  onClick={() => setShowHistorical(true)}
                   className="flex items-center py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
                 >
                   <History className="mr-2" size={18} />
@@ -459,18 +594,20 @@ export default function MultiDeviceCard({
         
         {renderSensorDetails()}
         
-        {(hasData('PRESAYA') || hasData('AMPS') || hasData('HZ') || hasData('VAC') || hasData('PRESION') || hasData('PRESRED') || 
-          hasData('TEMP1') || hasData('TEMP2') || hasData('ppm')) && (
-          <button 
-            onClick={() => setShowDetails(!showDetails)} 
+        {(hasData('PRESAYA') || hasData('AMPS') || hasData('HZ') || hasData('VAC') || hasData('PRESION') || hasData('PRESRED') ||
+          hasData('TEMP1') || hasData('TEMP2') || hasData('ppm') || hasData('NIVEL_MTS') || hasData('mtscolum') || hasData('ALTA') || hasData('BAJA') ||
+          hasData('DERAME') || hasData('MODO') || hasData('CALIDAD_OK') || hasData('CAUDAL_LPS') || hasData('VOLUMEN_M3') ||
+          hasData('PRESION_BAR')) && (
+          <button
+            onClick={() => setShowDetails(!showDetails)}
             className="mt-4 w-full py-2 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg flex items-center justify-center gap-2 transition-colors duration-200"
           >
             <span>{showDetails ? 'Ocultar detalles' : 'Ver detalles de sensores'}</span>
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              className={`h-4 w-4 transition-transform duration-300 ${showDetails ? 'rotate-180' : ''}`} 
-              fill="none" 
-              viewBox="0 0 24 24" 
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className={`h-4 w-4 transition-transform duration-300 ${showDetails ? 'rotate-180' : ''}`}
+              fill="none"
+              viewBox="0 0 24 24"
               stroke="currentColor"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -498,6 +635,7 @@ export default function MultiDeviceCard({
           deviceName={groupName}
           databaseKey={databaseKey}
           deviceType="multi"
+          historicalConfig={historicalConfig}
           onClose={() => setShowHistorical(false)}
         />
       ) : null}

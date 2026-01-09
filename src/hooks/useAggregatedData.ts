@@ -126,6 +126,16 @@ export const setGroupedURLsForAsada = (asadaCode: string) => {
         ]
       };
       break;
+    case 'belen2025':
+      groupedURLs = {
+        'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_ZAMORA/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ': [
+          'NACIENTE', 'REBOMBEO', 'TANQUE_PRINCIPAL', 'CAUDAL_SALIENTE'
+        ]
+      };
+      break;
+    case 'costapajaros2025':
+      groupedURLs = {};
+      break;
     default:
       groupedURLs = {};
   }
@@ -203,6 +213,7 @@ const fetchAggregatedData = async () => {
         Object.entries(groupedURLs).map(async ([url, keys]) => {
           // Añadir parámetro de tiempo para evitar caché en navegador
           const cacheBustUrl = `${url}${url.includes('?') ? '&' : '?'}_t=${now}`;
+
           const res = await fetch(cacheBustUrl, {
             cache: 'no-store',
             headers: {
@@ -211,12 +222,15 @@ const fetchAggregatedData = async () => {
             }
           });
 
-          if (!res.ok) throw new Error(`Error de conexión: ${url}`);
+          if (!res.ok) {
+            throw new Error(`Error de conexión: ${url}`);
+          }
+
           const result = await res.json();
 
           // Extract only the needed data
           return keys.reduce((acc, key) => {
-            if (result && result[key]) {
+            if (result && result[key] !== undefined && result[key] !== null) {
               acc[key] = result[key];
             }
             return acc;
@@ -264,17 +278,21 @@ const fetchAggregatedData = async () => {
       // Solo actualizar si hay cambios
       if (hasChanged) {
         dataCache.data = combinedData;
-        // Notificar a los suscriptores sobre la actualización
-        notifyUpdateListeners();
       } else {
         console.log('Sin cambios en los datos');
       }
 
       dataCache.lastFetched = now;
       dataCache.error = null;
+
+      // Siempre notificar a los suscriptores, incluso si no hay cambios
+      // Esto permite que los componentes actualicen su estado de carga
+      notifyUpdateListeners();
     } catch (err) {
       console.error('Error al obtener datos:', err);
       dataCache.error = 'Error al obtener datos';
+      // Notificar a los suscriptores sobre el error
+      notifyUpdateListeners();
     } finally {
       dataCache.loading = false;
       dataCache.fetchPromise = null;
