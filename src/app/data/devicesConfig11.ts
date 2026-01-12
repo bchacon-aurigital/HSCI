@@ -47,5 +47,11 @@ export const devices: Device[] = [
     historicoKey: 'PRESION',
     databaseKey: 'ACP/HISTORICO/PRESION',
     historicalConfig: costaPajarosHistoricalConfig,
+    pressureRanges: {
+      veryLow: 50,
+      low: 80,
+      normalMax: 110,
+      high: 130,
+    },
   },
 ];

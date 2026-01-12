@@ -5,8 +5,7 @@ export const devices: Device[] = [
   // TANQUE PRINCIPAL
   {
     name: 'TANQUE PRINCIPAL',
-    key: 'POZO_TANQUE',
-    pumpKey: 'TANQUE',
+    url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/HACIENDA_COYOL/POZO_TANQUE/TANQUE/.json',
     type: 'tank',
     group: 'hacienda-coyol',
     order: 1,
