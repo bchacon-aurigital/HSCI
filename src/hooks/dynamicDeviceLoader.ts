@@ -1,5 +1,7 @@
 // dynamicDeviceLoader.ts
-export const loadDevicesForAsada = async (codigoAsada: string) => {
+import { AsadaData } from '../app/types/types';
+
+export const loadDevicesForAsada = async (codigoAsada: string): Promise<AsadaData> => {
   switch (codigoAsada) {
     // case 'codigo1':
     //   const { devices: asada1Devices } = await import('../app/data/devicesConfig');
@@ -29,8 +31,8 @@ export const loadDevicesForAsada = async (codigoAsada: string) => {
       const { devices: asada9Devices } = await import('../app/data/devicesConfig9');
       return { name: 'ASADA Sanmarcanda', devices: asada9Devices };
     case 'belen2025':
-      const { devices: asada10Devices } = await import('../app/data/devicesConfig10');
-      return { name: 'Municipalidad BELEN', devices: asada10Devices };
+      const { subsystems: belenSubsystems } = await import('../app/data/devicesConfig10');
+      return { name: 'Municipalidad BELEN', subsystems: belenSubsystems };
     case 'ACP2026':
       const { devices: asada11Devices } = await import('../app/data/devicesConfig11');
       return { name: 'ASADA Costa Pajaros', devices: asada11Devices };

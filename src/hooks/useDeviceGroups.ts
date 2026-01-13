@@ -1,11 +1,12 @@
 // useDeviceGroups.ts
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { loadDevicesForAsada } from './dynamicDeviceLoader';
-import { Device } from '../app/types/types';
+import { Device, Subsystem } from '../app/types/types';
 import { triggerRefresh, subscribeToDataUpdates } from './useAggregatedData';
 
 export const useDeviceGroups = (codigoAsada: string) => {
   const [devices, setDevices] = useState<Device[]>([]);
+  const [subsystems, setSubsystems] = useState<Subsystem[]>([]);
   const [loading, setLoading] = useState(true);
 
   const reloadDevices = useCallback(async () => {
@@ -14,8 +15,15 @@ export const useDeviceGroups = (codigoAsada: string) => {
     try {
       // Usar triggerRefresh para actualizar los datos agregados
       await triggerRefresh();
-      const { devices: deviceList } = await loadDevicesForAsada(codigoAsada);
-      setDevices(deviceList);
+      const asadaData = await loadDevicesForAsada(codigoAsada);
+
+      if (asadaData.subsystems) {
+        setSubsystems(asadaData.subsystems);
+        setDevices([]);
+      } else if (asadaData.devices) {
+        setDevices(asadaData.devices);
+        setSubsystems([]);
+      }
     } catch (error) {
       console.error('Error al recargar los dispositivos:', error);
     } finally {
@@ -26,21 +34,27 @@ export const useDeviceGroups = (codigoAsada: string) => {
   // Cargar dispositivos inicialmente
   useEffect(() => {
     reloadDevices();
-    
+
     // Suscribirse a las actualizaciones de datos agregados
     const unsubscribe = subscribeToDataUpdates(() => {
       // Cuando los datos se actualicen, recargar los dispositivos sin mostrar el indicador de carga
       if (codigoAsada) {
         loadDevicesForAsada(codigoAsada)
-          .then(({ devices: deviceList }) => {
-            setDevices(deviceList);
+          .then((asadaData) => {
+            if (asadaData.subsystems) {
+              setSubsystems(asadaData.subsystems);
+              setDevices([]);
+            } else if (asadaData.devices) {
+              setDevices(asadaData.devices);
+              setSubsystems([]);
+            }
           })
           .catch(error => {
             console.error('Error al actualizar los dispositivos:', error);
           });
       }
     });
-    
+
     return () => {
       unsubscribe();
     };
@@ -103,5 +117,5 @@ export const useDeviceGroups = (codigoAsada: string) => {
     return groups;
   }, [devices, loading]);
 
-  return { groupedDevices, loading, reloadDevices };
+  return { groupedDevices, subsystems, loading, reloadDevices };
 };

@@ -48,6 +48,18 @@ export interface DeviceGroup {
   devices: (Device | MultiDevice)[];
 }
 
+export interface Subsystem {
+  name: string;
+  displayName: string;
+  devices: (Device | MultiDevice)[];
+}
+
+export interface AsadaData {
+  name: string;
+  devices?: (Device | MultiDevice)[];
+  subsystems?: Subsystem[];
+}
+
 export interface DeviceData {
   fecha: string;
   valor?: number;

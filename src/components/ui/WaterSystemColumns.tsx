@@ -1,11 +1,11 @@
 'use client';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { RefreshCw, Clock, AlertTriangle } from 'lucide-react';
 import Login from '../Login';
 import WaterTankCard from './WaterTankCard';
 import MultiDeviceCard from './MultiDeviceCard';
 import { useDeviceGroups } from '../../hooks/useDeviceGroups';
-import { BaseDeviceType, MultiDevice } from '../../app/types/types';
+import { BaseDeviceType, MultiDevice, Device } from '../../app/types/types';
 import { loadDevicesForAsada } from '../../hooks/dynamicDeviceLoader';
 import { setRealTimeMode, triggerRefresh } from '../../hooks/useAggregatedData';
 import { setRealTimeModeForDevices } from '../../hooks/useIndividualDeviceData';
@@ -25,6 +25,8 @@ export default function WaterSystemColumns() {
   const [deviceAlerts, setDeviceAlerts] = useState<Record<string, boolean>>({});
   // Estado para advertencias (amarillas)
   const [deviceWarnings, setDeviceWarnings] = useState<Record<string, boolean>>({});
+  // Estado para el subsistema activo
+  const [activeSubsystem, setActiveSubsystem] = useState<string>('');
 
   const handleLogin = (codigo: string) => {
     setLoading(true);
@@ -34,7 +36,7 @@ export default function WaterSystemColumns() {
 
   };
 
-  const { groupedDevices, loading: devicesLoading, reloadDevices } = useDeviceGroups(codigoAsada);
+  const { groupedDevices, subsystems, loading: devicesLoading, reloadDevices } = useDeviceGroups(codigoAsada);
 
   // Función para activar/desactivar modo tiempo real
   const toggleRealTime = () => {
@@ -84,15 +86,22 @@ export default function WaterSystemColumns() {
     }
   }, [codigoAsada]); // Solo depende de codigoAsada, no de isRealTime
 
+  // Establecer el subsistema activo inicial
+  useEffect(() => {
+    if (subsystems.length > 0 && !activeSubsystem) {
+      setActiveSubsystem(subsystems[0].name);
+    }
+  }, [subsystems, activeSubsystem]);
+
   useEffect(() => {
     if (codigoAsada) {
       try {
         loadDevicesForAsada(codigoAsada)
-          .then(({ name }) => {
-            setNombreAsada(name);
+          .then((asadaData) => {
+            setNombreAsada(asadaData.name);
             setLoading(false);
             setError(null);
-            
+
             // Actualizar el estado de isControlAsada basado en el código de asada
             setIsControlAsada(codigoAsada === 'codigo2');
             console.log(`ASADA Control: ${codigoAsada === 'codigo2' ? 'SÍ' : 'NO'}`);
@@ -108,27 +117,6 @@ export default function WaterSystemColumns() {
       }
     }
   }, [codigoAsada]);
-
-  // Inicializar columnas cerradas por defecto cuando groupedDevices cambie
-  useEffect(() => {
-  
-    if (groupedDevices.length > 0 && Object.keys(collapsedGroups).length === 0) {
-      const initialState: Record<string, boolean> = {};
-      groupedDevices.forEach(group => {
-        initialState[group.name] = false; // false = expandido
-      });
-      setCollapsedGroups(initialState);
-    } else if (groupedDevices.length > 0) {
-      const initialState: Record<string, boolean> = {};
-      groupedDevices.forEach(group => {
-        initialState[group.name] = collapsedGroups[group.name] || false;
-      });
-      
-      if (JSON.stringify(initialState) !== JSON.stringify(collapsedGroups)) {
-        setCollapsedGroups(initialState);
-      }
-    }
-  }, [groupedDevices]);
 
   // Función para verificar si un grupo tiene algún dispositivo en alerta
   const hasGroupAlert = (groupName: string) => {
@@ -221,6 +209,94 @@ export default function WaterSystemColumns() {
         setLoading(false);
       });
   };
+
+  // Procesar dispositivos del subsistema activo
+  const currentGroupedDevices = useMemo(() => {
+    if (subsystems.length > 0 && activeSubsystem) {
+      const activeSubsystemData = subsystems.find(s => s.name === activeSubsystem);
+      if (!activeSubsystemData) return [];
+
+      // Procesar los dispositivos del subsistema usando la misma lógica de groupedDevices
+      const devices = activeSubsystemData.devices;
+      const groupMap: Record<string, (Device | MultiDevice)[]> = {};
+
+      devices.forEach((device) => {
+        if (!groupMap[device.group]) {
+          groupMap[device.group] = [];
+        }
+        groupMap[device.group].push(device);
+      });
+
+      const groups = Object.entries(groupMap).map(([groupName, deviceList]) => {
+        const multiDevicesMap: Record<string, (Device | MultiDevice)[]> = {};
+        const restDevices: (Device | MultiDevice)[] = [];
+
+        deviceList.forEach((device) => {
+          if (device.type === 'pump' || device.type === 'well') {
+            const groupingKey = device.key ? device.key : device.url!;
+            if (groupingKey) {
+              if (!multiDevicesMap[groupingKey]) {
+                multiDevicesMap[groupingKey] = [];
+              }
+              multiDevicesMap[groupingKey].push(device);
+            } else {
+              restDevices.push(device);
+            }
+          } else {
+            restDevices.push(device);
+          }
+        });
+
+        Object.entries(multiDevicesMap).forEach(([key, devicesWithKey]) => {
+          if (devicesWithKey.length > 1) {
+            const multiDevice: MultiDevice = {
+              name: devicesWithKey[0].name,
+              key,
+              type: 'multi' as const,
+              group: groupName,
+              order: Math.min(...devicesWithKey.map((d) => d.order)),
+              multiDevices: devicesWithKey.map((d) => ({
+                name: d.name,
+                type: d.type as 'pump' | 'well',
+                pumpKey: d.pumpKey!,
+                key: d.key || '',
+                historicoKey: d.historicoKey,
+                databaseKey: d.databaseKey,
+              })),
+            };
+            restDevices.push(multiDevice);
+          } else {
+            restDevices.push(devicesWithKey[0]);
+          }
+        });
+
+        restDevices.sort((a, b) => a.order - b.order);
+        return { name: groupName, devices: restDevices };
+      });
+      return groups;
+    }
+    return groupedDevices;
+  }, [subsystems, activeSubsystem, groupedDevices]);
+
+  // Inicializar columnas cerradas por defecto cuando currentGroupedDevices cambie
+  useEffect(() => {
+    if (currentGroupedDevices.length > 0 && Object.keys(collapsedGroups).length === 0) {
+      const initialState: Record<string, boolean> = {};
+      currentGroupedDevices.forEach(group => {
+        initialState[group.name] = false; // false = expandido
+      });
+      setCollapsedGroups(initialState);
+    } else if (currentGroupedDevices.length > 0) {
+      const initialState: Record<string, boolean> = {};
+      currentGroupedDevices.forEach(group => {
+        initialState[group.name] = collapsedGroups[group.name] || false;
+      });
+
+      if (JSON.stringify(initialState) !== JSON.stringify(collapsedGroups)) {
+        setCollapsedGroups(initialState);
+      }
+    }
+  }, [currentGroupedDevices, activeSubsystem]);
 
   // Manejo de renderizado seguro
   const renderDeviceCard = (device: any, identifier: string, groupName: string) => {
@@ -371,7 +447,28 @@ export default function WaterSystemColumns() {
                 </div>
               </header>
 
-              {groupedDevices.length === 0 ? (
+              {/* Tabs para subsistemas */}
+              {subsystems.length > 0 && (
+                <div className="mb-8">
+                  <div className="flex space-x-2 border-b border-blue-500/20">
+                    {subsystems.map((subsystem) => (
+                      <button
+                        key={subsystem.name}
+                        onClick={() => setActiveSubsystem(subsystem.name)}
+                        className={`px-6 py-3 font-medium text-sm transition-colors duration-200 border-b-2 ${
+                          activeSubsystem === subsystem.name
+                            ? 'text-blue-400 border-blue-500'
+                            : 'text-gray-400 border-transparent hover:text-blue-300 hover:border-blue-400/50'
+                        }`}
+                      >
+                        {subsystem.displayName}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {currentGroupedDevices.length === 0 ? (
                 <div className="flex flex-col items-center justify-center p-12 bg-gray-800/50 rounded-lg">
                   <AlertTriangle className="h-12 w-12 text-yellow-500 mb-4" />
                   <h3 className="text-xl font-bold text-white mb-2">No se encontraron dispositivos</h3>
@@ -386,7 +483,7 @@ export default function WaterSystemColumns() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {groupedDevices.map((group) => {
+                  {currentGroupedDevices.map((group) => {
                     // Obtener el estado de alerta del grupo
                     const groupAlert = hasGroupAlert(group.name);
                     

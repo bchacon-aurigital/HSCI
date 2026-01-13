@@ -119,10 +119,10 @@ export default function HistoricalChart({
   // Función para cargar datos según la fecha seleccionada y la pestaña activa
   const loadDataForDate = async (selectedDateString: string) => {
     const { year, month, day } = parseSelectedDateInCostaRica(selectedDateString);
-    
+
     setLoading(true);
     setError(null);
-    
+
     try {
       // Verificamos que existan tanto historicoKey como databaseKey
       if (!historicoKey) {
@@ -130,7 +130,7 @@ export default function HistoricalChart({
         setLoading(false);
         return;
       }
-      
+
       if (!databaseKey) {
         setError('No hay base de datos definida para este dispositivo');
         setLoading(false);
@@ -146,35 +146,64 @@ export default function HistoricalChart({
         dataType = 'NIVELES';
       }
 
-      // Construir URL basada en configuración del device o defaults
-      let url: string;
+      // Preparar ambos formatos de fecha: con cero adelante y sin cero
+      const monthPadded = String(month).padStart(2, '0');
+      const dayPadded = String(day).padStart(2, '0');
+
+      // Construir URLs con ambos formatos
+      let urlsToTry: string[] = [];
+
       if (historicalConfig) {
         // Usar configuración custom del device
         const authParam = historicalConfig.authToken ? `?auth=${historicalConfig.authToken}` : '';
-        url = `${historicalConfig.baseUrl}${historicalConfig.historicalDataPath}${databaseKey}/${historicoKey}/${year}/${month}/${day}.json${authParam}`;
+        // Primero intentar con ceros adelante
+        urlsToTry.push(`${historicalConfig.baseUrl}${historicalConfig.historicalDataPath}${databaseKey}/${historicoKey}/${year}/${monthPadded}/${dayPadded}.json${authParam}`);
+        // Luego intentar sin ceros
+        urlsToTry.push(`${historicalConfig.baseUrl}${historicalConfig.historicalDataPath}${databaseKey}/${historicoKey}/${year}/${month}/${day}.json${authParam}`);
       } else {
         // Usar configuración por defecto (prueba-labview)
-        url = `https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/${databaseKey}/HISTORICO/${historicoKey}/${dataType}/${year}/${month}/${day}.json`;
+        // Primero intentar con ceros adelante
+        urlsToTry.push(`https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/${databaseKey}/HISTORICO/${historicoKey}/${dataType}/${year}/${monthPadded}/${dayPadded}.json`);
+        // Luego intentar sin ceros
+        urlsToTry.push(`https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/${databaseKey}/HISTORICO/${historicoKey}/${dataType}/${year}/${month}/${day}.json`);
       }
 
       console.log(`Obteniendo datos de ${dataType} para ${day}/${month}/${year} (Costa Rica) desde API`);
-      const response = await fetch(url);
-    
-      if (!response.ok) {
-        if (response.status === 404) {
-          setChartData(null);
-          setError(`No hay datos de ${dataMode === 'pumps' ? 'estado de bombas' : deviceType === 'pressure' ? 'presión' : 'niveles'} disponibles para ${day}/${month}/${year}`);
-        } else {
-          throw new Error(`Error de red: ${response.status}`);
+
+      // Intentar con ambas URLs
+      let response: Response | null = null;
+      let lastError: Error | null = null;
+
+      for (const url of urlsToTry) {
+        try {
+          console.log(`Intentando URL: ${url}`);
+          response = await fetch(url);
+
+          if (response.ok) {
+            break; // Si encuentra datos, salir del loop
+          } else if (response.status === 404) {
+            // Si es 404, intentar con la siguiente URL
+            continue;
+          } else {
+            throw new Error(`Error de red: ${response.status}`);
+          }
+        } catch (err: any) {
+          lastError = err;
+          continue;
         }
+      }
+
+      if (!response || !response.ok) {
+        setChartData(null);
+        setError(`No hay datos de ${dataMode === 'pumps' ? 'estado de bombas' : deviceType === 'pressure' ? 'presión' : 'niveles'} disponibles para ${day}/${month}/${year}`);
         setLoading(false);
         return;
       }
-    
+
       const data = await response.json();
-      
+
       processHistoricalData(data, historicoKey);
-      
+
     } catch (error: any) {
       console.error('Error al cargar datos históricos:', error);
       setError(`Error al cargar datos: ${error.message || 'Error desconocido'}`);
