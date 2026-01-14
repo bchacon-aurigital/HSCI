@@ -241,7 +241,7 @@ export default function HistoricalChart({
 
           // Para presión, intentar múltiples campos
           if (deviceType === 'pressure') {
-            fieldValue = item.DATA.PRESION_BAR ?? item.DATA.PRESION ?? item.DATA.VALOR;
+            fieldValue = item.DATA.PRESION_BAR ?? item.DATA.PRESION ?? item.DATA.VALOR ?? item.DATA.CAUDAL_LPS;
           } else {
             fieldValue = item.DATA[valueField];
           }
@@ -264,7 +264,7 @@ export default function HistoricalChart({
 
             // Para presión, intentar múltiples campos
             if (deviceType === 'pressure') {
-              fieldValue = value.DATA.PRESION_BAR ?? value.DATA.PRESION ?? value.DATA.VALOR;
+              fieldValue = value.DATA.PRESION_BAR ?? value.DATA.PRESION ?? value.DATA.VALOR ?? value.DATA.CAUDAL_LPS;
             } else {
               fieldValue = value.DATA[valueField];
             }
