@@ -176,7 +176,7 @@ export default function WaterTankCard({
               <Activity className="text-purple-400 mr-3" size={20} />
               <div>
                 <p className="text-xs text-gray-400">MODO DE OPERACIÓN</p>
-                <p className="font-bold text-gray-100">{data.MODO === 1 ? 'Automático' : data.MODO === 0 ? 'Manual' : data.MODO}</p>
+                <p className="font-bold text-gray-100">{data.MODO === '1' || data.MODO === 1 || data.MODO === 'AUTO' ? 'Automático' : data.MODO === '0' || data.MODO === 0 || data.MODO === 'MANUAL' ? 'Manual' : data.MODO}</p>
               </div>
             </div>
           )}

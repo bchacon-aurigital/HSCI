@@ -147,12 +147,12 @@ const zamoraDevices: (Device | MultiDevice)[] = [
 ];
 
 const citizenDevices: (Device | MultiDevice)[] = [
-  // CITIZEN - POZO NUEVO 1 - Estado
+  // CITIZEN - POZO NUEVO 1
   {
-    name: 'Pozo Nuevo 1 - Estado',
+    name: 'Pozo Nuevo 1',
     url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_CITIZEN/POZO_NUEVO_1/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
-    type: 'pump',
-    group: 'citizen-pozo-nuevo-1',
+    type: 'well',
+    group: 'citizen-pozos',
     order: 1,
     pumpKey: 'ESTADO',
     historicoKey: 'POZO_NUEVO_1/ESTADO',
@@ -160,156 +160,26 @@ const citizenDevices: (Device | MultiDevice)[] = [
     historicalConfig: belenHistoricalConfig,
   },
 
-  // CITIZEN - POZO NUEVO 1 - Modo
+  // CITIZEN - POZO NUEVO 2
   {
-    name: 'Modo',
-    url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_CITIZEN/POZO_NUEVO_1/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
-    type: 'valve',
-    group: 'citizen-pozo-nuevo-1',
-    order: 2,
-    pumpKey: 'MODO',
-    historicoKey: 'POZO_NUEVO_1/MODO',
-    databaseKey: 'CITIZEN',
-    historicalConfig: belenHistoricalConfig,
-  },
-
-  // CITIZEN - POZO NUEVO 1 - Amps
-  {
-    name: 'Amps',
-    url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_CITIZEN/POZO_NUEVO_1/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
-    type: 'valve',
-    group: 'citizen-pozo-nuevo-1',
-    order: 3,
-    pumpKey: 'AMPS',
-    historicoKey: 'POZO_NUEVO_1/AMPS',
-    databaseKey: 'CITIZEN',
-    historicalConfig: belenHistoricalConfig,
-  },
-
-  // CITIZEN - POZO NUEVO 1 - Hz
-  {
-    name: 'Hz',
-    url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_CITIZEN/POZO_NUEVO_1/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
-    type: 'valve',
-    group: 'citizen-pozo-nuevo-1',
-    order: 4,
-    pumpKey: 'HZ',
-    historicoKey: 'POZO_NUEVO_1/HZ',
-    databaseKey: 'CITIZEN',
-    historicalConfig: belenHistoricalConfig,
-  },
-
-  // CITIZEN - POZO NUEVO 1 - VAC
-  {
-    name: 'VAC',
-    url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_CITIZEN/POZO_NUEVO_1/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
-    type: 'valve',
-    group: 'citizen-pozo-nuevo-1',
-    order: 5,
-    pumpKey: 'VAC',
-    historicoKey: 'POZO_NUEVO_1/VAC',
-    databaseKey: 'CITIZEN',
-    historicalConfig: belenHistoricalConfig,
-  },
-
-  // CITIZEN - POZO NUEVO 2 - Estado
-  {
-    name: 'Pozo Nuevo 2 - Estado',
+    name: 'Pozo Nuevo 2',
     url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_CITIZEN/POZO_NUEVO_2/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
-    type: 'pump',
-    group: 'citizen-pozo-nuevo-2',
-    order: 1,
+    type: 'well',
+    group: 'citizen-pozos',
+    order: 2,
     pumpKey: 'ESTADO',
     historicoKey: 'POZO_NUEVO_2/ESTADO',
     databaseKey: 'CITIZEN',
     historicalConfig: belenHistoricalConfig,
   },
 
-  // CITIZEN - POZO NUEVO 2 - Modo
+  // CITIZEN - CAUDAL SALIENTE 1
   {
-    name: 'Modo',
-    url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_CITIZEN/POZO_NUEVO_2/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
-    type: 'valve',
-    group: 'citizen-pozo-nuevo-2',
-    order: 2,
-    pumpKey: 'MODO',
-    historicoKey: 'POZO_NUEVO_2/MODO',
-    databaseKey: 'CITIZEN',
-    historicalConfig: belenHistoricalConfig,
-  },
-
-  // CITIZEN - POZO NUEVO 2 - Amps
-  {
-    name: 'Amps',
-    url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_CITIZEN/POZO_NUEVO_2/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
-    type: 'valve',
-    group: 'citizen-pozo-nuevo-2',
-    order: 3,
-    pumpKey: 'AMPS',
-    historicoKey: 'POZO_NUEVO_2/AMPS',
-    databaseKey: 'CITIZEN',
-    historicalConfig: belenHistoricalConfig,
-  },
-
-  // CITIZEN - POZO NUEVO 2 - Hz
-  {
-    name: 'Hz',
-    url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_CITIZEN/POZO_NUEVO_2/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
-    type: 'valve',
-    group: 'citizen-pozo-nuevo-2',
-    order: 4,
-    pumpKey: 'HZ',
-    historicoKey: 'POZO_NUEVO_2/HZ',
-    databaseKey: 'CITIZEN',
-    historicalConfig: belenHistoricalConfig,
-  },
-
-  // CITIZEN - POZO NUEVO 2 - VAC
-  {
-    name: 'VAC',
-    url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_CITIZEN/POZO_NUEVO_2/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
-    type: 'valve',
-    group: 'citizen-pozo-nuevo-2',
-    order: 5,
-    pumpKey: 'VAC',
-    historicoKey: 'POZO_NUEVO_2/VAC',
-    databaseKey: 'CITIZEN',
-    historicalConfig: belenHistoricalConfig,
-  },
-
-  // CITIZEN - CAUDAL SALIENTE 1 - Caudal LPS
-  {
-    name: 'Caudal Saliente 1 - LPS',
-    url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_CITIZEN/CAUDAL_SALIENTE_1/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
-    type: 'valve',
-    group: 'citizen-caudal-saliente-1',
-    order: 1,
-    pumpKey: 'CAUDAL_LPS',
-    historicoKey: 'CAUDAL_SALIENTE_1/CAUDAL',
-    databaseKey: 'CITIZEN',
-    historicalConfig: belenHistoricalConfig,
-  },
-
-  // CITIZEN - CAUDAL SALIENTE 1 - Volumen M3
-  {
-    name: 'Volumen M3',
-    url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_CITIZEN/CAUDAL_SALIENTE_1/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
-    type: 'valve',
-    group: 'citizen-caudal-saliente-1',
-    order: 2,
-    pumpKey: 'VOLUMEN_M3',
-    historicoKey: 'CAUDAL_SALIENTE_1/VOLUMEN',
-    databaseKey: 'CITIZEN',
-    historicalConfig: belenHistoricalConfig,
-  },
-
-  // CITIZEN - CAUDAL SALIENTE 1 - Presión BAR
-  {
-    name: 'Presión BAR',
+    name: 'Caudal Saliente 1',
     url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_CITIZEN/CAUDAL_SALIENTE_1/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
     type: 'pressure',
-    group: 'citizen-caudal-saliente-1',
-    order: 3,
+    group: 'citizen-caudales',
+    order: 1,
     pumpKey: 'PRESION_BAR',
     historicoKey: 'CAUDAL_SALIENTE_1/CAUDAL',
     databaseKey: 'CITIZEN',
@@ -322,39 +192,13 @@ const citizenDevices: (Device | MultiDevice)[] = [
     },
   },
 
-  // CITIZEN - CAUDAL SALIENTE 2 - Caudal LPS
+  // CITIZEN - CAUDAL SALIENTE 2
   {
-    name: 'Caudal Saliente 2 - LPS',
-    url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_CITIZEN/CAUDAL_SALIENTE_2/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
-    type: 'valve',
-    group: 'citizen-caudal-saliente-2',
-    order: 1,
-    pumpKey: 'CAUDAL_LPS',
-    historicoKey: 'CAUDAL_SALIENTE_2/CAUDAL',
-    databaseKey: 'CITIZEN',
-    historicalConfig: belenHistoricalConfig,
-  },
-
-  // CITIZEN - CAUDAL SALIENTE 2 - Volumen M3
-  {
-    name: 'Volumen M3',
-    url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_CITIZEN/CAUDAL_SALIENTE_2/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
-    type: 'valve',
-    group: 'citizen-caudal-saliente-2',
-    order: 2,
-    pumpKey: 'VOLUMEN_M3',
-    historicoKey: 'CAUDAL_SALIENTE_2/VOLUMEN',
-    databaseKey: 'CITIZEN',
-    historicalConfig: belenHistoricalConfig,
-  },
-
-  // CITIZEN - CAUDAL SALIENTE 2 - Presión BAR
-  {
-    name: 'Presión BAR',
+    name: 'Caudal Saliente 2',
     url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_CITIZEN/CAUDAL_SALIENTE_2/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
     type: 'pressure',
-    group: 'citizen-caudal-saliente-2',
-    order: 3,
+    group: 'citizen-caudales',
+    order: 2,
     pumpKey: 'PRESION_BAR',
     historicoKey: 'CAUDAL_SALIENTE_2/CAUDAL',
     databaseKey: 'CITIZEN',
@@ -367,12 +211,12 @@ const citizenDevices: (Device | MultiDevice)[] = [
     },
   },
 
-  // CITIZEN - TANQUE CONCRETO - Nivel Porcentual
+  // CITIZEN - TANQUE CONCRETO
   {
     name: 'Tanque Concreto',
     url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_CITIZEN/TANQUE_CONCRETO/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
     type: 'tank',
-    group: 'citizen-tanque-concreto',
+    group: 'citizen-tanques',
     order: 1,
     pumpKey: 'NIVEL_PORC',
     historicoKey: 'TANQUE_CONCRETO/NIVELES',
@@ -380,92 +224,40 @@ const citizenDevices: (Device | MultiDevice)[] = [
     historicalConfig: belenHistoricalConfig,
   },
 
-  // CITIZEN - TANQUE CONCRETO - Nivel Metros
-  {
-    name: 'Nivel Metros',
-    url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_CITIZEN/TANQUE_CONCRETO/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
-    type: 'valve',
-    group: 'citizen-tanque-concreto',
-    order: 2,
-    pumpKey: 'NIVEL_MTS',
-    historicoKey: 'TANQUE_CONCRETO/NIVELES',
-    databaseKey: 'CITIZEN',
-    historicalConfig: belenHistoricalConfig,
-  },
-
-  // CITIZEN - TANQUE ELEVADO 1 - Nivel Porcentual
+  // CITIZEN - TANQUE ELEVADO 1
   {
     name: 'Tanque Elevado 1',
     url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_CITIZEN/TANQUE_ELEVADO_1/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
     type: 'tank',
-    group: 'citizen-tanque-elevado-1',
-    order: 1,
+    group: 'citizen-tanques',
+    order: 2,
     pumpKey: 'NIVEL_PORC',
     historicoKey: 'TANQUE_ELEVADO_1/NIVELES',
     databaseKey: 'CITIZEN',
     historicalConfig: belenHistoricalConfig,
   },
 
-  // CITIZEN - TANQUE ELEVADO 1 - Nivel Metros
-  {
-    name: 'Nivel Metros',
-    url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_CITIZEN/TANQUE_ELEVADO_1/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
-    type: 'valve',
-    group: 'citizen-tanque-elevado-1',
-    order: 2,
-    pumpKey: 'NIVEL_MTS',
-    historicoKey: 'TANQUE_ELEVADO_1/NIVELES',
-    databaseKey: 'CITIZEN',
-    historicalConfig: belenHistoricalConfig,
-  },
-
-  // CITIZEN - TANQUE ELEVADO 2 - Nivel Porcentual
+  // CITIZEN - TANQUE ELEVADO 2
   {
     name: 'Tanque Elevado 2',
     url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_CITIZEN/TANQUE_ELEVADO_2/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
     type: 'tank',
-    group: 'citizen-tanque-elevado-2',
-    order: 1,
+    group: 'citizen-tanques',
+    order: 3,
     pumpKey: 'NIVEL_PORC',
     historicoKey: 'TANQUE_ELEVADO_2/NIVELES',
     databaseKey: 'CITIZEN',
     historicalConfig: belenHistoricalConfig,
   },
 
-  // CITIZEN - TANQUE ELEVADO 2 - Nivel Metros
-  {
-    name: 'Nivel Metros',
-    url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_CITIZEN/TANQUE_ELEVADO_2/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
-    type: 'valve',
-    group: 'citizen-tanque-elevado-2',
-    order: 2,
-    pumpKey: 'NIVEL_MTS',
-    historicoKey: 'TANQUE_ELEVADO_2/NIVELES',
-    databaseKey: 'CITIZEN',
-    historicalConfig: belenHistoricalConfig,
-  },
-
-  // CITIZEN - TANQUE ELEVADO 3 - Nivel Porcentual
+  // CITIZEN - TANQUE ELEVADO 3
   {
     name: 'Tanque Elevado 3',
     url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_CITIZEN/TANQUE_ELEVADO_3/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
     type: 'tank',
-    group: 'citizen-tanque-elevado-3',
-    order: 1,
+    group: 'citizen-tanques',
+    order: 4,
     pumpKey: 'NIVEL_PORC',
-    historicoKey: 'TANQUE_ELEVADO_3/NIVELES',
-    databaseKey: 'CITIZEN',
-    historicalConfig: belenHistoricalConfig,
-  },
-
-  // CITIZEN - TANQUE ELEVADO 3 - Nivel Metros
-  {
-    name: 'Nivel Metros',
-    url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_CITIZEN/TANQUE_ELEVADO_3/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
-    type: 'valve',
-    group: 'citizen-tanque-elevado-3',
-    order: 2,
-    pumpKey: 'NIVEL_MTS',
     historicoKey: 'TANQUE_ELEVADO_3/NIVELES',
     databaseKey: 'CITIZEN',
     historicalConfig: belenHistoricalConfig,
@@ -473,11 +265,11 @@ const citizenDevices: (Device | MultiDevice)[] = [
 ];
 
 const epaDevices: (Device | MultiDevice)[] = [
-  // EPA - POZO - Estado
+  // EPA - POZO
   {
-    name: 'Pozo - Estado',
+    name: 'Pozo',
     url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_EPA/POZO/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
-    type: 'pump',
+    type: 'well',
     group: 'epa-pozo',
     order: 1,
     pumpKey: 'ESTADO',
@@ -486,64 +278,12 @@ const epaDevices: (Device | MultiDevice)[] = [
     historicalConfig: belenHistoricalConfig,
   },
 
-  // EPA - POZO - Modo
-  {
-    name: 'Modo',
-    url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_EPA/POZO/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
-    type: 'valve',
-    group: 'epa-pozo',
-    order: 2,
-    pumpKey: 'MODO',
-    historicoKey: 'POZO/MODO',
-    databaseKey: 'EPA',
-    historicalConfig: belenHistoricalConfig,
-  },
-
-  // EPA - POZO - Amps
-  {
-    name: 'Amps',
-    url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_EPA/POZO/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
-    type: 'valve',
-    group: 'epa-pozo',
-    order: 3,
-    pumpKey: 'AMPS',
-    historicoKey: 'POZO/AMPS',
-    databaseKey: 'EPA',
-    historicalConfig: belenHistoricalConfig,
-  },
-
-  // EPA - POZO - Hz
-  {
-    name: 'Hz',
-    url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_EPA/POZO/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
-    type: 'valve',
-    group: 'epa-pozo',
-    order: 4,
-    pumpKey: 'HZ',
-    historicoKey: 'POZO/HZ',
-    databaseKey: 'EPA',
-    historicalConfig: belenHistoricalConfig,
-  },
-
-  // EPA - POZO - VAC
-  {
-    name: 'VAC',
-    url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_EPA/POZO/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
-    type: 'valve',
-    group: 'epa-pozo',
-    order: 5,
-    pumpKey: 'VAC',
-    historicoKey: 'POZO/VAC',
-    databaseKey: 'EPA',
-    historicalConfig: belenHistoricalConfig,
-  },
-
-  // EPA - TANQUE ELEVADO 1 - Nivel Porcentual
+  // EPA - TANQUE ELEVADO 1
   {
     name: 'Tanque Elevado 1',
     url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_EPA/TANQUE_ELEVADO_1/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
     type: 'tank',
-    group: 'epa-tanque-elevado-1',
+    group: 'epa-tanques',
     order: 1,
     pumpKey: 'NIVEL_PORC',
     historicoKey: 'TANQUE_ELEVADO_1/NIVELES',
@@ -551,131 +291,53 @@ const epaDevices: (Device | MultiDevice)[] = [
     historicalConfig: belenHistoricalConfig,
   },
 
-  // EPA - TANQUE ELEVADO 1 - Nivel Metros
-  {
-    name: 'Nivel Metros',
-    url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_EPA/TANQUE_ELEVADO_1/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
-    type: 'valve',
-    group: 'epa-tanque-elevado-1',
-    order: 2,
-    pumpKey: 'NIVEL_MTS',
-    historicoKey: 'TANQUE_ELEVADO_1/NIVELES',
-    databaseKey: 'EPA',
-    historicalConfig: belenHistoricalConfig,
-  },
-
-  // EPA - TANQUE ELEVADO 2 - Nivel Porcentual
+  // EPA - TANQUE ELEVADO 2
   {
     name: 'Tanque Elevado 2',
     url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_EPA/TANQUE_ELEVADO_2/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
     type: 'tank',
-    group: 'epa-tanque-elevado-2',
-    order: 1,
+    group: 'epa-tanques',
+    order: 2,
     pumpKey: 'NIVEL_PORC',
     historicoKey: 'TANQUE_ELEVADO_2/NIVELES',
     databaseKey: 'EPA',
     historicalConfig: belenHistoricalConfig,
   },
 
-  // EPA - TANQUE ELEVADO 2 - Nivel Metros
-  {
-    name: 'Nivel Metros',
-    url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_EPA/TANQUE_ELEVADO_2/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
-    type: 'valve',
-    group: 'epa-tanque-elevado-2',
-    order: 2,
-    pumpKey: 'NIVEL_MTS',
-    historicoKey: 'TANQUE_ELEVADO_2/NIVELES',
-    databaseKey: 'EPA',
-    historicalConfig: belenHistoricalConfig,
-  },
-
-  // EPA - TANQUE ELEVADO 3 - Nivel Porcentual
+  // EPA - TANQUE ELEVADO 3
   {
     name: 'Tanque Elevado 3',
     url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_EPA/TANQUE_ELEVADO_3/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
     type: 'tank',
-    group: 'epa-tanque-elevado-3',
-    order: 1,
+    group: 'epa-tanques',
+    order: 3,
     pumpKey: 'NIVEL_PORC',
     historicoKey: 'TANQUE_ELEVADO_3/NIVELES',
     databaseKey: 'EPA',
     historicalConfig: belenHistoricalConfig,
   },
 
-  // EPA - TANQUE ELEVADO 3 - Nivel Metros
-  {
-    name: 'Nivel Metros',
-    url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_EPA/TANQUE_ELEVADO_3/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
-    type: 'valve',
-    group: 'epa-tanque-elevado-3',
-    order: 2,
-    pumpKey: 'NIVEL_MTS',
-    historicoKey: 'TANQUE_ELEVADO_3/NIVELES',
-    databaseKey: 'EPA',
-    historicalConfig: belenHistoricalConfig,
-  },
-
-  // EPA - TANQUE ELEVADO 4 - Nivel Porcentual
+  // EPA - TANQUE ELEVADO 4
   {
     name: 'Tanque Elevado 4',
     url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_EPA/TANQUE_ELEVADO_4/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
     type: 'tank',
-    group: 'epa-tanque-elevado-4',
-    order: 1,
+    group: 'epa-tanques',
+    order: 4,
     pumpKey: 'NIVEL_PORC',
     historicoKey: 'TANQUE_ELEVADO_4/NIVELES',
     databaseKey: 'EPA',
     historicalConfig: belenHistoricalConfig,
   },
 
-  // EPA - TANQUE ELEVADO 4 - Nivel Metros
+  // EPA - CAUDAL SALIENTE
   {
-    name: 'Nivel Metros',
-    url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_EPA/TANQUE_ELEVADO_4/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
-    type: 'valve',
-    group: 'epa-tanque-elevado-4',
-    order: 2,
-    pumpKey: 'NIVEL_MTS',
-    historicoKey: 'TANQUE_ELEVADO_4/NIVELES',
-    databaseKey: 'EPA',
-    historicalConfig: belenHistoricalConfig,
-  },
-
-  // EPA - CAUDAL SALIENTE - Caudal LPS
-  {
-    name: 'Caudal Saliente - LPS',
-    url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_EPA/CAUDAL_SALIENTE/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
-    type: 'valve',
-    group: 'epa-caudal-saliente',
-    order: 1,
-    pumpKey: 'CAUDAL_LPS',
-    historicoKey: 'CAUDAL_SALIENTE/CAUDAL',
-    databaseKey: 'EPA',
-    historicalConfig: belenHistoricalConfig,
-  },
-
-  // EPA - CAUDAL SALIENTE - Volumen M3
-  {
-    name: 'Volumen M3',
-    url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_EPA/CAUDAL_SALIENTE/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
-    type: 'valve',
-    group: 'epa-caudal-saliente',
-    order: 2,
-    pumpKey: 'VOLUMEN_M3',
-    historicoKey: 'CAUDAL_SALIENTE/VOLUMEN',
-    databaseKey: 'EPA',
-    historicalConfig: belenHistoricalConfig,
-  },
-
-  // EPA - CAUDAL SALIENTE - Presión BAR
-  {
-    name: 'Presión BAR',
+    name: 'Caudal Saliente',
     url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_EPA/CAUDAL_SALIENTE/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
     type: 'pressure',
-    group: 'epa-caudal-saliente',
-    order: 3,
-    pumpKey: 'PRESION_BAR',
+    group: 'epa-caudal',
+    order: 1,
+    pumpKey: 'PRESION_RED_BAR',
     historicoKey: 'CAUDAL_SALIENTE/CAUDAL',
     databaseKey: 'EPA',
     historicalConfig: belenHistoricalConfig,
@@ -687,15 +349,15 @@ const epaDevices: (Device | MultiDevice)[] = [
     },
   },
 
-  // EPA - PRESION BOMBEO
+  // EPA - PRESION SALIDA BOMBA
   {
     name: 'Presión Bombeo',
-    url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_EPA/PRESION_BOMBEO/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
+    url: 'https://municipalidad-belen-default-rtdb.firebaseio.com/AGUA_POTABLE/SISTEMA_EPA/PRESION_SALIDA_BOMBA/.json?auth=CZaWf3YBN4mLOWNFp19fT5AiDZ3sVmH5fhmAEdUJ',
     type: 'pressure',
-    group: 'epa-presion-bombeo',
-    order: 1,
+    group: 'epa-caudal',
+    order: 2,
     pumpKey: 'PRESION_BAR',
-    historicoKey: 'PRESION_BOMBEO/PRESION',
+    historicoKey: 'PRESION_SALIDA_BOMBA/PRESION',
     databaseKey: 'EPA',
     historicalConfig: belenHistoricalConfig,
     pressureRanges: {

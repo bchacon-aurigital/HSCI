@@ -388,10 +388,10 @@ export default function MultiDeviceCard({
 
           {hasSensorData('MODO') && (
             <div className="flex items-center bg-gray-700/50 p-3 rounded-lg">
-              <Settings className={sensorData.MODO === '1' || data.MODO === 1 ? 'text-green-400' : 'text-blue-400'} size={20} />
+              <Settings className={sensorData.MODO === '1' || sensorData.MODO === 1 || sensorData.MODO === 'AUTO' ? 'text-green-400' : 'text-blue-400'} size={20} />
               <div className="ml-3">
                 <p className="text-xs text-gray-400">Modo Operación</p>
-                <p className="font-bold text-gray-100">{sensorData.MODO === '1' || data.MODO === 1 ? 'Automático' : 'Manual'}</p>
+                <p className="font-bold text-gray-100">{sensorData.MODO === '1' || sensorData.MODO === 1 || sensorData.MODO === 'AUTO' ? 'Automático' : sensorData.MODO === '0' || sensorData.MODO === 0 || sensorData.MODO === 'MANUAL' ? 'Manual' : sensorData.MODO}</p>
               </div>
             </div>
           )}
