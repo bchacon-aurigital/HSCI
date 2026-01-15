@@ -151,7 +151,7 @@ export default function HistoricalChart({
       const dayPadded = String(day).padStart(2, '0');
 
       // Construir URLs con ambos formatos
-      let urlsToTry: string[] = [];
+      const urlsToTry: string[] = [];
 
       if (historicalConfig) {
         // Usar configuración custom del device
