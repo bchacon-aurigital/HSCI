@@ -1,8 +1,8 @@
-import { Device } from '../types/types';
+import { Device, Subsystem } from '../types/types';
 
-export const devices: Device[] = [
+const nizaDevices: Device[] = [
   {
-    name: 'POZO 109 (Estado Bomba)',
+    name: 'POZO 109',
     url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/AQG/NIZA/POZO2.json',
     type: 'well',
     group: 'niza-pozos',
@@ -12,7 +12,7 @@ export const devices: Device[] = [
     databaseKey: 'AQG',
   },
   {
-    name: 'POZO 111 (Estado Bomba)',
+    name: 'POZO 111',
     url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/AQG/NIZA/POZO1.json',
     type: 'well',
     group: 'niza-pozos',
@@ -60,5 +60,34 @@ export const devices: Device[] = [
     pumpKey: 'valor',
     historicoKey: 'NIZA/TANQUE_NIZA',
     databaseKey: 'AQG',
+  },
+];
+
+const caciqueDevices: Device[] = [
+  {
+    name: 'Pozo Cacique',
+    url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/AQG/CACIQUE/POZO.json',
+    type: 'well',
+    group: 'cacique-pozo',
+    order: 1,
+    pumpKey: 'DATABOMB',
+    historicoKey: 'CACIQUE/POZO',
+    databaseKey: 'AQG',
+  },
+];
+
+// Mantener export de devices para compatibilidad
+export const devices: Device[] = [...nizaDevices, ...caciqueDevices];
+
+export const subsystems: Subsystem[] = [
+  {
+    name: 'niza',
+    displayName: 'Sistema Niza',
+    devices: nizaDevices,
+  },
+  {
+    name: 'cacique',
+    displayName: 'Pozo Cacique',
+    devices: caciqueDevices,
   },
 ];

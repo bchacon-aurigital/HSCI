@@ -180,7 +180,14 @@ export default function HistoricalChart({
           response = await fetch(url);
 
           if (response.ok) {
-            break; // Si encuentra datos, salir del loop
+            // Verificar que los datos no sean null antes de aceptar esta URL
+            const clonedResponse = response.clone();
+            const testData = await clonedResponse.json();
+            if (testData !== null && testData !== undefined) {
+              break; // Si encuentra datos válidos, salir del loop
+            }
+            // Si los datos son null, continuar con la siguiente URL
+            continue;
           } else if (response.status === 404) {
             // Si es 404, intentar con la siguiente URL
             continue;
