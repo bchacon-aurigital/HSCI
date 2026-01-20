@@ -21,32 +21,6 @@ const zamoraDevices: (Device | MultiDevice)[] = [
     historicalConfig: belenHistoricalConfig,
   },
 
-  // NACIENTE - Caudal LPS (valve/flow)
-  {
-    name: 'Caudal LPS',
-    key: 'NACIENTE',
-    pumpKey: 'CAUDAL_LPS',
-    type: 'valve',
-    group: 'zamora-naciente',
-    order: 2,
-    historicoKey: 'NACIENTE/CAUDAL_LPS',
-    databaseKey: 'ZAMORA',
-    historicalConfig: belenHistoricalConfig,
-  },
-
-  // NACIENTE - Calidad OK
-  {
-    name: 'Calidad Agua',
-    key: 'NACIENTE',
-    pumpKey: 'CALIDAD_OK',
-    type: 'valve',
-    group: 'zamora-naciente',
-    order: 3,
-    historicoKey: 'NACIENTE/CALIDAD_OK',
-    databaseKey: 'ZAMORA',
-    historicalConfig: belenHistoricalConfig,
-  },
-
   // REBOMBEO - Bomba 1
   {
     name: 'Rebombeo Bomba 1',
@@ -74,7 +48,7 @@ const zamoraDevices: (Device | MultiDevice)[] = [
     historicalConfig: belenHistoricalConfig,
   },
 
-  // TANQUE PRINCIPAL - Nivel Porcentual
+  // TANQUE PRINCIPAL
   {
     name: 'Tanque Principal',
     key: 'TANQUE_PRINCIPAL',
@@ -87,61 +61,23 @@ const zamoraDevices: (Device | MultiDevice)[] = [
     historicalConfig: belenHistoricalConfig,
   },
 
-  // TANQUE PRINCIPAL - Nivel en Metros
+  // CAUDAL SALIENTE
   {
-    name: 'Nivel Metros',
-    key: 'TANQUE_PRINCIPAL',
-    pumpKey: 'NIVEL_MTS',
-    type: 'valve',
-    group: 'zamora-tanque',
-    order: 2,
-    historicoKey: 'TANQUE_PRINCIPAL/NIVELES',
-    databaseKey: 'ZAMORA',
-    historicalConfig: belenHistoricalConfig,
-  },
-
-  // CAUDAL SALIENTE - Caudal LPS
-  {
-    name: 'Caudal Saliente LPS',
+    name: 'Caudal Saliente',
     key: 'CAUDAL_SALIENTE',
     pumpKey: 'CAUDAL_LPS',
-    type: 'valve',
-    group: 'zamora-saliente',
-    order: 1,
-    historicoKey: 'CAUDAL_SALIENTE/CAUDAL',
-    databaseKey: 'ZAMORA',
-    historicalConfig: belenHistoricalConfig,
-  },
-
-  // CAUDAL SALIENTE - Volumen M3
-  {
-    name: 'Volumen M3',
-    key: 'CAUDAL_SALIENTE',
-    pumpKey: 'VOLUMEN_M3',
-    type: 'valve',
-    group: 'zamora-saliente',
-    order: 2,
-    historicoKey: 'CAUDAL_SALIENTE/VOLUMEN',
-    databaseKey: 'ZAMORA',
-    historicalConfig: belenHistoricalConfig,
-  },
-
-  // CAUDAL SALIENTE - Presión BAR
-  {
-    name: 'Presión BAR',
-    key: 'CAUDAL_SALIENTE',
-    pumpKey: 'PRESION_BAR',
     type: 'pressure',
     group: 'zamora-saliente',
     order: 3,
     historicoKey: 'CAUDAL_SALIENTE/CAUDAL',
     databaseKey: 'ZAMORA',
     historicalConfig: belenHistoricalConfig,
+    pressureUnit: 'L/s',
     pressureRanges: {
-      veryLow: 1.0,
-      low: 1.5,
-      normalMax: 3.0,
-      high: 4.0,
+      veryLow: 5,
+      low: 10,
+      normalMax: 100,
+      high: 120,
     },
   },
 ];
@@ -185,10 +121,10 @@ const citizenDevices: (Device | MultiDevice)[] = [
     databaseKey: 'CITIZEN',
     historicalConfig: belenHistoricalConfig,
     pressureRanges: {
-      veryLow: 1.0,
-      low: 1.5,
-      normalMax: 3.0,
-      high: 4.0,
+      veryLow: 5,
+      low: 10,
+      normalMax: 100,
+      high: 120,
     },
   },
 
@@ -204,10 +140,10 @@ const citizenDevices: (Device | MultiDevice)[] = [
     databaseKey: 'CITIZEN',
     historicalConfig: belenHistoricalConfig,
     pressureRanges: {
-      veryLow: 1.0,
-      low: 1.5,
-      normalMax: 3.0,
-      high: 4.0,
+      veryLow: 5,
+      low: 10,
+      normalMax: 100,
+      high: 120,
     },
   },
 
@@ -337,15 +273,16 @@ const epaDevices: (Device | MultiDevice)[] = [
     type: 'pressure',
     group: 'epa-caudal',
     order: 1,
-    pumpKey: 'PRESION_RED_BAR',
+    pumpKey: 'CAUDAL_LPS',
     historicoKey: 'CAUDAL_SALIENTE/CAUDAL',
     databaseKey: 'EPA',
     historicalConfig: belenHistoricalConfig,
+    pressureUnit: 'L/s',
     pressureRanges: {
-      veryLow: 1.0,
-      low: 1.5,
-      normalMax: 3.0,
-      high: 4.0,
+      veryLow: 5,
+      low: 10,
+      normalMax: 100,
+      high: 120,
     },
   },
 
@@ -361,10 +298,10 @@ const epaDevices: (Device | MultiDevice)[] = [
     databaseKey: 'EPA',
     historicalConfig: belenHistoricalConfig,
     pressureRanges: {
-      veryLow: 1.0,
-      low: 1.5,
-      normalMax: 3.0,
-      high: 4.0,
+      veryLow: 5,
+      low: 10,
+      normalMax: 100,
+      high: 120,
     },
   },
 ];

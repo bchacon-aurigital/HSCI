@@ -36,6 +36,7 @@ interface WaterTankCardProps {
   onAlertChange?: (hasAlert: boolean) => void;
   onWarningChange?: (hasWarning: boolean) => void;
   pressureRanges?: PressureRanges;
+  pressureUnit?: 'PSI' | 'L/s' | 'Bar';
   groupName?: string;
   historicalConfig?: HistoricalConfig;
 }
@@ -51,6 +52,7 @@ export default function WaterTankCard({
   onAlertChange,
   onWarningChange,
   pressureRanges,
+  pressureUnit = 'PSI',
   groupName,
   historicalConfig,
 }: WaterTankCardProps) {
@@ -356,7 +358,7 @@ export default function WaterTankCard({
               <Gauge className="text-purple-400 mr-3" size={20} />
               <div>
                 <p className="text-xs text-gray-400">Presión</p>
-                <p className="font-bold text-gray-100">{data.PRESION_BAR} BAR</p>
+                <p className="font-bold text-gray-100">{data.PRESION_BAR} psi</p>
               </div>
             </div>
           )}
@@ -757,15 +759,15 @@ export default function WaterTankCard({
               <div className="flex flex-col items-center space-y-6">
                 <PressureIndicator
                   pressure={pressureValue}
-                  maxPressure={100}
-                  unit="PSI"
+                  maxPressure={pressureUnit === 'L/s' ? 150 : 100}
+                  unit={pressureUnit}
                   pressureRanges={pressureRanges}
                 />
 
                 <div className="flex items-center justify-center w-full py-3 px-4 rounded-lg bg-gray-800/80 border border-gray-700/50">
                   <Gauge className="text-blue-400 mr-3" size={24} />
                   <span className="text-xl font-bold text-gray-100">{pressureValue.toFixed(1)}</span>
-                  <span className="ml-2 text-gray-400">PSI</span>
+                  <span className="ml-2 text-gray-400">{pressureUnit}</span>
                 </div>
 
                 {renderSensorDetails()}

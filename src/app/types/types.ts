@@ -26,6 +26,7 @@ export interface Device {
   historicoKey?: string;
   databaseKey?: string;
   pressureRanges?: PressureRanges;
+  pressureUnit?: 'PSI' | 'L/s' | 'Bar';
   historicalConfig?: HistoricalConfig;
 }
 

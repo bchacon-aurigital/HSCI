@@ -431,7 +431,7 @@ export default function MultiDeviceCard({
               <Gauge className="text-purple-400 mr-3" size={20} />
               <div>
                 <p className="text-xs text-gray-400">Presión</p>
-                <p className="font-bold text-gray-100">{sensorData.PRESION_BAR} BAR</p>
+                <p className="font-bold text-gray-100">{sensorData.PRESION_BAR} psi</p>
               </div>
             </div>
           )}

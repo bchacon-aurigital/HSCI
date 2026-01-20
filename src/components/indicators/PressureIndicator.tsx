@@ -10,7 +10,7 @@ interface PressureRanges {
 interface PressureIndicatorProps {
   pressure: number;
   maxPressure?: number;
-  unit?: 'PSI' | 'kg/cm²' | 'Bar';
+  unit?: 'PSI' | 'kg/cm²' | 'Bar' | 'L/s';
   id?: string;
   pressureRanges?: PressureRanges;
 }
