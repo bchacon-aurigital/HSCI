@@ -52,18 +52,20 @@ export const PressureIndicator = ({
   };
 
   const getPressureStatus = (currentPressure: number) => {
+    const label = unit === 'L/s' ? 'Caudal' : 'Presión';
+
     if (pressureRanges) {
-      if (currentPressure < pressureRanges.veryLow) return 'Presión Muy Baja';
-      if (currentPressure < pressureRanges.low) return 'Presión Baja';
-      if (currentPressure <= pressureRanges.normalMax) return 'Presión Normal';
-      if (currentPressure <= pressureRanges.high) return 'Presión Alta';
-      return 'Presión Muy Alta';
+      if (currentPressure < pressureRanges.veryLow) return `${label} Muy Bajo${unit === 'L/s' ? '' : 'a'}`;
+      if (currentPressure < pressureRanges.low) return `${label} Bajo${unit === 'L/s' ? '' : 'a'}`;
+      if (currentPressure <= pressureRanges.normalMax) return `${label} Normal`;
+      if (currentPressure <= pressureRanges.high) return `${label} Alto${unit === 'L/s' ? '' : 'a'}`;
+      return `${label} Muy Alto${unit === 'L/s' ? '' : 'a'}`;
     } else {
       const percentage = (currentPressure / maxPressure) * 100;
-      if (percentage < 30) return 'Presión Baja';
-      if (percentage < 70) return 'Presión Normal';
-      if (percentage < 85) return 'Presión Alta';
-      return 'Presión Crítica';
+      if (percentage < 30) return `${label} Bajo${unit === 'L/s' ? '' : 'a'}`;
+      if (percentage < 70) return `${label} Normal`;
+      if (percentage < 85) return `${label} Alto${unit === 'L/s' ? '' : 'a'}`;
+      return `${label} Crítico${unit === 'L/s' ? '' : 'a'}`;
     }
   };
 
