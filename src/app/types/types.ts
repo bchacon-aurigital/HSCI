@@ -59,6 +59,7 @@ export interface AsadaData {
   name: string;
   devices?: (Device | MultiDevice)[];
   subsystems?: Subsystem[];
+  headerLabel?: string; // Texto personalizado para el header (ej: "Centro de Control Acueducto Municipal")
 }
 
 export interface DeviceData {

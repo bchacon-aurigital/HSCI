@@ -32,7 +32,7 @@ export const loadDevicesForAsada = async (codigoAsada: string): Promise<AsadaDat
       return { name: 'ASADA Sanmarcanda', devices: asada9Devices };
     case 'belen2025':
       const { subsystems: belenSubsystems } = await import('../app/data/devicesConfig10');
-      return { name: 'Municipalidad BELEN', subsystems: belenSubsystems };
+      return { name: 'Municipalidad BELEN', subsystems: belenSubsystems, headerLabel: 'Centro de Control Acueducto Municipal' };
     case 'ACP2026':
       const { devices: asada11Devices } = await import('../app/data/devicesConfig11');
       return { name: 'ASADA Costa Pajaros', devices: asada11Devices };

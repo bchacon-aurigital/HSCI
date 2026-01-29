@@ -36,7 +36,7 @@ export default function WaterSystemColumns() {
 
   };
 
-  const { groupedDevices, subsystems, loading: devicesLoading, reloadDevices } = useDeviceGroups(codigoAsada);
+  const { groupedDevices, subsystems, headerLabel, loading: devicesLoading, reloadDevices } = useDeviceGroups(codigoAsada);
 
   // Función para activar/desactivar modo tiempo real
   const toggleRealTime = () => {
@@ -403,7 +403,9 @@ export default function WaterSystemColumns() {
                             </svg>
                           </div>
                         )}
-                        <h1 className="text-xl font-semibold text-blue-300">Centro de Control ASADA</h1>
+                        <h1 className="text-xl font-semibold text-blue-300">
+                          {headerLabel || 'Centro de Control ASADA'}
+                        </h1>
                       </div>
                       <div className="flex flex-col sm:flex-row gap-2">
                         {/* Solo mostrar el botón de tiempo real si es la ASADA de control */}

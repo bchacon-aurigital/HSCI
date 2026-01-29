@@ -7,6 +7,7 @@ import { triggerRefresh, subscribeToDataUpdates } from './useAggregatedData';
 export const useDeviceGroups = (codigoAsada: string) => {
   const [devices, setDevices] = useState<Device[]>([]);
   const [subsystems, setSubsystems] = useState<Subsystem[]>([]);
+  const [headerLabel, setHeaderLabel] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(true);
 
   const reloadDevices = useCallback(async () => {
@@ -17,6 +18,7 @@ export const useDeviceGroups = (codigoAsada: string) => {
       await triggerRefresh();
       const asadaData = await loadDevicesForAsada(codigoAsada);
 
+      setHeaderLabel(asadaData.headerLabel);
       if (asadaData.subsystems) {
         setSubsystems(asadaData.subsystems);
         setDevices([]);
@@ -41,6 +43,7 @@ export const useDeviceGroups = (codigoAsada: string) => {
       if (codigoAsada) {
         loadDevicesForAsada(codigoAsada)
           .then((asadaData) => {
+            setHeaderLabel(asadaData.headerLabel);
             if (asadaData.subsystems) {
               setSubsystems(asadaData.subsystems);
               setDevices([]);
@@ -117,5 +120,5 @@ export const useDeviceGroups = (codigoAsada: string) => {
     return groups;
   }, [devices, loading]);
 
-  return { groupedDevices, subsystems, loading, reloadDevices };
+  return { groupedDevices, subsystems, headerLabel, loading, reloadDevices };
 };
