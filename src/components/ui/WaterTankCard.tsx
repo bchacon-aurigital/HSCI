@@ -13,12 +13,14 @@ import {
   Ruler,
   ShieldCheck,
   ShieldAlert,
+  Waves,
 } from 'lucide-react';
 import { WaterTankIndicator } from '../indicators/WaterTankIndicator';
 import { PumpIndicator } from '../indicators/PumpIndicator';
 import { WellIndicator } from '../indicators/WellIndicator';
 import { CentrifugalPumpIndicator } from '../indicators/CentrifugalPumpIndicator';
 import { PressureIndicator } from '../indicators/PressureIndicator';
+import { FlowIndicator } from '../indicators/FlowIndicator';
 import { useDeviceData } from '../../hooks/useDeviceData';
 import { formatDate } from '../../utils/utils';
 import { BaseDeviceType, PressureRanges, HistoricalConfig } from '../../app/types/types';
@@ -751,24 +753,37 @@ export default function WaterTankCard({
           <CardHeader className="bg-gray-800 pb-2">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold text-gray-100">{name}</h2>
-              <Gauge className="text-blue-400" size={24} />
+              {pressureUnit === 'L/s' ? (
+                <Waves className="text-cyan-400" size={24} />
+              ) : (
+                <Gauge className="text-blue-400" size={24} />
+              )}
             </div>
           </CardHeader>
           <CardContent className="pt-4">
             {hasPressureValue ? (
               <div className="flex flex-col items-center space-y-6">
-                <PressureIndicator
-                  pressure={pressureValue}
-                  maxPressure={pressureUnit === 'L/s' ? 150 : 100}
-                  unit={pressureUnit}
-                  pressureRanges={pressureRanges}
-                />
-
-                <div className="flex items-center justify-center w-full py-3 px-4 rounded-lg bg-gray-800/80 border border-gray-700/50">
-                  <Gauge className="text-blue-400 mr-3" size={24} />
-                  <span className="text-xl font-bold text-gray-100">{pressureValue.toFixed(1)}</span>
-                  <span className="ml-2 text-gray-400">{pressureUnit}</span>
-                </div>
+                {pressureUnit === 'L/s' ? (
+                  <FlowIndicator
+                    flow={pressureValue}
+                    unit={pressureUnit}
+                    flowRanges={pressureRanges}
+                  />
+                ) : (
+                  <>
+                    <PressureIndicator
+                      pressure={pressureValue}
+                      maxPressure={100}
+                      unit={pressureUnit}
+                      pressureRanges={pressureRanges}
+                    />
+                    <div className="flex items-center justify-center w-full py-3 px-4 rounded-lg bg-gray-800/80 border border-gray-700/50">
+                      <Gauge className="text-blue-400 mr-3" size={24} />
+                      <span className="text-xl font-bold text-gray-100">{pressureValue.toFixed(1)}</span>
+                      <span className="ml-2 text-gray-400">{pressureUnit}</span>
+                    </div>
+                  </>
+                )}
 
                 {renderSensorDetails()}
 
