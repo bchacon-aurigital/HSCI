@@ -13,6 +13,16 @@ Este documento mantiene un registro histórico de todas las ASADAs agregadas al 
 
 > Periodo: Octubre 2025 - Enero 2026
 
+### Febrero 2026
+
+#### `codigo1` - ASADA Los Sueños *(Reactivado)*
+- **Fecha de Reactivación:** 2026-02-04
+- **Archivo de Configuración:** `devicesConfig.ts`
+- **Autor:** Aurigital
+- **Notas:** Se descomentó el caso en `dynamicDeviceLoader.ts` para restaurar el acceso con código `codigo1`. Anteriormente fue comentado el 2025-07-10 (commit 2a67bac8).
+
+---
+
 ### Enero 2026
 
 #### `ACP2026` - ASADA Costa Pajaros
@@ -114,20 +124,14 @@ Este documento mantiene un registro histórico de todas las ASADAs agregadas al 
 
 ### Casos Comentados
 
-#### `codigo1` - ASADA Los Sueños
-- **Estado:** Comentado
-- **Fecha de Comentado:** 2025-07-10
-- **Commit:** 2a67bac8
-- **Archivo de Configuración:** `devicesConfig.ts`
-- **Autor:** Aurigital
-- **Notas:** Este caso fue comentado y no está activo en el sistema
+> No hay casos comentados actualmente. Todos los casos están activos.
 
 ---
 
 ## Estadísticas
 
 ### Por Año
-- **2026:** 2 ASADAs (Enero: 2)
+- **2026:** 3 entradas (Febrero: 1 reactivación, Enero: 2)
 - **2025:** 9 ASADAs
   - Diciembre: 1
   - Octubre: 1
@@ -136,12 +140,12 @@ Este documento mantiene un registro histórico de todas las ASADAs agregadas al 
   - Mayo: 3
 
 ### Por Tipo
-- **Devices (dispositivos estándar):** 8 ASADAs
+- **Devices (dispositivos estándar):** 9 ASADAs
 - **Subsystems (subsistemas):** 2 ASADAs (AQG2025, belen2025)
-- **Comentados:** 1 ASADA (codigo1)
+- **Comentados:** 0
 
 ### Total Activo
-**11 ASADAs** activas en el sistema (10 si se excluyen los casos comentados)
+**11 ASADAs** activas en el sistema
 
 ---
 
@@ -164,4 +168,4 @@ Este documento mantiene un registro histórico de todas las ASADAs agregadas al 
 
 ---
 
-**Última actualización de este documento:** 2026-01-16
+**Última actualización de este documento:** 2026-02-04
