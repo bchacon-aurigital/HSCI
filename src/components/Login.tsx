@@ -21,7 +21,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     setIsLoading(true);
 
     setTimeout(() => {
-      const validCodes = ['codigo1', 'asroa2537', 'codigo2', 'alajuela2025', 'coyol2025', 'catsa2025', 'AQG2025', 'zapotal2025', 'sanmarcanda2025', 'belen2025', 'ACP2026'];
+      const validCodes = ['codigo1', 'asroa2537', 'codigo2', 'alajuela2025', 'coyol2025', 'catsa2025', 'AQG2025', 'zapotal2025', 'sanmarcanda2025', 'belen2025', 'ACP2026', 'villasol2026'];
       if (validCodes.includes(codigo)) {
         setError(null);
         onLogin(codigo);
