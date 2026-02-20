@@ -13,18 +13,6 @@ export const devices: Device[] = [
     databaseKey: 'VILLA_EL_SOL',
   },
 
-  // POZO BOMBA
-  {
-    name: 'Bomba Pozo',
-    url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/VILLA_EL_SOL/POZO_TANQUE/POZO.json',
-    type: 'well',
-    group: 'vds-pozo',
-    order: 1,
-    pumpKey: 'DATABOMB',
-    historicoKey: 'POZO-TANQUE',
-    databaseKey: 'VILLA_EL_SOL',
-  },
-
   // BOMBA PRESIÓN CONSTANTE 1
   {
     name: 'Bomba Presión Constante 1',
