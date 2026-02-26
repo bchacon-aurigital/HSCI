@@ -309,7 +309,7 @@ const epaDevices: (Device | MultiDevice)[] = [
 export const subsystems: Subsystem[] = [
   {
     name: 'zamora',
-    displayName: 'Sistema San Anotnio',
+    displayName: 'Sistema San Antonio',
     devices: zamoraDevices,
   },
   {
