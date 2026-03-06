@@ -1,0 +1,26 @@
+{
+  "name": "Centro de Control HSCI",
+  "short_name": "HSCI Monitor",
+  "description": "Sistema de supervisión continua para infraestructura hídrica",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#28C0F5",
+  "background_color": "#0b1729",
+  "lang": "es-CR",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

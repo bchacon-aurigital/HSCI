@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 
@@ -13,9 +13,22 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  themeColor: '#28C0F5'
+};
+
 export const metadata: Metadata = {
   title: 'Centro de Control HSCI | Monitoreo en tiempo real',
   description: 'Sistema de supervisión continua para infraestructura hídrica',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'HSCI Monitor'
+  },
   openGraph: {
     title: 'Centro de Control HSCI | Monitoreo en tiempo real',
     description: 'Sistema de supervisión continua para infraestructura hídrica',
@@ -49,6 +62,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
+      <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
