@@ -21,25 +21,25 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'Centro de Control HSCI | Monitoreo en tiempo real',
+  title: 'Centro de Control HCSI | Monitoreo en tiempo real',
   description: 'Sistema de supervisión continua para infraestructura hídrica',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'HSCI Monitor'
+    title: 'HCSI Monitor'
   },
   openGraph: {
-    title: 'Centro de Control HSCI | Monitoreo en tiempo real',
+    title: 'Centro de Control HCSI | Monitoreo en tiempo real',
     description: 'Sistema de supervisión continua para infraestructura hídrica',
     url: 'https://sistema.hcsicr.com/',
-    siteName: 'Centro de Control HSCI',
+    siteName: 'Centro de Control HCSI',
     images: [
       {
         url: '/og-image.jpg', // Asegúrate de tener esta imagen en la carpeta public
         width: 1200,
         height: 630,
-        alt: 'Monitoreo de sistemas hídricos HSCI',
+        alt: 'Monitoreo de sistemas hídricos HCSI',
       },
     ],
     locale: 'es_CR',
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Centro de Control HSCI | Monitoreo en tiempo real',
+    title: 'Centro de Control HCSI | Monitoreo en tiempo real',
     description: 'Sistema de supervisión continua para infraestructura hídrica',
     images: ['/og-image.jpg'],
   },

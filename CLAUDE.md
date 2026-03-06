@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Next.js 14 application called "3bahias-monitor" that serves as a water system monitoring platform for HSCI (Hydraulic Systems Control and Infrastructure). The application monitors water infrastructure including tanks, pumps, wells, and valves in real-time through Firebase integration.
+This is a Next.js 14 application called "3bahias-monitor" that serves as a water system monitoring platform for HCSI (Hydraulic Control Systems and Infrastructure). The application monitors water infrastructure including tanks, pumps, wells, and valves in real-time through Firebase integration.
 
 ## Development Commands
 

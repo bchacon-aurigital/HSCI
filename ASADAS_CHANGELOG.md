@@ -1,6 +1,6 @@
 # Registro de ASADAs - Changelog
 
-Este documento mantiene un registro histórico de todas las ASADAs agregadas al sistema de monitoreo HSCI, incluyendo fechas de implementación y códigos de acceso.
+Este documento mantiene un registro histórico de todas las ASADAs agregadas al sistema de monitoreo HCSI, incluyendo fechas de implementación y códigos de acceso.
 
 ## Índice
 - [Casos Recientes (Últimos 4 meses)](#casos-recientes-últimos-4-meses)
