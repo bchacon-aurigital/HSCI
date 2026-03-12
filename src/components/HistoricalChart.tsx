@@ -43,6 +43,7 @@ interface HistoricalChartProps {
   deviceType?: string;
   groupName?: string;
   historicalConfig?: HistoricalConfig;
+  pressureUnit?: 'PSI' | 'L/s' | 'Bar';
 }
 
 // Función para obtener la fecha actual en Costa Rica
@@ -72,7 +73,8 @@ export default function HistoricalChart({
   databaseKey,
   deviceType,
   groupName,
-  historicalConfig
+  historicalConfig,
+  pressureUnit = 'PSI'
 }: HistoricalChartProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -355,7 +357,7 @@ export default function HistoricalChart({
     const dataLabel = isPumpData
       ? 'Estado de la bomba (0=Apagada, 1=Encendida, 2=Error, 3=Selector Fuera)'
       : deviceType === 'pressure'
-      ? 'Presión (PSI)'
+      ? pressureUnit === 'L/s' ? 'Caudal (L/s)' : `Presión (${pressureUnit})`
       : 'Nivel del tanque (%)';
 
     setChartData({
@@ -407,7 +409,7 @@ export default function HistoricalChart({
       },
       title: {
         display: true,
-        text: `Histórico de ${dataMode === 'pumps' ? 'Estado de Bombas' : deviceType === 'pressure' ? 'Presión' : 'Niveles'} - ${day}/${month}/${year} (Costa Rica)`,
+        text: `Histórico de ${dataMode === 'pumps' ? 'Estado de Bombas' : deviceType === 'pressure' ? (pressureUnit === 'L/s' ? 'Caudal' : 'Presión') : 'Niveles'} - ${day}/${month}/${year} (Costa Rica)`,
         color: 'white',
         font: {
           size: isMobile ? 14 : 16,
@@ -436,9 +438,9 @@ export default function HistoricalChart({
               const estados = ['Apagada', 'Encendida', 'Error', 'Selector Fuera'];
               return `Estado: ${estados[realState] || 'Desconocido'}`;
             }
-            // Para niveles o presión
+            // Para niveles o presión/caudal
             return deviceType === 'pressure'
-              ? `Presión: ${context.raw} PSI`
+              ? pressureUnit === 'L/s' ? `Caudal: ${context.raw} L/s` : `Presión: ${context.raw} ${pressureUnit}`
               : `Nivel: ${context.raw}%`;
           }
         }
@@ -447,7 +449,7 @@ export default function HistoricalChart({
     scales: {
       y: {
         min: 0,
-        max: dataMode === 'pumps' ? 1.2 : 105, 
+        max: dataMode === 'pumps' ? 1.2 : (deviceType === 'pressure' && pressureUnit === 'L/s' ? 60 : 105), 
         grid: {
           color: 'rgba(148, 163, 184, 0.1)',
           display: !isMobile && dataMode === 'levels' 
@@ -462,7 +464,9 @@ export default function HistoricalChart({
             if (dataMode === 'pumps') {
               return '';
             }
-            return deviceType === 'pressure' ? value + ' PSI' : value + '%';
+            return deviceType === 'pressure'
+              ? (pressureUnit === 'L/s' ? value + ' L/s' : value + ' ' + pressureUnit)
+              : value + '%';
           },
           maxTicksLimit: isMobile ? 6 : (dataMode === 'pumps' ? 0 : 11),
           stepSize: dataMode === 'pumps' ? 1 : undefined,
@@ -470,7 +474,9 @@ export default function HistoricalChart({
         },
         title: {
           display: !isMobile && dataMode === 'levels',
-          text: deviceType === 'pressure' ? 'Presión (PSI)' : 'Nivel del Tanque (%)',
+          text: deviceType === 'pressure'
+            ? (pressureUnit === 'L/s' ? 'Caudal (L/s)' : `Presión (${pressureUnit})`)
+            : 'Nivel del Tanque (%)',
           color: 'white',
           font: {
             weight: 'bold' as const

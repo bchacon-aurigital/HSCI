@@ -568,6 +568,7 @@ export default function WaterTankCard({
             deviceType={type}
             groupName={groupName}
             historicalConfig={historicalConfig}
+            pressureUnit={pressureUnit}
             onClose={() => setShowHistorical(false)}
           />
         ) : null}
@@ -719,6 +720,7 @@ export default function WaterTankCard({
             deviceType={type}
             groupName={groupName}
             historicalConfig={historicalConfig}
+            pressureUnit={pressureUnit}
             onClose={() => setShowHistorical(false)}
           />
         ) : null}
@@ -849,6 +851,7 @@ export default function WaterTankCard({
             deviceType={type}
             groupName={groupName}
             historicalConfig={historicalConfig}
+            pressureUnit={pressureUnit}
             onClose={() => setShowHistorical(false)}
           />
         ) : null}
