@@ -29,8 +29,8 @@ export const devices: (Device | MultiDevice)[] = [
   { name: 'BOMBA DE POZO', key: 'BAJOPAI', pumpKey: 'DATAPANEL', type: 'well', group: 'Bajo-paires', order: 2, historicoKey: 'BP', databaseKey: 'ASROA' },
 
   //JULIO
-  { name: 'TANQUE JULIO ALFARO', key: 'JULIO', type: 'tank', group: 'Julio-alfaro', order: 1},
-  { name: 'BOMBA DE POZO', key: 'JULIO', pumpKey: 'DATAPANEL', type: 'well', group: 'Julio-alfaro', order: 2, historicoKey: 'JULIO_POZO', databaseKey: 'ASROA' },
+  { name: 'TANQUE JULIO ALFARO', key: 'JULIO', type: 'tank', group: 'Julio-alfaro', order: 1, historicoKey: 'JULIO', databaseKey: 'ASROA' },
+  { name: 'BOMBA DE POZO', key: 'JULIO', pumpKey: 'DATAPANEL', type: 'well', group: 'Julio-alfaro', order: 2, historicoKey: 'JULIO', databaseKey: 'ASROA' },
 
   //MELI
   { name: 'TANQUE LAS MELISAS', key: 'MELI', type: 'tank', group: 'Las-melisas', order: 1, historicoKey: 'MELI', databaseKey: 'ASROA' },
