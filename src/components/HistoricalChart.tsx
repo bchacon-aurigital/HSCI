@@ -449,7 +449,7 @@ export default function HistoricalChart({
     scales: {
       y: {
         min: 0,
-        max: dataMode === 'pumps' ? 1.2 : (deviceType === 'pressure' && pressureUnit === 'L/s' ? 60 : 105), 
+        max: dataMode === 'pumps' ? 1.2 : (deviceType === 'pressure' && pressureUnit === 'L/s' ? 100 : 105), 
         grid: {
           color: 'rgba(148, 163, 184, 0.1)',
           display: !isMobile && dataMode === 'levels' 
