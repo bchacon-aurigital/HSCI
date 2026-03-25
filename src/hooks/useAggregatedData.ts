@@ -136,6 +136,9 @@ export const setGroupedURLsForAsada = (asadaCode: string) => {
     case 'costapajaros2025':
       groupedURLs = {};
       break;
+    case 'app2026':
+      groupedURLs = {};
+      break;
     default:
       groupedURLs = {};
   }
