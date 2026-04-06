@@ -9,9 +9,9 @@ const pabloPresbereHistoricalConfig = {
 };
 
 export const devices: Device[] = [
-  // TANQUE
+  // TANQUE 1
   {
-    name: 'Tanque Pablo Presbere',
+    name: 'Tanque 1',
     url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/ASADA_PP/TANQUE.json',
     type: 'tank',
     group: 'pp-tanque',
@@ -22,54 +22,67 @@ export const devices: Device[] = [
     historicalConfig: pabloPresbereHistoricalConfig,
   },
 
-  // POZO 1
+  // TANQUE 2
   {
-    name: 'Pozo 1',
-    url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/ASADA_PP/POZOS/POZO1.json',
-    type: 'well',
-    group: 'pp-pozos',
+    name: 'Tanque 2',
+    url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/ASADA_PP/TANQUE2.json',
+    type: 'tank',
+    group: 'pp-tanque2',
     order: 1,
-    pumpKey: 'DATABOMB',
-    historicoKey: 'POZO1/ESTADOBOMBA',
+    pumpKey: 'valor',
+    historicoKey: 'TANQUES/TANQUE2/NIVELES',
     databaseKey: 'ASADA_PP/HISTORICO',
     historicalConfig: pabloPresbereHistoricalConfig,
   },
 
-  // POZO 2
+  // BOMBA 1
   {
-    name: 'Pozo 2',
-    url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/ASADA_PP/POZOS/POZO2.json',
+    name: 'Bomba 1',
+    url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/ASADA_PP/BOMBEO/BOMBA1.json',
     type: 'well',
-    group: 'pp-pozos',
+    group: 'pp-bombas',
+    order: 1,
+    pumpKey: 'ESTADO',
+    historicoKey: 'BOMBEO/BOMBA1/ESTADO',
+    databaseKey: 'ASADA_PP/HISTORICO',
+    historicalConfig: pabloPresbereHistoricalConfig,
+  },
+
+  // BOMBA 2
+  {
+    name: 'Bomba 2',
+    url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/ASADA_PP/BOMBEO/BOMBA2.json',
+    type: 'well',
+    group: 'pp-bombas',
     order: 2,
-    pumpKey: 'DATABOMB',
-    historicoKey: 'POZO2/ESTADOBOMBA',
+    pumpKey: 'ESTADO',
+    historicoKey: 'BOMBEO/BOMBA2/ESTADO',
     databaseKey: 'ASADA_PP/HISTORICO',
     historicalConfig: pabloPresbereHistoricalConfig,
   },
 
-  // POZO 3
+  // BOMBA 3
   {
-    name: 'Pozo 3',
-    url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/ASADA_PP/POZOS/POZO3.json',
+    name: 'Bomba 3',
+    url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/ASADA_PP/BOMBEO/BOMBA3.json',
     type: 'well',
-    group: 'pp-pozos',
+    group: 'pp-bombas',
     order: 3,
-    pumpKey: 'DATABOMB',
-    historicoKey: 'POZO3/ESTADOBOMBA',
+    pumpKey: 'ESTADO',
+    historicoKey: 'BOMBEO/BOMBA3/ESTADO',
     databaseKey: 'ASADA_PP/HISTORICO',
     historicalConfig: pabloPresbereHistoricalConfig,
   },
 
-  // POZO 4
+  // BOMBA 4
   {
-    name: 'Pozo 4',
-    url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/ASADA_PP/POZOS/POZO4.json',
+    name: 'Bomba 4',
+    url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/ASADA_PP/BOMBEO/BOMBA4.json',
     type: 'well',
-    group: 'pp-pozos',
+    group: 'pp-bombas',
     order: 4,
-    pumpKey: 'DATABOMB',
-    historicoKey: 'POZO4/ESTADOBOMBA',
+    pumpKey: 'ESTADO',
+    historicoKey: 'BOMBEO/BOMBA4/ESTADO',
     databaseKey: 'ASADA_PP/HISTORICO',
     historicalConfig: pabloPresbereHistoricalConfig,
   },
