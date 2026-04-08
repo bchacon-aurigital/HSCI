@@ -523,16 +523,17 @@ export default function HistoricalChart({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
       <Card className="w-[95%] max-w-4xl max-h-[95vh] bg-gray-900 border-gray-800 overflow-hidden">
-        <CardHeader className="bg-gray-800 flex flex-row items-center justify-between pb-2 px-3 sm:px-6">
-          <div className="flex items-center">
+        <CardHeader className="bg-gray-800 flex flex-row items-center justify-between gap-2 pb-2 px-3 sm:px-6">
+          <div className="flex items-center min-w-0 flex-1">
             <Calendar className="text-blue-400 mr-2" size={isMobile ? 16 : 18} />
-            <h2 className={`${isMobile ? 'text-base' : 'text-xl'} font-semibold text-gray-100 truncate`}>
+            <h2 className={`${isMobile ? 'text-base' : 'text-xl'} font-semibold text-gray-100 truncate min-w-0`}>
               Histórico {deviceName}{groupName ? ` ${groupName.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}` : ''}
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-full hover:bg-gray-700"
+            className="p-1 rounded-full hover:bg-gray-700 shrink-0"
+            aria-label="Cerrar modal de histórico"
           >
             <X className="text-gray-400 hover:text-white" size={isMobile ? 18 : 20} />
           </button>
