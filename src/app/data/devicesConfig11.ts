@@ -36,6 +36,19 @@ export const devices: Device[] = [
     historicalConfig: costaPajarosHistoricalConfig,
   },
 
+  // POZO 4 - Bomba
+  {
+    name: 'Pozo 4',
+    url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/ACP/POZOS/POZO2.json',
+    type: 'well',
+    group: 'costa-pajaros-pozo',
+    order: 2,
+    pumpKey: 'DATABOMB',
+    historicoKey: 'POZO2/ESTADOBOMBA',
+    databaseKey: 'ACP/HISTORICO/',
+    historicalConfig: costaPajarosHistoricalConfig,
+  },
+
   // PRESION RED
   {
     name: 'Presion Red',
