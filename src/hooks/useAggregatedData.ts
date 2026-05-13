@@ -139,6 +139,9 @@ export const setGroupedURLsForAsada = (asadaCode: string) => {
     case 'app2026':
       groupedURLs = {};
       break;
+    case 'ALDN2026':
+      groupedURLs = {};
+      break;
     default:
       groupedURLs = {};
   }

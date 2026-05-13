@@ -42,6 +42,9 @@ export const loadDevicesForAsada = async (codigoAsada: string): Promise<AsadaDat
     case 'app2026':
       const { devices: asada13Devices } = await import('../app/data/devicesConfig13');
       return { name: 'ASADA Pablo Presbere', devices: asada13Devices };
+    case 'ALDN2026':
+      const { devices: asada14Devices } = await import('../app/data/devicesConfig14');
+      return { name: 'ASADA Las Delicias de Nosara', devices: asada14Devices };
     default:
       throw new Error('ASADA Control');
   }
