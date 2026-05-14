@@ -47,10 +47,10 @@ export const devices: Device[] = [
     databaseKey: 'ALDN/HISTORICO',
     historicalConfig: lasDeliciasHistoricalConfig,
     pressureRanges: {
-      veryLow: 50,
-      low: 80,
-      normalMax: 110,
-      high: 130,
+      veryLow: 5,
+      low: 15,
+      normalMax: 40,
+      high: 50,
     },
   },
 ];
