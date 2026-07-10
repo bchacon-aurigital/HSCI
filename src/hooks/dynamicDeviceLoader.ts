@@ -15,9 +15,9 @@ export const loadDevicesForAsada = async (codigoAsada: string): Promise<AsadaDat
     case 'alajuela2025':
       const { devices: asada4Devices } = await import('../app/data/devicesConfig4');
       return { name: 'Acueducto Municipal Alajuela', devices: asada4Devices };
-    case 'coyol2025':
-      const { devices: asada5Devices } = await import('../app/data/devicesConfig5');
-      return { name: 'Hacienda el Coyol', devices: asada5Devices };
+    // case 'coyol2025':
+    //   const { devices: asada5Devices } = await import('../app/data/devicesConfig5');
+    //   return { name: 'Hacienda el Coyol', devices: asada5Devices };
     case 'catsa2025':
       const { devices: asada6Devices } = await import('../app/data/devicesConfig6');
       return { name: 'Central Azucarera del Tempisque', devices: asada6Devices };
