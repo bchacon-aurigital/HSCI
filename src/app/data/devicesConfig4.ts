@@ -3,7 +3,7 @@ import { Device, MultiDevice } from '../types/types';
 
 export const devices: (Device | MultiDevice)[] = [
   // LA GIRALDA
-  { name: 'Tanque La Giralda', key: 'TVIILAELIA', type: 'tank', group: 'Sistema La Giralda y Cataluña', order: 1, historicoKey: 'RIOSEG', databaseKey: 'ACUEDUCTOALAJUELA' },
+  { name: 'Tanque La Giralda', url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/ACUEDUCTOALAJUELA/RIOSEG/TANQUE.json', type: 'tank', group: 'Sistema La Giralda y Cataluña', order: 1, historicoKey: 'RIOSEG', databaseKey: 'ACUEDUCTOALAJUELA' },
   { name: 'Bombeo La Giralda', url: 'https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/ACUEDUCTOALAJUELA/RIOSEG/BOMBA.json', pumpKey: 'DATABOMB', type: 'well', group: 'Sistema La Giralda y Cataluña', order: 2, historicoKey: 'RIOSEG_BOMBA', databaseKey: 'ACUEDUCTOALAJUELA' },
 
   // LOS LLANOS (OCULTO)

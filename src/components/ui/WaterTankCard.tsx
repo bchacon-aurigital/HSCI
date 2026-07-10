@@ -60,7 +60,7 @@ export default function WaterTankCard({
 }: WaterTankCardProps) {
   const pumpKeyParam = type === 'pump' || type === 'well' ? undefined : pumpKey;
   const { data, error, loading } = useDeviceData(identifier, pumpKeyParam, codigoAsada);
-  const [showDetails, setShowDetails] = useState(false);
+  const [showDetails, setShowDetails] = useState(true);
   const [isDeviceExpanded, setIsDeviceExpanded] = useState(false);
   const [showHistorical, setShowHistorical] = useState(false);
   const [hasHistorical, setHasHistorical] = useState(false);
