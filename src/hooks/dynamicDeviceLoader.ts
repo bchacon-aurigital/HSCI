@@ -24,9 +24,9 @@ export const loadDevicesForAsada = async (codigoAsada: string): Promise<AsadaDat
     case 'AQG2025':
       const { subsystems: aqgSubsystems } = await import('../app/data/devicesConfig7');
       return { name: 'ASADA Quebrado Ganado', subsystems: aqgSubsystems };
-    case 'zapotal2025':
-      const { devices: asada8Devices } = await import('../app/data/devicesConfig8');
-      return { name: 'Zapotal Beach Club', devices: asada8Devices };
+    // case 'zapotal2025':
+    //   const { devices: asada8Devices } = await import('../app/data/devicesConfig8');
+    //   return { name: 'Zapotal Beach Club', devices: asada8Devices };
     case 'sanmarcanda2025':
       const { devices: asada9Devices } = await import('../app/data/devicesConfig9');
       return { name: 'ASADA Sanmarcanda', devices: asada9Devices };
@@ -48,6 +48,9 @@ export const loadDevicesForAsada = async (codigoAsada: string): Promise<AsadaDat
     case 'ASPB2026':
       const { devices: asada15Devices } = await import('../app/data/devicesConfig15');
       return { name: 'ASADA San Pedro de Barva', devices: asada15Devices };
+    case 'APT2026':
+      const { devices: asada16Devices } = await import('../app/data/devicesConfig16');
+      return { name: 'ASADA Paso Tempisque', devices: asada16Devices };
     default:
       throw new Error('ASADA Control');
   }
