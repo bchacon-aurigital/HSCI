@@ -21,7 +21,7 @@ export const devices: (Device | MultiDevice)[] = [
   { name: 'BOMBA DE POZO', key: 'SACRA', pumpKey: 'databomb', type: 'well', group: 'Sacramento', order: 2, historicoKey: 'SACRA_POZO', databaseKey: 'ASROA' },
 
   //SONIA
-  { name: 'TANQUE SONIA', key: 'SONIA', type: 'tank', group: 'Sonia-araujo', order: 1},
+  { name: 'TANQUE SONIA', key: 'SONIA', type: 'tank', group: 'Sonia-araujo', order: 1, historicoKey: 'SONIA', databaseKey: 'ASROA' },
   { name: 'BOMBA DE POZO', key: 'SONIA', pumpKey: 'DATAPANEL', type: 'well', group: 'Sonia-araujo', order: 2, historicoKey: 'SONIA_POZO', databaseKey: 'ASROA' },
 
   //BAJOPAI
