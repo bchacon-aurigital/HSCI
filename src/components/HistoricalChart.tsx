@@ -17,8 +17,18 @@ import {
 import { Line, Bar } from 'react-chartjs-2';
 import { Card, CardContent, CardHeader } from './ui/card';
 import { Calendar, X, Info } from 'lucide-react';
-import { formatLabviewTimeToHourMinute, formatLabviewTimeToFullDateTime } from '../utils/timeUtils';
-import { HistoricalConfig } from '../app/types/types';
+import {
+  formatLabviewTimeToHourMinute,
+  formatLabviewTimeToFullDateTime,
+  generateDateArray,
+  formatDateTimeForChart,
+  getDaysDifference,
+  addDays,
+  getFirstDayOfMonth,
+  parseLabviewTime
+} from '../utils/timeUtils';
+import { HistoricalConfig, DateRange, MultiDayDataPoint } from '../app/types/types';
+import { determineAggregation, aggregateByHour, aggregateBy2Hours } from '../utils/dataAggregation';
 
 ChartJS.register(
   CategoryScale,
@@ -83,9 +93,18 @@ export default function HistoricalChart({
   const dataMode: 'levels' | 'pumps' =
     (deviceType === 'pump' || deviceType === 'well') ? 'pumps' : 'levels';
 
-  const [selectedDate, setSelectedDate] = useState<string>(
-    formatDateForInput(getCostaRicaDate())
-  );
+  const [dateRange, setDateRange] = useState<DateRange>({
+    start: formatDateForInput(getCostaRicaDate()),
+    end: formatDateForInput(getCostaRicaDate()),
+    mode: 'single'
+  });
+
+  const [loadingProgress, setLoadingProgress] = useState<{
+    current: number;
+    total: number;
+  } | null>(null);
+
+  const [aggregationInfo, setAggregationInfo] = useState<string | null>(null);
 
   // Detectar si estamos en un dispositivo móvil
   const [isMobile, setIsMobile] = useState(false);
@@ -219,6 +238,120 @@ export default function HistoricalChart({
       setChartData(null);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Función para cargar datos de un rango de fechas
+  const fetchDateRangeData = async (startDate: string, endDate: string) => {
+    // Validar rango
+    const dayCount = getDaysDifference(startDate, endDate);
+
+    if (dayCount > 30) {
+      setError('El rango máximo es de 30 días. Por favor selecciona un período menor.');
+      setLoading(false);
+      return;
+    }
+
+    if (dayCount < 1) {
+      setError('La fecha de inicio debe ser anterior o igual a la fecha final.');
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setLoadingProgress({ current: 0, total: dayCount });
+
+    try {
+      if (!historicoKey || !databaseKey) {
+        setError('No hay configuración histórica para este dispositivo');
+        setLoading(false);
+        return;
+      }
+
+      // Generar array de fechas
+      const dates = generateDateArray(startDate, endDate);
+
+      // Crear promesas para fetch paralelo
+      const fetchPromises = dates.map(async (dateString, index) => {
+        try {
+          const { year, month, day } = parseSelectedDateInCostaRica(dateString);
+
+          let dataType;
+          if (dataMode === 'pumps') {
+            dataType = 'ESTADOBOMBA';
+          } else if (deviceType === 'pressure') {
+            dataType = 'PRESION';
+          } else {
+            dataType = 'NIVELES';
+          }
+
+          const monthPadded = String(month).padStart(2, '0');
+          const dayPadded = String(day).padStart(2, '0');
+
+          const urlsToTry: string[] = [];
+
+          if (historicalConfig) {
+            const authParam = historicalConfig.authToken ? `?auth=${historicalConfig.authToken}` : '';
+            urlsToTry.push(`${historicalConfig.baseUrl}${historicalConfig.historicalDataPath}${databaseKey}/${historicoKey}/${year}/${monthPadded}/${dayPadded}.json${authParam}`);
+            urlsToTry.push(`${historicalConfig.baseUrl}${historicalConfig.historicalDataPath}${databaseKey}/${historicoKey}/${year}/${month}/${day}.json${authParam}`);
+          } else {
+            urlsToTry.push(`https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/${databaseKey}/HISTORICO/${historicoKey}/${dataType}/${year}/${monthPadded}/${dayPadded}.json`);
+            urlsToTry.push(`https://prueba-labview-default-rtdb.firebaseio.com/BASE_DATOS/${databaseKey}/HISTORICO/${historicoKey}/${dataType}/${year}/${month}/${day}.json`);
+          }
+
+          // Intentar ambas URLs
+          for (const url of urlsToTry) {
+            try {
+              const response = await fetch(url);
+              if (response.ok) {
+                const data = await response.json();
+                if (data !== null && data !== undefined) {
+                  // Actualizar progreso
+                  setLoadingProgress({ current: index + 1, total: dayCount });
+                  return { date: dateString, data };
+                }
+              }
+            } catch (err) {
+              continue;
+            }
+          }
+
+          // Si llegamos aquí, no se encontraron datos para esta fecha
+          return { date: dateString, data: null };
+        } catch (err) {
+          return { date: dateString, data: null };
+        }
+      });
+
+      // Ejecutar todas las promesas en paralelo
+      const results = await Promise.allSettled(fetchPromises);
+
+      // Filtrar resultados exitosos
+      const successfulResults = results
+        .filter((r): r is PromiseFulfilledResult<{ date: string; data: any }> => r.status === 'fulfilled' && r.value.data !== null)
+        .map(r => r.value);
+
+      const failedCount = dayCount - successfulResults.length;
+
+      if (successfulResults.length === 0) {
+        setError(`No se encontraron datos para el rango seleccionado (${startDate} - ${endDate})`);
+        setChartData(null);
+        setLoading(false);
+        setLoadingProgress(null);
+        return;
+      }
+
+      // Procesar datos multi-día
+      processMultiDayData(successfulResults, historicoKey, dayCount, failedCount);
+
+    } catch (error: any) {
+      console.error('Error al cargar rango de datos:', error);
+      setError(`Error al cargar datos: ${error.message || 'Error desconocido'}`);
+      setChartData(null);
+    } finally {
+      setLoading(false);
+      setLoadingProgress(null);
     }
   };
 
@@ -385,12 +518,161 @@ export default function HistoricalChart({
     });
   };
 
-  // Cargar datos cuando cambie la fecha
-  useEffect(() => {
-    loadDataForDate(selectedDate);
-  }, [selectedDate]);
+  // Procesar datos de múltiples días
+  const processMultiDayData = (
+    results: Array<{ date: string; data: any }>,
+    deviceKey: string,
+    totalDays: number,
+    failedCount: number
+  ) => {
+    try {
+      // Determinar qué campo buscar
+      let valueField = 'VALOR';
+      if (dataMode === 'pumps') {
+        valueField = 'ESTADO';
+      } else if (deviceType === 'pressure') {
+        valueField = 'PRESION_BAR';
+      }
 
-  const { year, month, day } = parseSelectedDateInCostaRica(selectedDate);
+      // Recopilar todos los puntos de datos
+      const allDataPoints: MultiDayDataPoint[] = [];
+
+      results.forEach(({ date, data }) => {
+        if (!data) return;
+
+        const processItem = (item: any) => {
+          if (!item || !item.DATA) return;
+
+          let fieldValue;
+          if (deviceType === 'pressure') {
+            fieldValue = item.DATA.PRESION_BAR ?? item.DATA.PRESION ?? item.DATA.VALOR ?? item.DATA.CAUDAL_LPS;
+          } else {
+            fieldValue = item.DATA[valueField];
+          }
+
+          if (fieldValue !== undefined && item.DATA.TIME) {
+            allDataPoints.push({
+              timestamp: Number(item.DATA.TIME),
+              value: Number(fieldValue),
+              date: date
+            });
+          }
+        };
+
+        if (Array.isArray(data)) {
+          data.forEach(processItem);
+        } else if (typeof data === 'object') {
+          Object.values(data).forEach(processItem);
+        }
+      });
+
+      if (allDataPoints.length === 0) {
+        setError('No se encontraron datos válidos en el rango seleccionado');
+        setChartData(null);
+        return;
+      }
+
+      // Ordenar por timestamp
+      allDataPoints.sort((a, b) => a.timestamp - b.timestamp);
+
+      // Determinar agregación
+      const aggregationMethod = determineAggregation(totalDays);
+      const isPumpData = dataMode === 'pumps';
+
+      let processedData = allDataPoints;
+
+      // Aplicar agregación si es necesario
+      if (aggregationMethod === 'hourly') {
+        processedData = aggregateByHour(allDataPoints, isPumpData);
+        setAggregationInfo(`⚠ Datos promediados por hora para mejor visualización (${processedData.length} puntos de ${allDataPoints.length})`);
+      } else if (aggregationMethod === '2-hour') {
+        processedData = aggregateBy2Hours(allDataPoints, isPumpData);
+        setAggregationInfo(`⚠ Datos promediados cada 2 horas para mejor visualización (${processedData.length} puntos de ${allDataPoints.length})`);
+      } else {
+        if (failedCount > 0) {
+          setAggregationInfo(`✓ Se cargaron ${results.length} de ${totalDays} días. ${failedCount} días sin datos.`);
+        } else {
+          setAggregationInfo(`✓ Se cargaron ${allDataPoints.length} puntos de datos de ${totalDays} días`);
+        }
+      }
+
+      // Generar labels y values
+      const chartLabels = processedData.map((point, index) => {
+        const date = parseLabviewTime(point.timestamp);
+        return formatDateTimeForChart(date);
+      });
+
+      const chartValues = processedData.map(point => point.value);
+
+      const realStates = isPumpData ? [...chartValues] : [];
+      const displayValues = isPumpData ? chartValues.map(() => 1) : chartValues;
+
+      let backgroundColors, borderColors;
+
+      if (isPumpData) {
+        const stateColors = {
+          0: 'rgba(59, 130, 246, 0.8)',
+          1: 'rgba(34, 197, 94, 0.8)',
+          2: 'rgba(239, 68, 68, 0.8)',
+          3: 'rgba(156, 163, 175, 0.8)'
+        };
+        const stateBorderColors = {
+          0: 'rgb(59, 130, 246)',
+          1: 'rgb(34, 197, 94)',
+          2: 'rgb(239, 68, 68)',
+          3: 'rgb(156, 163, 175)'
+        };
+
+        backgroundColors = realStates.map(value => stateColors[value as keyof typeof stateColors] || 'rgba(156, 163, 175, 0.8)');
+        borderColors = realStates.map(value => stateBorderColors[value as keyof typeof stateBorderColors] || 'rgb(156, 163, 175)');
+      }
+
+      const dataLabel = isPumpData
+        ? 'Estado de la bomba (0=Apagada, 1=Encendida, 2=Error, 3=Selector Fuera)'
+        : deviceType === 'pressure'
+        ? pressureUnit === 'L/s' ? 'Caudal (L/s)' : `Presión (${pressureUnit})`
+        : 'Nivel del tanque (%)';
+
+      setChartData({
+        labels: chartLabels,
+        datasets: [
+          {
+            label: dataLabel,
+            data: displayValues,
+            realStates: realStates,
+            borderColor: isPumpData ? borderColors : 'rgb(53, 162, 235)',
+            backgroundColor: isPumpData ? backgroundColors : 'rgba(53, 162, 235, 0.5)',
+            fill: !isPumpData,
+            pointRadius: isPumpData ? 4 : 0,
+            pointHoverRadius: isMobile ? 6 : 8,
+            pointHoverBackgroundColor: isPumpData ? 'rgb(34, 197, 94)' : 'rgb(53, 162, 235)',
+            pointHoverBorderColor: 'white',
+            pointHoverBorderWidth: isMobile ? 1 : 2,
+            tension: isPumpData ? 0 : 0.3,
+            borderWidth: isPumpData ? 2 : 3,
+            stepped: isPumpData ? false : false,
+            borderRadius: isPumpData ? 4 : 0,
+            borderSkipped: false
+          }
+        ]
+      });
+    } catch (error: any) {
+      console.error('Error al procesar datos multi-día:', error);
+      setError(`Error al procesar datos: ${error.message || 'Error desconocido'}`);
+      setChartData(null);
+    }
+  };
+
+  // Cargar datos cuando cambie el rango de fechas
+  useEffect(() => {
+    if (dateRange.mode === 'single') {
+      loadDataForDate(dateRange.start);
+    } else {
+      fetchDateRangeData(dateRange.start, dateRange.end);
+    }
+  }, [dateRange]);
+
+  const { year, month, day } = parseSelectedDateInCostaRica(dateRange.start);
 
   const options = {
     responsive: true,
@@ -501,7 +783,7 @@ export default function HistoricalChart({
         },
         title: {
           display: !isMobile,
-          text: 'Hora del día',
+          text: dateRange.mode === 'range' ? 'Fecha y hora' : 'Hora del día',
           color: 'white',
           font: {
             weight: 'bold' as const
@@ -540,29 +822,131 @@ export default function HistoricalChart({
         </CardHeader>
         
         <CardContent className="p-2 sm:p-4 overflow-auto">
+          {/* Botones de preset */}
           <div className="mb-3 sm:mb-4">
-            <label className="block text-xs sm:text-sm text-gray-400 mb-1">Seleccionar Fecha (Costa Rica)</label>
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              max={formatDateForInput(getCostaRicaDate())} // No permitir fechas futuras
-              className="bg-gray-800 border border-gray-700 rounded px-2 sm:px-3 py-1 sm:py-2 text-white w-full max-w-xs text-sm sm:text-base"
-            />
-            <p className="text-xs text-gray-500 mt-1">
+            <label className="block text-xs sm:text-sm text-gray-400 mb-2">Seleccionar Rango</label>
+            <div className="flex flex-wrap gap-2 mb-3">
+              <button
+                onClick={() => setDateRange({
+                  start: addDays(formatDateForInput(getCostaRicaDate()), -7),
+                  end: formatDateForInput(getCostaRicaDate()),
+                  mode: 'range'
+                })}
+                className="px-3 py-1.5 text-xs sm:text-sm bg-blue-700 hover:bg-blue-600 text-white rounded transition"
+              >
+                Últimos 7 días
+              </button>
+              <button
+                onClick={() => setDateRange({
+                  start: addDays(formatDateForInput(getCostaRicaDate()), -30),
+                  end: formatDateForInput(getCostaRicaDate()),
+                  mode: 'range'
+                })}
+                className="px-3 py-1.5 text-xs sm:text-sm bg-blue-700 hover:bg-blue-600 text-white rounded transition"
+              >
+                Últimos 30 días
+              </button>
+              <button
+                onClick={() => setDateRange({
+                  start: getFirstDayOfMonth(),
+                  end: formatDateForInput(getCostaRicaDate()),
+                  mode: 'range'
+                })}
+                className="px-3 py-1.5 text-xs sm:text-sm bg-blue-700 hover:bg-blue-600 text-white rounded transition"
+              >
+                Este mes
+              </button>
+              <button
+                onClick={() => setDateRange({
+                  start: formatDateForInput(getCostaRicaDate()),
+                  end: formatDateForInput(getCostaRicaDate()),
+                  mode: 'single'
+                })}
+                className="px-3 py-1.5 text-xs sm:text-sm bg-gray-700 hover:bg-gray-600 text-white rounded transition"
+              >
+                Día único
+              </button>
+            </div>
+
+            {/* Inputs de fecha */}
+            {dateRange.mode === 'range' ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs text-gray-400 mb-1">Fecha Inicio</label>
+                  <input
+                    type="date"
+                    value={dateRange.start}
+                    onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
+                    max={formatDateForInput(getCostaRicaDate())}
+                    className="bg-gray-800 border border-gray-700 rounded px-2 sm:px-3 py-1 sm:py-2 text-white w-full text-sm sm:text-base"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-400 mb-1">Fecha Fin</label>
+                  <input
+                    type="date"
+                    value={dateRange.end}
+                    onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
+                    max={formatDateForInput(getCostaRicaDate())}
+                    className="bg-gray-800 border border-gray-700 rounded px-2 sm:px-3 py-1 sm:py-2 text-white w-full text-sm sm:text-base"
+                  />
+                </div>
+              </div>
+            ) : (
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">Seleccionar Fecha (Costa Rica)</label>
+                <input
+                  type="date"
+                  value={dateRange.start}
+                  onChange={(e) => setDateRange({ ...dateRange, start: e.target.value, end: e.target.value })}
+                  max={formatDateForInput(getCostaRicaDate())}
+                  className="bg-gray-800 border border-gray-700 rounded px-2 sm:px-3 py-1 sm:py-2 text-white w-full max-w-xs text-sm sm:text-base"
+                />
+              </div>
+            )}
+
+            <p className="text-xs text-gray-500 mt-2">
               Fecha actual en Costa Rica: {formatDateForInput(getCostaRicaDate())}
             </p>
           </div>
+
+          {/* Loading progress */}
+          {loadingProgress && (
+            <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-green-900/20 border border-green-800/30 rounded-lg">
+              <p className="text-xs sm:text-sm text-green-300">
+                Cargando datos históricos... {loadingProgress.current} de {loadingProgress.total} días
+              </p>
+              <div className="mt-2 bg-gray-700 rounded-full h-2">
+                <div
+                  className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${(loadingProgress.current / loadingProgress.total) * 100}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Aggregation info */}
+          {aggregationInfo && !loading && (
+            <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-blue-900/20 border border-blue-800/30 rounded-lg">
+              <p className="text-xs sm:text-sm text-blue-300">{aggregationInfo}</p>
+            </div>
+          )}
 
           <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-blue-900/20 border border-blue-800/30 rounded-lg flex items-start">
             <Info className="text-blue-400 mr-2 flex-shrink-0 mt-0.5" size={isMobile ? 16 : 18} />
             <div>
               <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-blue-300`}>
                 {dataMode === 'pumps'
-                  ? `Histórico del estado de bombas del día ${day}/${month}/${year} (Costa Rica).`
+                  ? dateRange.mode === 'range'
+                    ? `Histórico del estado de bombas (${dateRange.start} - ${dateRange.end}, Costa Rica).`
+                    : `Histórico del estado de bombas del día ${day}/${month}/${year} (Costa Rica).`
                   : deviceType === 'pressure'
-                  ? `Histórico de presión del día ${day}/${month}/${year} (Costa Rica).`
-                  : `Histórico de niveles del tanque del día ${day}/${month}/${year} (Costa Rica).`
+                  ? dateRange.mode === 'range'
+                    ? `Histórico de presión (${dateRange.start} - ${dateRange.end}, Costa Rica).`
+                    : `Histórico de presión del día ${day}/${month}/${year} (Costa Rica).`
+                  : dateRange.mode === 'range'
+                    ? `Histórico de niveles del tanque (${dateRange.start} - ${dateRange.end}, Costa Rica).`
+                    : `Histórico de niveles del tanque del día ${day}/${month}/${year} (Costa Rica).`
                 }
                 Las lecturas se realizan cada 30 minutos (puede haber lecturas faltantes).
               </p>

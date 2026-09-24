@@ -49,6 +49,28 @@ export interface DeviceGroup {
   devices: (Device | MultiDevice)[];
 }
 
+// Date Range Types
+export type DateRangeMode = 'single' | 'range';
+
+export interface DateRange {
+  start: string;
+  end: string;
+  mode: DateRangeMode;
+}
+
+export interface AggregationInfo {
+  method: 'none' | 'hourly' | '2-hour';
+  originalPoints: number;
+  aggregatedPoints: number;
+}
+
+export interface MultiDayDataPoint {
+  timestamp: number; // LabVIEW timestamp
+  value: number;
+  date: string; // YYYY-MM-DD
+  aggregatedCount?: number; // Cuántos puntos se agregaron
+}
+
 export interface Subsystem {
   name: string;
   displayName: string;
