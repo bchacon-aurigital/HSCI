@@ -51,6 +51,9 @@ export const loadDevicesForAsada = async (codigoAsada: string): Promise<AsadaDat
     case 'APT2026':
       const { devices: asada16Devices } = await import('../app/data/devicesConfig16');
       return { name: 'ASADA Paso Tempisque', devices: asada16Devices };
+    case 'ABCN2026':
+      const { devices: asada17Devices } = await import('../app/data/devicesConfig17');
+      return { name: 'ASADA Barcelona', devices: asada17Devices };
     default:
       throw new Error('ASADA Control');
   }
